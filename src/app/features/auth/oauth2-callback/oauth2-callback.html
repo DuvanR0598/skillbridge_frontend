@@ -1,0 +1,12 @@
+<div class="callback-shell">
+  @if (error()) {
+    <div class="callback-error">
+      <span class="material-icons">error_outline</span>
+      <p>{{ error() }}</p>
+      <button (click)="goToLogin()">Volver al inicio</button>
+    </div>
+  } @else {
+    <mat-spinner diameter="48" />
+    <p class="callback-msg">Procesando autenticación con Google...</p>
+  }
+</div>
