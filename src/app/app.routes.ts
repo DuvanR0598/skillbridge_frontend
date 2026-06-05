@@ -33,17 +33,17 @@ export const routes: Routes = [
   },
 
   // ── Layout principal con sidebar ───────────────────────────────
-  // {
-  //   path: 'app',
-  //   loadComponent: () =>
-  //     import('./layouts/main-layout/main-layout').then((m) => m.MainLayout),
-  //   canActivate: [authGuard, perfilGuard],
-  //   children: [
-  //     {
-  //       path: 'dashboard',
-  //       loadComponent: () =>
-  //         import('./features/dashboard/dashboard').then((m) => m.Dashboard),
-  //     },
+  {
+    path: 'app',
+    loadComponent: () =>
+      import('./layouts/main-layout/main-layout').then((m) => m.MainLayout),
+    canActivate: [authGuard, perfilGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard').then((m) => m.DashboardComponent),
+      }
   //     {
   //       path: 'questionnaires',
   //       canActivate: [rolGuard],
@@ -71,15 +71,24 @@ export const routes: Routes = [
   //         import('./features/profile/profile').then((m) => m.Profile),
   //     },
   //     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  //   ],
-  // },
+    ],
+   },
 
   // ── Dashboard mínimo (placeholder hasta implementar MainLayout) ─
   {
     path: 'app/dashboard',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+      import('./features/dashboard/dashboard').then((m) => m.DashboardComponent),
+  },
+
+  // ── Administración de usuarios (solo ADMIN) ────────────────────
+  {
+    path: 'app/admin/users',
+    canActivate: [authGuard, rolGuard],
+    data: { roles: ['ROLE_ADMIN'] },
+    loadComponent: () =>
+      import('./features/admin/users/admin-users').then((m) => m.AdminUsers),
   },
 
   // ── OAuth2 callback de Google ──────────────────────────────────

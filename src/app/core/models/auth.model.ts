@@ -28,6 +28,7 @@ export interface UserResponse {
   avatarUrl?: string;
   authProvider: 'LOCAL' | 'GOOGLE';
   emailVerified: boolean;
+  enabled?: boolean;
   roles: string[];
   permissions: string[];
   createdAt: string;
