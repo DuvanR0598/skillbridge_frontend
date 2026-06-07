@@ -1,0 +1,66 @@
+<div class="comparison-table">
+  <!-- Cabecera -->
+  <div class="table-header">
+    <div class="col-skill">Dimensión</div>
+    <div class="col-phase">PRE-TEST</div>
+    <div class="col-phase">POST-TEST</div>
+    <div class="col-delta">Delta</div>
+  </div>
+
+  <!-- Filas -->
+  @for (s of skills(); track $index) {
+    <div class="table-row">
+      <!-- Dimensión -->
+      <div class="col-skill">
+        <span class="dim-skill">{{ getSkillLabel(s.skill) }}</span>
+        <span class="dim-label">{{ getDimLabel(s.dimension) }}</span>
+      </div>
+
+      <!-- PRE -->
+      <div class="col-phase">
+        @if (s.prePorcentaje !== null) {
+          <div class="phase-content">
+            <span class="phase-pct">{{ s.prePorcentaje | number: '1.0-0' }}%</span>
+            <div class="mini-bar">
+              <div class="mini-fill pre-fill" [style.width.%]="s.prePorcentaje"></div>
+            </div>
+            <span class="phase-level" [class]="getLevelClass(s.preNivel)">
+              {{ getLevelLabel(s.preNivel) }}
+            </span>
+          </div>
+        } @else {
+          <span class="no-data">Sin datos</span>
+        }
+      </div>
+
+      <!-- POST -->
+      <div class="col-phase">
+        @if (s.postPorcentaje !== null) {
+          <div class="phase-content">
+            <span class="phase-pct">{{ s.postPorcentaje | number: '1.0-0' }}%</span>
+            <div class="mini-bar">
+              <div class="mini-fill post-fill" [style.width.%]="s.postPorcentaje"></div>
+            </div>
+            <span class="phase-level" [class]="getLevelClass(s.postNivel)">
+              {{ getLevelLabel(s.postNivel) }}
+            </span>
+          </div>
+        } @else {
+          <span class="no-data">Pendiente</span>
+        }
+      </div>
+
+      <!-- Delta -->
+      <div class="col-delta">
+        @if (s.porcentajeDelta !== null) {
+          <span class="delta-badge" [class]="getDeltaClass(s.porcentajeDelta)">
+            <mat-icon class="delta-icon">{{ getDeltaIcon(s.porcentajeDelta) }}</mat-icon>
+            {{ s.porcentajeDelta > 0 ? '+' : '' }}{{ s.porcentajeDelta | number: '1.0-1' }}%
+          </span>
+        } @else {
+          <span class="no-data">—</span>
+        }
+      </div>
+    </div>
+  }
+</div>

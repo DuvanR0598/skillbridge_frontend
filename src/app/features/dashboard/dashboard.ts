@@ -93,19 +93,19 @@ export class DashboardComponent implements OnInit {
       });
     }
 
-    const hasBasic = skills.some((s) => s.level === 'BASIC');
+    const hasBasic = skills.some((s) => s.level === 'BAJO');
     if (hasBasic) {
       actions.push({
         id: 2,
         title: 'Revisar plan de fortalecimiento',
-        subtitle: 'Tienes dimensiones en nivel BASIC',
+        subtitle: 'Tienes dimensiones en nivel BAJO',
         route: '/app/analytics',
         type: 'warning',
         icon: 'lightbulb',
       });
     }
 
-    const allAdvanced = skills.length > 0 && skills.every((s) => s.level === 'ADVANCED');
+    const allAdvanced = skills.length > 0 && skills.every((s) => s.level === 'AVANZADO');
     if (allAdvanced && hasPost) {
       actions.push({
         id: 3,
@@ -122,18 +122,18 @@ export class DashboardComponent implements OnInit {
 
   getLevelClass(level: string | null): string {
     const map: Record<string, string> = {
-      BASIC: 'level-basic',
-      INTERMEDIATE: 'level-intermediate',
-      ADVANCED: 'level-advanced',
+      BAJO: 'level-basic',
+      INTERMEDIO: 'level-intermediate',
+      AVANZADO: 'level-advanced',
     };
     return level ? (map[level] ?? '') : '';
   }
 
   getLevelLabel(level: string | null): string {
     const map: Record<string, string> = {
-      BASIC: 'Básico',
-      INTERMEDIATE: 'Intermedio',
-      ADVANCED: 'Avanzado',
+      BAJO: 'Bajo',
+      INTERMEDIO: 'Intermedio',
+      AVANZADO: 'Avanzado',
     };
     return level ? (map[level] ?? 'Sin evaluar') : 'Sin evaluar';
   }

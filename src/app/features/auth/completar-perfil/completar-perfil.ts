@@ -63,10 +63,10 @@ export class CompletarPerfil implements OnInit{
   minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 100));
 
   genderOptions = [
-    { value: 'MASCULINO',           label: 'Masculino' },
-    { value: 'FEMENINO',            label: 'Femenino' },
-    { value: 'NO_BINARIO',          label: 'No binario' },
-    { value: 'PREFIERO_NO_DECIRLO', label: 'Prefiero no decirlo' },
+    { value: 'MALE',              label: 'Masculino' },
+    { value: 'FEMALE',            label: 'Femenino' },
+    { value: 'NON_BINARY',        label: 'No binario' },
+    { value: 'PREFER_NOT_TO_SAY', label: 'Prefiero no decirlo' },
   ];
 
   semesterOptions = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -74,7 +74,10 @@ export class CompletarPerfil implements OnInit{
   // ── Paso 1: datos personales ──────────────────────────────
   personalForm: FormGroup = this.fb.group({
     dateOfBirth: [null, Validators.required],
-    gender:      [null, Validators.required]
+    gender:      [null, Validators.required],
+    phoneNumber: ['', [
+      Validators.pattern(/^\+?[\d\s\-()]{7,20}$/)
+    ]]
   });
 
   // ── Paso 2: datos académicos ──────────────────────────────
@@ -82,6 +85,10 @@ export class CompletarPerfil implements OnInit{
     engineeringProgram: [null, Validators.required],
     academicSemester:   [null, Validators.required],
     studentCode:        [''],
+    academicYear:       [null, [
+      Validators.min(2000),
+      Validators.max(2100)
+    ]],
   });
 
   // ── Paso 3: sobre mí (opcional) ───────────────────────────
@@ -128,8 +135,10 @@ export class CompletarPerfil implements OnInit{
 
     if (pv.dateOfBirth)        filled++;
     if (pv.gender)             filled++;
+    if (pv.phoneNumber)        filled++;
     if (av.engineeringProgram) filled++;
     if (av.academicSemester)   filled++;
+    if (av.studentCode)        filled++;
     if (bv.biography)          filled++;
 
     return Math.round((filled / total) * 100);
@@ -159,7 +168,7 @@ export class CompletarPerfil implements OnInit{
     };
 
     this.http.patch<ApiResponse<unknown>>(
-      `${this.API}/usuarios/me/perfil`, payload
+      `${this.API}/users/me/profile`, payload
     ).subscribe({
       next: () => {
         localStorage.setItem('profileCompleted', 'true');

@@ -1,4 +1,5 @@
 <div class="profile-shell">
+
   <!-- Encabezado -->
   <div class="profile-header">
     <div class="header-brand">
@@ -7,8 +8,8 @@
     </div>
     <h1 class="header-title">Completa tu perfil</h1>
     <p class="header-sub">
-      Solo toma unos minutos. Esta información nos permite personalizar tu experiencia en la
-      plataforma.
+      Solo toma unos minutos. Esta información nos permite
+      personalizar tu experiencia en la plataforma.
     </p>
 
     <!-- Barra de progreso -->
@@ -17,16 +18,27 @@
         <span>Completitud</span>
         <span class="progress-pct">{{ completionPct }}%</span>
       </div>
-      <mat-progress-bar mode="determinate" [value]="completionPct" class="profile-progress" />
+      <mat-progress-bar
+        mode="determinate"
+        [value]="completionPct"
+        class="profile-progress"
+      />
     </div>
   </div>
 
   <!-- Stepper -->
   <div class="stepper-card">
-    <mat-stepper [linear]="true" [selectedIndex]="currentStep()" orientation="horizontal">
+
+    <mat-stepper
+      [linear]="true"
+      [selectedIndex]="currentStep()"
+      orientation="horizontal"
+    >
+
       <!-- ── Paso 1: Información personal ─────────────────── -->
       <mat-step [stepControl]="personalForm" label="Personal">
         <form [formGroup]="personalForm">
+
           <h3 class="step-title">Información personal</h3>
           <p class="step-desc">Cuéntanos un poco sobre ti</p>
 
@@ -43,10 +55,8 @@
             />
             <mat-datepicker-toggle matIconSuffix [for]="picker" />
             <mat-datepicker #picker startView="multi-year" />
-            @if (
-              personalForm.get('dateOfBirth')?.hasError('required') &&
-              personalForm.get('dateOfBirth')?.touched
-            ) {
+            @if (personalForm.get('dateOfBirth')?.hasError('required')
+                 && personalForm.get('dateOfBirth')?.touched) {
               <mat-error>La fecha de nacimiento es obligatoria</mat-error>
             }
           </mat-form-field>
@@ -59,32 +69,29 @@
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
               }
             </mat-select>
-            @if (
-              personalForm.get('gender')?.hasError('required') &&
-              personalForm.get('gender')?.touched
-            ) {
+            @if (personalForm.get('gender')?.hasError('required')
+                 && personalForm.get('gender')?.touched) {
               <mat-error>El género es obligatorio</mat-error>
             }
           </mat-form-field>
 
           <div class="step-actions">
-            <button
-              mat-flat-button
-              class="btn-next"
-              matStepperNext
-              [disabled]="personalForm.invalid"
-              (click)="nextStep()"
-            >
+            <button mat-flat-button class="btn-next"
+                    matStepperNext
+                    [disabled]="personalForm.invalid"
+                    (click)="nextStep()">
               Siguiente
               <mat-icon>arrow_forward</mat-icon>
             </button>
           </div>
+
         </form>
       </mat-step>
 
       <!-- ── Paso 2: Información académica ─────────────────── -->
       <mat-step [stepControl]="academicForm" label="Académico">
         <form [formGroup]="academicForm">
+
           <h3 class="step-title">Información académica</h3>
           <p class="step-desc">Datos de tu programa de estudios</p>
 
@@ -101,10 +108,8 @@
                 }
               }
             </mat-select>
-            @if (
-              academicForm.get('engineeringProgram')?.hasError('required') &&
-              academicForm.get('engineeringProgram')?.touched
-            ) {
+            @if (academicForm.get('engineeringProgram')?.hasError('required')
+                 && academicForm.get('engineeringProgram')?.touched) {
               <mat-error>Selecciona tu programa</mat-error>
             }
           </mat-form-field>
@@ -118,10 +123,8 @@
                   <mat-option [value]="sem">Semestre {{ sem }}</mat-option>
                 }
               </mat-select>
-              @if (
-                academicForm.get('academicSemester')?.hasError('required') &&
-                academicForm.get('academicSemester')?.touched
-              ) {
+              @if (academicForm.get('academicSemester')?.hasError('required')
+                   && academicForm.get('academicSemester')?.touched) {
                 <mat-error>Selecciona tu semestre</mat-error>
               }
             </mat-form-field>
@@ -134,27 +137,27 @@
           </div>
 
           <div class="step-actions">
-            <button mat-stroked-button class="btn-back" matStepperPrevious (click)="prevStep()">
+            <button mat-stroked-button class="btn-back"
+                    matStepperPrevious (click)="prevStep()">
               <mat-icon>arrow_back</mat-icon>
               Anterior
             </button>
-            <button
-              mat-flat-button
-              class="btn-next"
-              matStepperNext
-              [disabled]="academicForm.invalid"
-              (click)="nextStep()"
-            >
+            <button mat-flat-button class="btn-next"
+                    matStepperNext
+                    [disabled]="academicForm.invalid"
+                    (click)="nextStep()">
               Siguiente
               <mat-icon>arrow_forward</mat-icon>
             </button>
           </div>
+
         </form>
       </mat-step>
 
       <!-- ── Paso 3: Sobre mí ──────────────────────────────── -->
       <mat-step label="Sobre mí">
         <form [formGroup]="bioForm">
+
           <h3 class="step-title">Cuéntanos sobre ti</h3>
           <p class="step-desc">Este paso es opcional</p>
 
@@ -181,34 +184,35 @@
           }
 
           <div class="step-actions">
-            <button mat-stroked-button class="btn-back" matStepperPrevious (click)="prevStep()">
+            <button mat-stroked-button class="btn-back"
+                    matStepperPrevious (click)="prevStep()">
               <mat-icon>arrow_back</mat-icon>
               Anterior
             </button>
-            <button
-              mat-flat-button
-              class="btn-primary"
-              type="button"
-              (click)="onSubmit()"
-              [disabled]="savingStep()"
-            >
-              <div class="button-content">
-                @if (savingStep()) {
-                  <mat-spinner diameter="20" class="btn-spinner" />
-                  <span>Guardando...</span>
-                } @else {
-                  <mat-icon class="btn-icon">check_circle</mat-icon>
-                  <span>Completar perfil</span>
-                }
-              </div>  
+            <button mat-flat-button class="btn-primary"
+                    type="button"
+                    (click)="onSubmit()"
+                    [disabled]="savingStep()">
+              @if (savingStep()) {
+                <mat-spinner diameter="20" class="btn-spinner" />
+                <span>Guardando...</span>
+              } @else {
+                <mat-icon>check_circle</mat-icon>
+                <span>Completar perfil</span>
+              }
             </button>
           </div>
 
           <div class="skip-wrap mt-1">
-            <button mat-button class="btn-skip" (click)="skipForNow()">Completar más tarde</button>
+            <button mat-button class="btn-skip" (click)="skipForNow()">
+              Completar más tarde
+            </button>
           </div>
+
         </form>
       </mat-step>
+
     </mat-stepper>
   </div>
+
 </div>

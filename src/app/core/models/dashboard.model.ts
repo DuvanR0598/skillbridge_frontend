@@ -27,6 +27,6 @@ export interface SkillSummary {
   dimension:      string;
   prePercentage:  number | null;
   postPercentage: number | null;
-  level:          'BASIC' | 'INTERMEDIATE' | 'ADVANCED' | null;
+  level:          'BAJO' | 'INTERMEDIO' | 'AVANZADO' | null;
   delta:          number | null;
 }

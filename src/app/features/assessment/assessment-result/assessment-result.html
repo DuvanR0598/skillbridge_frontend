@@ -1,0 +1,166 @@
+@if (loading()) {
+  <div class="result-loading">
+    <mat-spinner diameter="52" />
+    <p>Calculando resultados...</p>
+  </div>
+}
+
+@if (!loading() && report(); as r) {
+  <div class="result-shell">
+
+    <!-- Banner de resultado -->
+    <div class="result-banner" [class.banner-advanced]="isAllAdvanced()">
+      <div class="banner-icon">
+        <mat-icon>{{ isAllAdvanced() ? 'workspace_premium' : 'assignment_turned_in' }}</mat-icon>
+      </div>
+      <div class="banner-content">
+        <h2 class="banner-title">
+          {{ isAllAdvanced()
+             ? '¡Felicitaciones! Alcanzaste nivel Avanzado'
+             : 'Evaluación completada' }}
+        </h2>
+        <p class="banner-sub">
+          {{ r.nombreCuestionario }} ·
+          {{ r.evaluacionFase === 'PRE_TEST' ? 'PRE-TEST' : 'POST-TEST' }} · 
+          Intento {{ r.numeroIntento }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Resumen global -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <mat-icon class="card-icon">summarize</mat-icon>
+          Resumen
+        </h3>
+      </div>
+      <p class="summary-text">{{ r.resumenGeneral }}</p>
+    </div>
+
+    <!-- Resultados por skill -->
+    <div class="results-list">
+      @for (result of r.resultados; track result.id) {
+        <div class="result-card">
+
+          <!-- Encabezado del resultado -->
+          <div class="result-head">
+            <div class="result-skill-info">
+              <span class="result-skill">
+                {{ getSkillLabel(result.skill) }}
+              </span>
+              @if (result.dimension) {
+                <span class="result-dimension">{{ result.dimension }}</span>
+              }
+            </div>
+            <span
+              class="level-badge"
+              [class]="getLevelClass(result.nivel)"
+            >
+              {{ getLevelLabel(result.nivel) }}
+            </span>
+          </div>
+
+          <!-- Puntaje -->
+          <div class="score-section">
+            <div class="score-numbers">
+              <span class="score-main">
+                {{ result.totalPuntaje }} / {{ result.maxPuntuacionPosible }}
+              </span>
+              <span class="score-pct">
+                {{ result.porcentajePuntuacion | number:'1.0-0' }}%
+              </span>
+            </div>
+            <div class="score-bar-track">
+              <div
+                class="score-bar-fill"
+                [style.width.%]="result.porcentajePuntuacion"
+                [class.fill-basic]="result.nivel === 'BAJO'"
+                [class.fill-intermediate]="result.nivel === 'INTERMEDIO'"
+                [class.fill-advanced]="result.nivel === 'AVANZADO'"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Descripción del nivel -->
+          @if (result.descripcionNivel) {
+            <p class="level-desc">{{ result.descripcionNivel }}</p>
+          }
+
+          <!-- Comportamientos observables -->
+          @if (result.caracteristicasObservables) {
+            <div class="observable">
+              <mat-icon class="obs-icon">visibility</mat-icon>
+              <p>{{ result.caracteristicasObservables }}</p>
+            </div>
+          }
+
+          <!-- Planes de fortalecimiento -->
+          @if (result.planesAsignados.length > 0) {
+            <div class="plans-section">
+              <h4 class="plans-title">Plan de fortalecimiento</h4>
+              <div class="plans-grid">
+                @for (plan of result.planesAsignados; track plan.id) {
+                  <div class="plan-card">
+                    <div class="plan-header">
+                      <span class="plan-axis" [class]="getPlanAxisClass(plan.planAxis)">
+                        {{ getPlanAxisLabel(plan.planAxis) }}
+                      </span>
+                      <span class="plan-action">
+                        <mat-icon class="action-icon">
+                          {{ getActionIcon(plan.tipoAccion) }}
+                        </mat-icon>
+                        {{ plan.tipoAccion }}
+                      </span>
+                    </div>
+                    <p class="plan-title-text">{{ plan.titulo }}</p>
+                    <p class="plan-desc">{{ plan.descripcion }}</p>
+                    @if (plan.recursos.length > 0) {
+                      <div class="plan-resources">
+                        @for (url of plan.recursos; track url) {
+                          <a
+                            [href]="url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="resource-link"
+                          >
+                            <mat-icon class="link-icon">open_in_new</mat-icon>
+                            {{ url | slice:0:50 }}{{ url.length > 50 ? '...' : '' }}
+                          </a>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+
+    <!-- Acciones finales -->
+    <div class="result-actions">
+      <button mat-stroked-button class="btn-progress" (click)="goToProgress()">
+        <mat-icon>trending_up</mat-icon>
+        Ver mi progreso completo
+      </button>
+      <button mat-flat-button class="btn-dashboard" (click)="goToDashboard()">
+        <mat-icon>home</mat-icon>
+        Ir al Dashboard
+      </button>
+    </div>
+
+  </div>
+}
+
+@if (!loading() && errorMsg()) {
+  <div class="error-state">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <p>{{ errorMsg() }}</p>
+    <button mat-flat-button class="btn-dashboard" routerLink="/app/dashboard">
+      Volver al Dashboard
+    </button>
+  </div>
+}

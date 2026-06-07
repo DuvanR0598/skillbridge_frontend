@@ -43,53 +43,31 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () =>
           import('./features/dashboard/dashboard').then((m) => m.DashboardComponent),
-      }
-  //     {
-  //       path: 'questionnaires',
-  //       canActivate: [rolGuard],
-  //       data: { roles: ['ROLE_ADMIN', 'ROLE_COORDINADOR'] },
-  //       loadChildren: () =>
-  //         import('./features/questionnaires/questionnaires.routes').then(
-  //           (m) => m.questionnaireRoutes,
-  //         ),
-  //     },
-  //     {
-  //       path: 'assessment',
-  //       canActivate: [rolGuard],
-  //       data: { roles: ['ROLE_STUDENT'] },
-  //       loadChildren: () =>
-  //         import('./features/assessment/assessment.routes').then((m) => m.assessmentRoutes),
-  //     },
-  //     {
-  //       path: 'analytics',
-  //       loadChildren: () =>
-  //         import('./features/analytics/analytics.routes').then((m) => m.analyticsRoutes),
-  //     },
-  //     {
-  //       path: 'profile',
-  //       loadComponent: () =>
-  //         import('./features/profile/profile').then((m) => m.Profile),
-  //     },
-  //     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      },
+      {
+        path: 'assessment',
+        canActivate: [rolGuard],
+        data: { roles: ['ROLE_ESTUDIANTE'] },
+        loadChildren: () =>
+          import('./features/assessment/assessment.routes').then(
+            (m) => m.assessmentRoutes,
+          ),
+      },
+      {
+        path: 'analytics',
+        loadChildren: () =>
+          import('./features/analytics/analytics.routes').then((m) => m.analyticsRoutes),
+      },
+      {
+        path: 'admin/users',
+        canActivate: [rolGuard],
+        data: { roles: ['ROLE_ADMIN'] },
+        loadComponent: () =>
+          import('./features/admin/users/admin-users').then((m) => m.AdminUsers),
+      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
    },
-
-  // ── Dashboard mínimo (placeholder hasta implementar MainLayout) ─
-  {
-    path: 'app/dashboard',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/dashboard/dashboard').then((m) => m.DashboardComponent),
-  },
-
-  // ── Administración de usuarios (solo ADMIN) ────────────────────
-  {
-    path: 'app/admin/users',
-    canActivate: [authGuard, rolGuard],
-    data: { roles: ['ROLE_ADMIN'] },
-    loadComponent: () =>
-      import('./features/admin/users/admin-users').then((m) => m.AdminUsers),
-  },
 
   // ── OAuth2 callback de Google ──────────────────────────────────
   {

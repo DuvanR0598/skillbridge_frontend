@@ -1,0 +1,220 @@
+@if (loading()) {
+  <div class="loading-state">
+    <mat-spinner diameter="48" />
+    <p>Cargando tu progreso...</p>
+  </div>
+}
+
+@if (!loading() && errorMsg()) {
+  <div class="error-state">
+    <mat-icon class="error-icon">bar_chart</mat-icon>
+    <p class="error-title">Sin datos de progreso</p>
+    <p class="error-sub">Completa tu primera evaluación para ver tu progreso.</p>
+    <a mat-flat-button class="btn-start" routerLink="/app/assessment">
+      <mat-icon>play_arrow</mat-icon>
+      Iniciar evaluación
+    </a>
+  </div>
+}
+
+@if (!loading() && report(); as r) {
+  <div class="progress-shell">
+    <!-- Encabezado -->
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Mi progreso</h2>
+        <p class="page-sub">{{ r.nombreCuestionario }}</p>
+      </div>
+      <a mat-stroked-button class="btn-eval" routerLink="/app/assessment">
+        <mat-icon>{{ hasPostTest() ? 'replay' : 'play_arrow' }}</mat-icon>
+        {{ hasPostTest() ? 'Nueva evaluación' : 'Iniciar POST_TEST' }}
+      </a>
+    </div>
+
+    <!-- Tarjetas resumen -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-icon icon-blue">
+          <mat-icon>assignment</mat-icon>
+        </div>
+        <div class="summary-info">
+          <span class="summary-label">PRE-TEST</span>
+          <span class="summary-value">
+            {{ hasPreTest() ? formatDate(r.preTestDate) : 'Pendiente' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon icon-green">
+          <mat-icon>assignment_turned_in</mat-icon>
+        </div>
+        <div class="summary-info">
+          <span class="summary-label">POST-TEST</span>
+          <span class="summary-value">
+            {{ hasPostTest() ? formatDate(r.postTestDate) : 'Pendiente' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon icon-purple">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="summary-info">
+          <span class="summary-label">Mejora promedio</span>
+          <span class="summary-value" [class.positive]="(overallImprovement() ?? 0) > 0">
+            @if (overallImprovement() !== null) {
+              {{ overallImprovement()! > 0 ? '+' : '' }}{{ overallImprovement() }}%
+            } @else {
+              Sin datos POST
+            }
+          </span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon" [class]="allAdvanced() ? 'icon-gold' : 'icon-gray'">
+          <mat-icon>{{ allAdvanced() ? 'workspace_premium' : 'emoji_events' }}</mat-icon>
+        </div>
+        <div class="summary-info">
+          <span class="summary-label">Estado</span>
+          <span class="summary-value">
+            {{ allAdvanced() ? '¡Nivel Avanzado!' : r.resumen.split('.')[0] }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decisión de escalamiento -->
+    @if (escalation()) {
+      <app-escalation-card
+        [decision]="escalation()!.decision"
+        [reason]="escalation()!.razon"
+        [achievedDimensions]="escalation()!.dimensionesAlcanzadas"
+        [pendingDimensions]="escalation()!.dimensionesPendientes"
+      />
+    }
+
+    <!-- Cuerpo principal: gráfico + tabla -->
+    <div class="body-grid">
+      <!-- Radar chart -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <mat-icon class="card-icon">radar</mat-icon>
+            Mapa de habilidades
+          </h3>
+        </div>
+        <app-skill-radar-chart [skills]="r.skillProgreso" />
+        <div class="chart-legend">
+          <span class="legend-dot dot-pre"></span> PRE-TEST
+          <span class="legend-dot dot-post"></span> POST-TEST
+        </div>
+      </div>
+
+      <!-- Tabla comparativa -->
+      <div class="card table-card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <mat-icon class="card-icon">compare_arrows</mat-icon>
+            Comparativa PRE vs POST
+          </h3>
+        </div>
+        <app-progress-comparison [skills]="r.skillProgreso" />
+      </div>
+    </div>
+
+    <!-- Planes de fortalecimiento actuales -->
+    @if (r.planActual.length > 0) {
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <mat-icon class="card-icon">lightbulb</mat-icon>
+            Plan de fortalecimiento actual
+          </h3>
+        </div>
+        <div class="plans-grid">
+          @for (plan of r.planActual; track plan.id) {
+            <div class="plan-item">
+              <div class="plan-item-header">
+                <span class="plan-axis-badge" [class]="getAxisClass(plan.planAxis)">
+                  {{ getAxisLabel(plan.planAxis) }}
+                </span>
+                <span class="plan-action-type">
+                  <mat-icon class="action-ico">{{ getActionIcon(plan.tipoAccion) }}</mat-icon>
+                  {{ plan.tipoAccion }}
+                </span>
+              </div>
+              <p class="plan-item-title">{{ plan.titulo }}</p>
+              <p class="plan-item-desc">{{ plan.descripcion }}</p>
+              @if (plan.recursos.length > 0) {
+                <div class="plan-resources">
+                  @for (url of plan.recursos.slice(0, 2); track url) {
+                    <a [href]="url" target="_blank" rel="noopener" class="res-link">
+                      <mat-icon class="res-icon">open_in_new</mat-icon>
+                      Recurso
+                    </a>
+                  }
+                  @if (plan.recursos.length > 2) {
+                    <span class="res-more">+{{ plan.recursos.length - 2 }} más</span>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Historial de intentos -->
+    @if (history().length > 0) {
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <mat-icon class="card-icon">history</mat-icon>
+            Historial de evaluaciones
+          </h3>
+        </div>
+        <div class="history-list">
+          @for (attempt of history(); track attempt.idEvaluacion) {
+            <div class="history-row">
+              <div class="history-phase">
+                <span
+                  class="phase-label"
+                  [class]="attempt.fase === 'PRE_TEST' ? 'phase-pre' : 'phase-post'"
+                >
+                  {{ formatPhase(attempt.fase) }}
+                </span>
+                <span class="attempt-num">Intento {{ attempt.numeroIntentos }}</span>
+              </div>
+              <div class="history-date">
+                <mat-icon class="hist-icon">calendar_today</mat-icon>
+                {{ formatDate(attempt.startedAt) }}
+              </div>
+              <div class="history-scores">
+                @for (score of attempt.puntaje; track score.skill) {
+                  <div class="hist-score">
+                    <span class="hist-skill">
+                      {{ score.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                    </span>
+                    <span class="hist-pct"> {{ score.porcentajePuntuacion | number: '1.0-0' }}% </span>
+                    <span class="hist-level" [class]="getLevelClass(score.nivel)">
+                      {{ getLevelLabel(score.nivel) }}
+                    </span>
+                  </div>
+                }
+              </div>
+              <span
+                class="history-status"
+                [class]="attempt.estado === 'COMPLETADO' ? 'status-done' : 'status-pending'"
+              >
+                {{ attempt.estado === 'COMPLETADO' ? 'Completado' : 'En progreso' }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

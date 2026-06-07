@@ -1,0 +1,232 @@
+@if (loading()) {
+  <div class="player-loading">
+    <mat-spinner diameter="52" />
+    <p>Cargando cuestionario...</p>
+  </div>
+}
+
+@if (!loading() && delivery()) {
+  <div class="player-shell">
+    <!-- Header del player -->
+    <div class="player-header">
+      <div class="player-title-row">
+        <h2 class="player-title">{{ delivery()!.nombre }}</h2>
+        <div class="player-timer">
+          <mat-icon class="timer-icon">schedule</mat-icon>
+          {{ elapsedFormatted }}
+        </div>
+      </div>
+
+      <!-- Barra de progreso -->
+      <div class="progress-row">
+        <mat-progress-bar mode="determinate" [value]="progress()" class="player-progress" />
+        <span class="progress-text">
+          {{ answeredCount() }} / {{ visibleQuestions().length }} respondidas
+        </span>
+      </div>
+
+      <!-- Navegación rápida por número -->
+      <div class="question-nav" role="navigation" aria-label="Ir a pregunta">
+        @for (q of visibleQuestions(); track q.idPregunta; let i = $index) {
+          <button
+            class="nav-dot"
+            [class.active]="i === currentIndex()"
+            [class.answered]="answers().get(q.idPregunta)?.submitted"
+            (click)="goTo(i)"
+            [attr.aria-label]="'Ir a pregunta ' + (i + 1)"
+          >
+            {{ i + 1 }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Error -->
+    @if (errorMsg()) {
+      <div class="alert alert-error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMsg() }}</span>
+        <button mat-icon-button (click)="errorMsg.set(null)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    }
+
+    <!-- Pregunta actual -->
+    @if (currentQuestion(); as q) {
+      <div class="question-card">
+        <!-- Encabezado de la pregunta -->
+        <div class="question-head">
+          <div class="question-meta">
+            <span class="question-num">
+              Pregunta {{ currentIndex() + 1 }} de {{ visibleQuestions().length }}
+            </span>
+            <span class="question-type-badge" [class]="'type-' + q.tipoPregunta.toLowerCase()">
+              {{ q.tipoPregunta.replace('_', ' ') }}
+            </span>
+            @if (!q.obligatoria) {
+              <span class="optional-badge">Opcional</span>
+            }
+          </div>
+
+          <p class="question-text">{{ q.texto }}</p>
+
+          @if (q.ayuda) {
+            <p class="question-help">
+              <mat-icon class="help-icon">info_outline</mat-icon>
+              {{ q.ayuda }}
+            </p>
+          }
+
+          @if (q.imagenUrl) {
+            <img [src]="q.imagenUrl" alt="Imagen de la pregunta" class="question-img" />
+          }
+        </div>
+
+        <!-- Opciones según tipo -->
+        <div class="options-area">
+          <!-- TRUE_FALSE y SINGLE_CHOICE -->
+          @if (q.tipoPregunta === 'VERDADERO_FALSO' || q.tipoPregunta === 'OPCION_UNICA') {
+            <div class="options-list" role="radiogroup">
+              @for (opt of q.opciones; track opt.idOpcion) {
+                <label class="option-item" [class.selected]="isOptionSelected(opt.idOpcion)">
+                  <input
+                    type="radio"
+                    [name]="'q-' + q.idPregunta"
+                    [value]="opt.idOpcion"
+                    [checked]="isOptionSelected(opt.idOpcion)"
+                    (change)="onSingleSelect(opt.idOpcion)"
+                    class="option-radio"
+                  />
+                  <span class="option-indicator radio-indicator"></span>
+                  <span class="option-text">{{ opt.texto }}</span>
+                </label>
+              }
+            </div>
+          }
+
+          <!-- LIKERT -->
+          @if (q.tipoPregunta === 'LIKERT') {
+            <div class="likert-wrap">
+              <div class="likert-labels">
+                <span>{{ q.opciones[0]?.texto }}</span>
+                <span>{{ q.opciones[q.opciones.length - 1]?.texto }}</span>
+              </div>
+              <div class="likert-options" role="radiogroup">
+                @for (opt of q.opciones; track opt.idOpcion) {
+                  <label class="likert-item" [class.selected]="isOptionSelected(opt.idOpcion)">
+                    <input
+                      type="radio"
+                      [name]="'q-' + q.idPregunta"
+                      [value]="opt.idOpcion"
+                      [checked]="isOptionSelected(opt.idOpcion)"
+                      (change)="onSingleSelect(opt.idOpcion)"
+                      class="option-radio"
+                    />
+                    <span class="likert-dot"></span>
+                    <span class="likert-num">{{ opt.ordenVisualizacion }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- MULTIPLE_CHOICE -->
+          @if (q.tipoPregunta === 'OPCION_MULTIPLE') {
+            @if (q.maxOpciones) {
+              <p class="multi-hint">
+                Selecciona hasta {{ q.maxOpciones }} opciones. ({{
+                  currentAnswer()?.idsOpcionesSeleccionadas?.length ?? 0
+                }}/{{ q.maxOpciones }})
+              </p>
+            }
+            <div class="options-list">
+              @for (opt of q.opciones; track opt.idOpcion) {
+                <label
+                  class="option-item"
+                  [class.selected]="isOptionSelected(opt.idOpcion)"
+                  [class.disabled]="isMultiDisabled(opt.idOpcion)"
+                >
+                  <input
+                    type="checkbox"
+                    [checked]="isOptionSelected(opt.idOpcion)"
+                    [disabled]="isMultiDisabled(opt.idOpcion)"
+                    (change)="onMultiSelect(opt.idOpcion, $any($event.target).checked)"
+                    class="option-radio"
+                  />
+                  <span class="option-indicator check-indicator">
+                    @if (isOptionSelected(opt.idOpcion)) {
+                      <mat-icon class="check-mark">check</mat-icon>
+                    }
+                  </span>
+                  <span class="option-text">{{ opt.texto }}</span>
+                </label>
+              }
+            </div>
+          }
+
+          <!-- DESCRIPTION -->
+          @if (q.tipoPregunta === 'DESCRIPCION') {
+            <div class="description-wrap">
+              <textarea
+                class="description-input"
+                [value]="currentAnswer()?.openAnswer ?? ''"
+                (input)="onTextInput($any($event.target).value)"
+                rows="6"
+                maxlength="3000"
+                placeholder="Escribe tu respuesta aquí..."
+              ></textarea>
+              <span class="char-count">
+                {{ currentAnswer()?.openAnswer?.length ?? 0 }} / 3000
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Controles de navegación -->
+    <div class="player-controls">
+      <button
+        mat-stroked-button
+        class="btn-prev"
+        [disabled]="currentIndex() === 0 || submitting()"
+        (click)="prev()"
+      >
+        <mat-icon>arrow_back</mat-icon>
+        Anterior
+      </button>
+
+      @if (!isLastQuestion()) {
+        <button
+          mat-flat-button
+          class="btn-next"
+          [disabled]="!canGoNext() || submitting()"
+          (click)="next()"
+        >
+          @if (submitting()) {
+            <mat-spinner diameter="18" class="btn-spinner-sm" />
+          } @else {
+            <span>Siguiente</span>
+            <mat-icon>arrow_forward</mat-icon>
+          }
+        </button>
+      } @else {
+        <button
+          mat-flat-button
+          class="btn-complete"
+          [disabled]="!canGoNext() || completing() || submitting()"
+          (click)="complete()"
+        >
+          @if (completing()) {
+            <mat-spinner diameter="18" class="btn-spinner-sm" />
+            <span>Calculando...</span>
+          } @else {
+            <mat-icon>check_circle</mat-icon>
+            <span>Finalizar evaluación</span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+}

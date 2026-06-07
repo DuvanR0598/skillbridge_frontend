@@ -1,0 +1,110 @@
+<div class="list-shell">
+  <div class="list-header">
+    <h2 class="list-title">Mis evaluaciones</h2>
+    <p class="list-sub">Selecciona un cuestionario para comenzar o continuar tu evaluación.</p>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert alert-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMsg() }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-wrap">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else if (questionnaires().length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">assignment</mat-icon>
+      <p class="empty-title">Sin evaluaciones disponibles</p>
+      <p class="empty-sub">Tu docente aún no ha publicado cuestionarios. Vuelve más tarde.</p>
+    </div>
+  } @else {
+    <div class="questionnaire-grid">
+      @for (q of questionnaires(); track q.id) {
+        <div class="q-card">
+          <div class="q-card-header">
+            <div class="q-icon">
+              <mat-icon>quiz</mat-icon>
+            </div>
+            <div class="q-meta">
+              <span class="q-title">{{ q.name }}</span>
+              @if (q.createdAt) {
+                <span class="q-period"> Creado el {{ formatDate(q.createdAt) }} </span>
+              }
+            </div>
+          </div>
+
+          @if (q.purpose) {
+            <p class="q-purpose">{{ q.purpose }}</p>
+          }
+
+          <div class="q-stats">
+            <span class="q-stat">
+              <mat-icon class="stat-icon">help_outline</mat-icon>
+              {{ q.totalQuestions }} preguntas
+            </span>
+            @if (q.randomOrder) {
+              <span class="q-stat">
+                <mat-icon class="stat-icon">shuffle</mat-icon>
+                Orden aleatorio
+              </span>
+            }
+          </div>
+
+          @if (activeSession(q.id); as session) {
+            <div class="q-resume-note">
+              <mat-icon class="resume-icon">history</mat-icon>
+              <span>
+                Tienes una sesión {{ session.phase === 'PRE_TEST' ? 'PRE_TEST' : 'POST_TEST' }}
+                en progreso.
+              </span>
+            </div>
+            <div class="q-actions">
+              <button
+                mat-flat-button
+                class="btn-resume"
+                (click)="resume(q.id)"
+              >
+                <mat-icon>play_circle</mat-icon>
+                Continuar evaluación
+              </button>
+            </div>
+          } @else {
+            <div class="q-actions">
+              <button
+                mat-flat-button
+                class="btn-pre"
+                [disabled]="starting() === q.id"
+                (click)="startAssessment(q.id, 'PRE_TEST')"
+              >
+                @if (starting() === q.id) {
+                  <mat-spinner diameter="16" class="btn-spinner-sm" />
+                } @else {
+                  <mat-icon>play_arrow</mat-icon>
+                }
+                PRE_TEST
+              </button>
+
+              <button
+                mat-stroked-button
+                class="btn-post"
+                [disabled]="starting() === q.id"
+                (click)="startAssessment(q.id, 'POST_TEST')"
+              >
+                @if (starting() === q.id) {
+                  <mat-spinner diameter="16" class="btn-spinner-sm" />
+                } @else {
+                  <mat-icon>replay</mat-icon>
+                }
+                POST_TEST
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

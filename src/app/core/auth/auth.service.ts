@@ -48,7 +48,8 @@ export class AuthService {
     return this.http
       .post<ApiResponse<AuthResponse>>(`${this.API}/auth/refresh`, { refreshToken })
       .pipe(
-        tap((response) => this.handleAuthSuccess(response.data)),
+        // Refresh silencioso: actualiza tokens sin navegar
+        tap((response) => this.persistSession(response.data)),
         catchError((error) => {
           // Si el refresh falla, desloguear
           this.logout();
@@ -132,13 +133,19 @@ export class AuthService {
 
   // ── Helpers privados ───────────────────────────────────────────
 
-  private handleAuthSuccess(data: AuthResponse): void {
+  /** Guarda tokens y usuario en localStorage + signals (sin navegar). */
+  private persistSession(data: AuthResponse): void {
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('currentUser', JSON.stringify(data.user));
 
     this._accessToken.set(data.accessToken);
     this._currentUser.set(data.user);
+  }
+
+  /** Login/registro exitoso: persiste la sesión y navega según el perfil. */
+  private handleAuthSuccess(data: AuthResponse): void {
+    this.persistSession(data);
 
     // Redirigir según si el perfil está completo
     if (!data.profileCompleted) {
