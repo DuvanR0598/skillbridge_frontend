@@ -117,4 +117,24 @@ export class AssessmentList implements OnInit {
       day: '2-digit', month: 'long', year: 'numeric'
     });
   }
+
+  formatDateTime(date: string | null): string {
+    if (!date) return '';
+    return new Date(date).toLocaleString('es-CO', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  }
+
+  /** Estado de la ventana de disponibilidad para mostrar en la tarjeta. */
+  availabilityStatus(q: any): 'open' | 'upcoming' | 'closed' {
+    const now = new Date();
+    if (q.fechaInicio && now < new Date(q.fechaInicio)) return 'upcoming';
+    if (q.fechaFin && now > new Date(q.fechaFin)) return 'closed';
+    return 'open';
+  }
+
+  isAvailable(q: any): boolean {
+    return this.availabilityStatus(q) === 'open';
+  }
 }

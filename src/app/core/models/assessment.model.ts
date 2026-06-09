@@ -9,6 +9,7 @@ export interface CuestionarioEntregaResponse {
   idCuestionario:         number;
   nombre:                 string;
   objetivo:               string;
+  instrucciones?:         string;
   ordenAleatorio:         boolean;
   totalPreguntas:         number;
   preguntas:              PreguntaEntregaResponse[];

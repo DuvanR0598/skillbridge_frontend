@@ -35,7 +35,7 @@
         @if (group.title && !collapsed()) {
           <span class="nav-group-title">{{ group.title }}</span>
         }
-        @for (item of group.items; track item.route) {
+        @for (item of group.items; track item.label) {
           <a
             class="nav-item"
             [routerLink]="item.route"

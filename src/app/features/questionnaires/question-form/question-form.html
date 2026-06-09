@@ -1,0 +1,148 @@
+<div class="qform-shell">
+  <div class="qform-header">
+    <h3 class="qform-title">Nueva pregunta</h3>
+    <button mat-icon-button (click)="cancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert alert-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMsg() }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <!-- Tipo -->
+    <mat-form-field appearance="outline">
+      <mat-label>Tipo de pregunta</mat-label>
+      <mat-select formControlName="questionType" (selectionChange)="onTypeChange()">
+        @for (t of questionTypes; track t.value) {
+          <mat-option [value]="t.value">{{ t.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Texto -->
+    <mat-form-field appearance="outline" class="mt-3">
+      <mat-label>Texto de la pregunta *</mat-label>
+      <textarea
+        matInput
+        formControlName="text"
+        rows="3"
+        placeholder="Escribe la pregunta aquí..."
+      ></textarea>
+      <mat-hint align="end"> {{ form.get('text')?.value?.length ?? 0 }}/1000 </mat-hint>
+      @if (form.get('text')?.hasError('required') && form.get('text')?.touched) {
+        <mat-error>El texto es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Ayuda -->
+    <mat-form-field appearance="outline" class="mt-3">
+      <mat-label>Texto de ayuda (opcional)</mat-label>
+      <input
+        matInput
+        formControlName="help"
+        placeholder="Ej: Selecciona la opción que mejor te describe"
+      />
+    </mat-form-field>
+
+    <!-- maxOptions para MULTIPLE_CHOICE -->
+    @if (selectedType === 'OPCION_MULTIPLE') {
+      <mat-form-field appearance="outline" class="mt-3">
+        <mat-label>Máximo de opciones seleccionables</mat-label>
+        <input matInput type="number" formControlName="maxOptions" min="1" placeholder="Ej: 3" />
+      </mat-form-field>
+    }
+
+    <!-- Opciones -->
+    @if (needsOptions) {
+      <div class="options-section mt-4">
+        <div class="options-header">
+          <span class="options-label">Opciones de respuesta</span>
+          @if (selectedType !== 'VERDADERO_FALSO') {
+            <button mat-stroked-button type="button" class="btn-add-opt" (click)="addOption()">
+              <mat-icon>add</mat-icon>
+              Agregar opción
+            </button>
+          }
+        </div>
+
+        @if (optionsError && options.length > 0) {
+          <div class="opt-hint" role="alert">
+            <mat-icon>info</mat-icon>
+            <span>{{ optionsError }}</span>
+          </div>
+        }
+
+        @if (options.length === 0) {
+          <div class="opt-hint" role="alert">
+            <mat-icon>info</mat-icon>
+            <span>Agrega al menos 2 opciones de respuesta para esta pregunta.</span>
+          </div>
+        }
+
+        <div formArrayName="options" class="options-list">
+          @for (opt of options.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="option-row">
+              <span class="opt-num">{{ i + 1 }}</span>
+
+              <mat-form-field appearance="outline" class="opt-text-field">
+                <input matInput formControlName="text" placeholder="Texto de la opción" />
+              </mat-form-field>
+
+              <!-- Peso -->
+              <mat-form-field appearance="outline" class="opt-weight-field">
+                <mat-label>Peso</mat-label>
+                <input matInput type="number" formControlName="weight" min="0" />
+              </mat-form-field>
+
+              <!-- ¿Correcta? (no aplica a LIKERT) -->
+              @if (selectedType !== 'LIKERT') {
+                <label class="correct-toggle">
+                  <input type="checkbox" formControlName="isCorrect" />
+                  <span class="correct-label">Correcta</span>
+                </label>
+              }
+
+              <!-- Eliminar (no para TRUE_FALSE) -->
+              @if (selectedType !== 'VERDADERO_FALSO') {
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="btn-remove-opt"
+                  (click)="removeOption(i)"
+                  [disabled]="options.length <= 2"
+                >
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Acciones del formulario -->
+    <div class="qform-actions mt-4">
+      <button mat-stroked-button type="button" class="btn-cancel" (click)="cancel()">
+        Cancelar
+      </button>
+      <button
+        mat-flat-button
+        type="submit"
+        class="btn-create"
+        [disabled]="!canSubmit"
+      >
+        @if (saving()) {
+          <mat-spinner diameter="18" class="btn-sp" />
+        } @else {
+          <mat-icon>add_circle</mat-icon>
+        }
+        Crear pregunta
+      </button>
+    </div>
+  </form>
+</div>

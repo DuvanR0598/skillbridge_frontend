@@ -1,0 +1,166 @@
+<div class="ql-shell">
+  <!-- Encabezado -->
+  <div class="ql-header">
+    <div>
+      <h2 class="ql-title">Cuestionarios</h2>
+      <p class="ql-sub">Gestiona y publica los instrumentos de evaluación.</p>
+    </div>
+    <a mat-flat-button class="btn-new" routerLink="/app/questionnaires/new">
+      <mat-icon>add</mat-icon>
+      Nuevo cuestionario
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filter-row">
+    <div class="search-wrap">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar cuestionario..."
+        [value]="searchText()"
+        (input)="searchText.set($any($event.target).value)"
+      />
+    </div>
+    <div class="status-filters">
+      @for (opt of statusOptions; track opt.value) {
+        <button
+          class="filter-btn"
+          [class.active]="filterStatus() === opt.value"
+          (click)="filterStatus.set(opt.value)"
+        >
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Error global -->
+  @if (errorMsg()) {
+    <div class="alert alert-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMsg() }}</span>
+      <button mat-icon-button (click)="errorMsg.set(null)">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-wrap"><mat-spinner diameter="40" /></div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">quiz</mat-icon>
+      <p class="empty-title">Sin cuestionarios</p>
+      <p class="empty-sub">Crea el primer cuestionario para comenzar.</p>
+    </div>
+  } @else {
+    <div class="q-list">
+      @for (q of filtered(); track q.idCuestionario) {
+        <div class="q-item">
+          <!-- Info -->
+          <div class="q-info">
+            <div class="q-title-row">
+              <span class="q-name">{{ q.nombre }}</span>
+              <span class="status-badge" [class]="getStatusClass(q.estadoCuestionario)">
+                {{ getStatusLabel(q.estadoCuestionario) }}
+              </span>
+            </div>
+            @if (q.objetivo) {
+              <p class="q-purpose">{{ q.objetivo }}</p>
+            }
+            <div class="q-meta">
+              <span class="meta-item">
+                <mat-icon class="meta-icon">help_outline</mat-icon>
+                {{ q.totalPreguntas }} preguntas
+              </span>
+              <span class="meta-item">
+                <mat-icon class="meta-icon">calendar_today</mat-icon>
+                {{ formatDate(q.createdAt) }}
+              </span>
+              @if (q.appPeriodEnd) {
+                <span class="meta-item">
+                  <mat-icon class="meta-icon">event</mat-icon>
+                  Hasta {{ formatDate(q.appPeriodEnd) }}
+                </span>
+              }
+              @if (q.ordenAleatorio) {
+                <span class="meta-item">
+                  <mat-icon class="meta-icon">shuffle</mat-icon>
+                  Orden aleatorio
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="q-actions">
+            <!-- Editar (solo DRAFT) -->
+            @if (q.editable) {
+              <a
+                mat-icon-button
+                [routerLink]="['/app/questionnaires', q.idCuestionario, 'edit']"
+                matTooltip="Editar configuración"
+              >
+                <mat-icon>edit</mat-icon>
+              </a>
+            }
+
+            <!-- Builder (solo DRAFT) -->
+            @if (q.editable) {
+              <button mat-icon-button (click)="openBuilder(q.idCuestionario)" matTooltip="Agregar preguntas">
+                <mat-icon>playlist_add</mat-icon>
+              </button>
+            }
+
+            <!-- Menú de transiciones de estado -->
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="stateMenu"
+              [disabled]="actionLoading() === q.idCuestionario"
+              matTooltip="Cambiar estado"
+            >
+              @if (actionLoading() === q.idCuestionario) {
+                <mat-spinner diameter="18" />
+              } @else {
+                <mat-icon>more_vert</mat-icon>
+              }
+            </button>
+
+            <mat-menu #stateMenu="matMenu">
+              @if (canComplete(q)) {
+                <button mat-menu-item (click)="doAction('completo', q)">
+                  <mat-icon>check_circle</mat-icon>
+                  Marcar como completo
+                </button>
+              }
+              @if (canPublish(q)) {
+                <button mat-menu-item (click)="doAction('publicado', q)">
+                  <mat-icon>publish</mat-icon>
+                  Publicar
+                </button>
+              }
+              @if (canArchive(q)) {
+                <button mat-menu-item (click)="doAction('archivado', q)">
+                  <mat-icon>archive</mat-icon>
+                  Archivar
+                </button>
+              }
+              @if (canDelete(q)) {
+                <mat-divider />
+                <button mat-menu-item class="danger-item" (click)="doAction('eliminado', q)">
+                  <mat-icon>delete_outline</mat-icon>
+                  Eliminar
+                </button>
+              }
+              @if (!canComplete(q) && !canPublish(q) && !canArchive(q) && !canDelete(q)) {
+                <button mat-menu-item disabled>Sin acciones disponibles</button>
+              }
+            </mat-menu>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

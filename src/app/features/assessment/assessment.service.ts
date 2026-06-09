@@ -36,6 +36,9 @@ export class AssessmentService {
               randomOrder:    q.ordenAleatorio,
               createdAt:      q.createdAt ?? q.fechaCreacion,
               status:         q.estadoCuestionario,
+              fechaInicio:    q.fechaInicio ?? null,
+              fechaFin:       q.fechaFin ?? null,
+              disponible:     q.disponible ?? true,
             })),
         ),
       );

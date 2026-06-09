@@ -54,6 +54,28 @@
             }
           </div>
 
+          <!-- Ventana de disponibilidad -->
+          @if (q.fechaInicio || q.fechaFin) {
+            <div class="q-window" [class]="'win-' + availabilityStatus(q)">
+              <mat-icon class="win-icon">event</mat-icon>
+              @switch (availabilityStatus(q)) {
+                @case ('upcoming') {
+                  <span>Disponible desde el {{ formatDateTime(q.fechaInicio) }}</span>
+                }
+                @case ('closed') {
+                  <span>Cerrado · finalizó el {{ formatDateTime(q.fechaFin) }}</span>
+                }
+                @default {
+                  @if (q.fechaFin) {
+                    <span>Disponible hasta el {{ formatDateTime(q.fechaFin) }}</span>
+                  } @else {
+                    <span>Disponible</span>
+                  }
+                }
+              }
+            </div>
+          }
+
           @if (activeSession(q.id); as session) {
             <div class="q-resume-note">
               <mat-icon class="resume-icon">history</mat-icon>
@@ -71,6 +93,15 @@
                 <mat-icon>play_circle</mat-icon>
                 Continuar evaluación
               </button>
+            </div>
+          } @else if (!isAvailable(q)) {
+            <div class="q-unavailable">
+              <mat-icon>lock_clock</mat-icon>
+              <span>
+                {{ availabilityStatus(q) === 'upcoming'
+                   ? 'Aún no está disponible para responder.'
+                   : 'El período para responder ya finalizó.' }}
+              </span>
             </div>
           } @else {
             <div class="q-actions">

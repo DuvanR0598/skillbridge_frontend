@@ -445,3 +445,19 @@
 .btn-spinner-sm {
   --mdc-circular-progress-active-indicator-color: white;
 }
+
+.player-instructions {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(26, 92, 56, 0.07);
+  border: 1px solid rgba(26, 92, 56, 0.18);
+
+  .instr-icon { color: var(--primary); flex-shrink: 0; }
+  .instr-body { display: flex; flex-direction: column; gap: 2px; }
+  .instr-title { font-weight: 600; font-size: 13px; color: var(--primary); }
+  .instr-text { margin: 0; font-size: 13.5px; color: var(--text-secondary); white-space: pre-line; }
+}

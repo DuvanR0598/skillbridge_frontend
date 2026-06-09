@@ -1,0 +1,212 @@
+@if (loading()) {
+  <div class="builder-loading">
+    <mat-spinner diameter="48" />
+    <p>Cargando el builder...</p>
+  </div>
+}
+
+@if (!loading() && questionnaire(); as q) {
+  <div class="builder-shell">
+    <!-- Encabezado -->
+    <div class="builder-header">
+      <div class="builder-header-left">
+        <a mat-icon-button routerLink="/app/questionnaires" class="back-btn">
+          <mat-icon>arrow_back</mat-icon>
+        </a>
+        <div>
+          <h2 class="builder-title">{{ q.nombre }}</h2>
+          <div class="builder-meta">
+            <span class="status-badge" [class]="'st-' + q.estadoCuestionario.toLowerCase()">
+              {{ q.estadoCuestionario }}
+            </span>
+            <span class="meta-sep">·</span>
+            <span class="meta-txt">
+              {{ q.totalPreguntas }} pregunta{{ q.totalPreguntas !== 1 ? 's' : '' }}
+            </span>
+            @if (!q.editable) {
+              <span class="meta-sep">·</span>
+              <span class="locked-badge">
+                <mat-icon class="lock-icon">lock</mat-icon>
+                Solo lectura
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Acción principal según estado -->
+      @if (q.editable && q.totalPreguntas >= 2) {
+        <button mat-flat-button class="btn-complete" [disabled]="saving()" (click)="complete()">
+          @if (saving()) {
+            <mat-spinner diameter="18" class="btn-sp" />
+          } @else {
+            <mat-icon>check_circle</mat-icon>
+          }
+          Marcar como completo
+        </button>
+      }
+    </div>
+
+    <!-- Mensajes -->
+    @if (errorMsg()) {
+      <div class="alert alert-error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMsg() }}</span>
+      </div>
+    }
+
+    @if (successMsg()) {
+      <div class="alert alert-success" role="status">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ successMsg() }}</span>
+      </div>
+    }
+
+    <!-- Aviso de mínimo preguntas -->
+    @if (q.editable && q.totalPreguntas < 2) {
+      <div class="info-banner">
+        <mat-icon>info</mat-icon>
+        Agrega al menos <strong>2 preguntas</strong> para poder completar el cuestionario. Llevas
+        {{ q.totalPreguntas }}.
+      </div>
+    }
+
+    <!-- Layout: banco izquierda + preguntas añadidas derecha -->
+    <div class="builder-grid">
+      <!-- Panel izquierdo: banco de preguntas -->
+      <div class="panel panel-bank">
+        <div class="panel-header">
+          <h3 class="panel-title">
+            <mat-icon class="pi">library_books</mat-icon>
+            Banco de preguntas
+          </h3>
+          @if (q.editable) {
+            <button
+              mat-flat-button
+              class="btn-new-q"
+              (click)="showNewQuestionForm.set(!showNewQuestionForm())"
+            >
+              <mat-icon>{{ showNewQuestionForm() ? 'close' : 'add' }}</mat-icon>
+              {{ showNewQuestionForm() ? 'Cancelar' : 'Nueva pregunta' }}
+            </button>
+          }
+        </div>
+
+        <!-- Formulario de nueva pregunta -->
+        @if (showNewQuestionForm()) {
+          <div class="new-q-wrap">
+            <app-question-form
+              (questionCreated)="onQuestionCreated($event)"
+              (cancelled)="showNewQuestionForm.set(false)"
+            />
+          </div>
+        }
+
+        <!-- Lista del banco -->
+        <div class="bank-list">
+          @if (availableBank().length === 0 && !showNewQuestionForm()) {
+            <div class="bank-empty">
+              <mat-icon>quiz</mat-icon>
+              <p>Sin preguntas disponibles en el banco.</p>
+              <p>Crea una nueva pregunta para comenzar.</p>
+            </div>
+          }
+
+          @for (bq of availableBank(); track bq.idPregunta) {
+            <div class="bank-item">
+              <div class="bank-item-info">
+                <span class="type-chip" [class]="getTypeClass(bq.tipoPregunta)">
+                  {{ getTypeLabel(bq.tipoPregunta) }}
+                </span>
+                <p class="bank-item-text">{{ bq.texto }}</p>
+                @if (bq.opcionPregunta.length > 0) {
+                  <span class="bank-item-opts"> {{ bq.opcionPregunta.length }} opciones </span>
+                }
+              </div>
+              @if (q.editable) {
+                <button
+                  mat-icon-button
+                  class="btn-add-bank"
+                  [disabled]="saving()"
+                  (click)="addFromBank(bq.idPregunta)"
+                  matTooltip="Agregar al cuestionario"
+                >
+                  <mat-icon>add_circle</mat-icon>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Panel derecho: preguntas en el cuestionario -->
+      <div class="panel panel-added">
+        <div class="panel-header">
+          <h3 class="panel-title">
+            <mat-icon class="pi">playlist_add_check</mat-icon>
+            En este cuestionario
+            <span class="count-badge">{{ q.totalPreguntas }}</span>
+          </h3>
+        </div>
+
+        <div class="added-list">
+          @if (questionnaireQuestions().length === 0) {
+            <div class="added-empty">
+              <mat-icon>playlist_add</mat-icon>
+              <p>Agrega preguntas desde el banco.</p>
+            </div>
+          }
+
+          @for (item of questionnaireQuestions(); track item.idPregunta) {
+            <div class="added-item">
+              <div class="added-num">{{ $index + 1 }}</div>
+              <div class="added-info">
+                <div class="added-row">
+                  <span class="type-chip" [class]="getTypeClass(item.tipoPregunta)">
+                    {{ getTypeLabel(item.tipoPregunta) }}
+                  </span>
+                  @if (item.obligatoria) {
+                    <span class="req-chip">Obligatoria</span>
+                  }
+                  @if (item.isCondicional) {
+                    <span class="cond-chip">Condicional</span>
+                  }
+                </div>
+                <p class="added-text">{{ item.texto }}</p>
+
+                <!-- Opciones de la pregunta -->
+                @if (item.opciones.length > 0) {
+                  <ul class="opt-list">
+                    @for (opt of item.opciones; track opt.idOpcion) {
+                      <li class="opt-row" [class.opt-correct]="opt.isCorrecta">
+                        @if (opt.isCorrecta) {
+                          <mat-icon class="opt-ic">check_circle</mat-icon>
+                        } @else {
+                          <mat-icon class="opt-ic muted">radio_button_unchecked</mat-icon>
+                        }
+                        <span class="opt-text">{{ opt.texto }}</span>
+                        <span class="opt-peso">peso {{ opt.peso }}</span>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+
+              @if (q.editable) {
+                <button
+                  mat-icon-button
+                  class="btn-remove"
+                  [disabled]="saving()"
+                  (click)="removeQuestion(item.idPregunta)"
+                  matTooltip="Quitar del cuestionario"
+                >
+                  <mat-icon>remove_circle_outline</mat-icon>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,232 @@
+@if (loading()) {
+  <div class="gr-loading">
+    <mat-spinner diameter="48" />
+    <p>Generando reporte del grupo...</p>
+  </div>
+}
+
+@if (!loading() && report(); as r) {
+  <div class="gr-shell">
+
+    <!-- Encabezado -->
+    <div class="gr-header">
+      <div class="gr-header-left">
+        <a mat-icon-button routerLink="/app/teacher"
+           class="back-btn" aria-label="Volver">
+          <mat-icon>arrow_back</mat-icon>
+        </a>
+        <div>
+          <h2 class="gr-title">Reporte de grupo</h2>
+          <p class="gr-sub">
+            {{ r.nombreCuestionario }} ·
+            Generado {{ formatDate(r.generatedAt) }}
+          </p>
+        </div>
+      </div>
+      <button mat-stroked-button class="btn-export"
+              (click)="exportCsv()">
+        <mat-icon>download</mat-icon>
+        Exportar CSV
+      </button>
+    </div>
+
+    <!-- Tarjetas de resumen del grupo -->
+    <div class="summary-grid">
+
+      <div class="sum-card">
+        <div class="sum-icon icon-blue"><mat-icon>people</mat-icon></div>
+        <div class="sum-body">
+          <span class="sum-val">{{ r.totalEstudiantesConPreTest }}</span>
+          <span class="sum-lbl">Con PRE-TEST</span>
+        </div>
+      </div>
+
+      <div class="sum-card">
+        <div class="sum-icon icon-green"><mat-icon>how_to_reg</mat-icon></div>
+        <div class="sum-body">
+          <span class="sum-val">{{ r.totalEstudiantesConPostTest }}</span>
+          <span class="sum-lbl">Con POST-TEST</span>
+        </div>
+      </div>
+
+      <div class="sum-card">
+        <div class="sum-icon icon-purple"><mat-icon>check_circle</mat-icon></div>
+        <div class="sum-body">
+          <span class="sum-val">{{ r.totalEstudiantesCompletados }}</span>
+          <span class="sum-lbl">Completaron ambas</span>
+        </div>
+      </div>
+
+      <div class="sum-card">
+        <div class="sum-icon icon-amber"><mat-icon>trending_up</mat-icon></div>
+        <div class="sum-body">
+          <span class="sum-val positive">
+            {{ formatPct(r.pcAlcanzadoCualquierNivelAvanzado) }}
+          </span>
+          <span class="sum-lbl">Alcanzaron ADVANCED</span>
+        </div>
+      </div>
+
+      <div class="sum-card">
+        <div class="sum-icon icon-gold"><mat-icon>workspace_premium</mat-icon></div>
+        <div class="sum-body">
+          <span class="sum-val positive">
+            {{ formatPct(r.pcTotalAvanzado) }}
+          </span>
+          <span class="sum-lbl">Certificación completa</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Dimensiones más crítica y más mejorada -->
+    @if (r.dimensionMasCritica || r.dimensionMasMejorada) {
+      <div class="highlights-grid">
+        @if (r.dimensionMasCritica; as mc) {
+          <div class="highlight-card critical-card">
+            <div class="hl-header">
+              <mat-icon>warning</mat-icon>
+              <span>Dimensión más crítica</span>
+            </div>
+            <p class="hl-dim">
+              {{ mc.skill === 'PENSAMIENTO_CRITICO'
+                 ? 'Pensamiento Crítico' : 'Adaptabilidad' }}
+              @if (mc.dimension) { · {{ mc.dimension }} }
+            </p>
+            <p class="hl-val">Promedio PRE: {{ formatPct(mc.avgPrePorcentaje) }}</p>
+          </div>
+        }
+        @if (r.dimensionMasMejorada; as mi) {
+          <div class="highlight-card improved-card">
+            <div class="hl-header">
+              <mat-icon>trending_up</mat-icon>
+              <span>Mayor mejora</span>
+            </div>
+            <p class="hl-dim">
+              {{ mi.skill === 'PENSAMIENTO_CRITICO'
+                 ? 'Pensamiento Crítico' : 'Adaptabilidad' }}
+              @if (mi.dimension) { · {{ mi.dimension }} }
+            </p>
+            <p class="hl-val">Delta: +{{ formatPct(mi.avgDelta) }}</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Distribución de niveles por dimensión -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <mat-icon class="ci">pie_chart</mat-icon>
+          Distribución de niveles por dimensión
+        </h3>
+      </div>
+      <div class="dist-grid">
+        @for (a of r.analisiDimensional; track $index) {
+          <div class="dist-block">
+            <p class="dist-label">
+              {{ a.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+              @if (a.dimension) { · {{ a.dimension }} }
+            </p>
+            <app-level-distribution-chart
+              [pre]="a.preDistribucion"
+              [post]="a.postDistribucion"
+            />
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Tabla de análisis por dimensión -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <mat-icon class="ci">table_chart</mat-icon>
+          Análisis por dimensión
+        </h3>
+      </div>
+      <app-dimension-analysis-table
+        [analyses]="r.analisiDimensional"
+      />
+    </div>
+
+    <!-- Estudiantes que necesitan apoyo -->
+    <div class="card">
+      <div class="card-header">
+        <div class="support-header">
+          <h3 class="card-title">
+            <mat-icon class="ci">priority_high</mat-icon>
+            Estudiantes con nivel Básico — atención prioritaria
+          </h3>
+          @if (needingSupport().length > 0) {
+            <span class="support-count">
+              {{ needingSupport().length }} estudiantes
+            </span>
+          }
+        </div>
+      </div>
+      <app-students-support-list
+        [students]="needingSupport()"
+      />
+    </div>
+
+    <!-- Acordeón: tabla individual completa -->
+    <mat-expansion-panel class="student-table-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon class="ci" style="margin-right:8px">list</mat-icon>
+          Resultados individuales por estudiante
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ r.resumenEstudiantes.length }} registros
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="student-table">
+        <div class="st-head">
+          <div>ID</div>
+          <div>Skill</div>
+          <div>Dimensión</div>
+          <div>Fase</div>
+          <div>Puntaje</div>
+          <div>%</div>
+          <div>Nivel</div>
+        </div>
+        @for (row of r.resumenEstudiantes; track ($index)) {
+          <div class="st-row">
+            <div class="st-id">#{{ row.idEstudiante }}</div>
+            <div class="st-skill">
+              {{ row.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+            </div>
+            <div class="st-dim">{{ row.dimension ?? '—' }}</div>
+            <div>
+              <span class="phase-chip"
+                    [class]="row.fase === 'PRE_TEST' ? 'chip-pre' : 'chip-post'">
+                {{ row.fase === 'PRE_TEST' ? 'PRE' : 'POST' }}
+              </span>
+            </div>
+            <div>{{ row.totalPuntaje }}/{{ row.maxPosiblePuntaje }}</div>
+            <div>{{ row.puntajePorcentaje | number:'1.0-0' }}%</div>
+            <div>
+              <span class="level-pill"
+                    [class]="'pill-' + (row.nivel ?? '').toLowerCase()">
+                {{ row.nivel === 'BAJO' ? 'Básico'
+                 : row.nivel === 'INTERMEDIO' ? 'Interm.'
+                 : row.nivel === 'AVANZADO' ? 'Avanzado' : '—' }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </mat-expansion-panel>
+
+  </div>
+}
+
+@if (!loading() && errorMsg()) {
+  <div class="gr-error">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMsg() }}</p>
+    <a mat-stroked-button routerLink="/app/teacher">Volver</a>
+  </div>
+}

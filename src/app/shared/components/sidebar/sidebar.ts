@@ -86,14 +86,19 @@ export class Sidebar {
         title: 'Gestión académica',
         items: [
           {
+            label: 'Panel coordinador',
+            icon: 'dashboard_customize',
+            route: '/app/teacher',
+          },
+          {
             label: 'Cuestionarios',
             icon: 'quiz',
             route: '/app/questionnaires',
           },
           {
-            label: 'Reportes de grupo',
-            icon: 'bar_chart',
-            route: '/app/analytics',
+            label: 'Banco de preguntas',
+            icon: 'library_books',
+            route: '/app/question-bank',
           },
         ],
       });

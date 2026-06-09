@@ -7,13 +7,11 @@ export const routes: Routes = [
   // ── Layout sin sidebar (auth) ──────────────────────────────────
   {
     path: '',
-    loadComponent: () =>
-      import('./layouts/auth-layout/auth-layout').then((m) => m.AuthLayout),
+    loadComponent: () => import('./layouts/auth-layout/auth-layout').then((m) => m.AuthLayout),
     children: [
       {
         path: 'login',
-        loadComponent: () =>
-          import('./features/auth/login/login').then((m) => m.Login),
+        loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
       },
       {
         path: 'register',
@@ -35,8 +33,7 @@ export const routes: Routes = [
   // ── Layout principal con sidebar ───────────────────────────────
   {
     path: 'app',
-    loadComponent: () =>
-      import('./layouts/main-layout/main-layout').then((m) => m.MainLayout),
+    loadComponent: () => import('./layouts/main-layout/main-layout').then((m) => m.MainLayout),
     canActivate: [authGuard, perfilGuard],
     children: [
       {
@@ -49,8 +46,24 @@ export const routes: Routes = [
         canActivate: [rolGuard],
         data: { roles: ['ROLE_ESTUDIANTE'] },
         loadChildren: () =>
-          import('./features/assessment/assessment.routes').then(
-            (m) => m.assessmentRoutes,
+          import('./features/assessment/assessment.routes').then((m) => m.assessmentRoutes),
+      },
+      {
+        path: 'questionnaires',
+        canActivate: [rolGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_COORDINADOR'] },
+        loadChildren: () =>
+          import('./features/questionnaires/questionnaires.routes').then(
+            (m) => m.questionnaireRoutes,
+          ),
+      },
+      {
+        path: 'question-bank',
+        canActivate: [rolGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_COORDINADOR'] },
+        loadComponent: () =>
+          import('./features/questionnaires/question-bank/question-bank').then(
+            (m) => m.QuestionBank,
           ),
       },
       {
@@ -59,23 +72,27 @@ export const routes: Routes = [
           import('./features/analytics/analytics.routes').then((m) => m.analyticsRoutes),
       },
       {
+        path: 'teacher',
+        canActivate: [rolGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_COORDINADOR'] },
+        loadChildren: () =>
+          import('./features/teacher/teacher.routes').then((m) => m.teacherRoutes),
+      },
+      {
         path: 'admin/users',
         canActivate: [rolGuard],
         data: { roles: ['ROLE_ADMIN'] },
-        loadComponent: () =>
-          import('./features/admin/users/admin-users').then((m) => m.AdminUsers),
+        loadComponent: () => import('./features/admin/users/admin-users').then((m) => m.AdminUsers),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
-   },
+  },
 
   // ── OAuth2 callback de Google ──────────────────────────────────
   {
     path: 'oauth2/callback',
     loadComponent: () =>
-      import('./features/auth/oauth2-callback/oauth2-callback').then(
-        (m) => m.Oauth2Callback,
-      ),
+      import('./features/auth/oauth2-callback/oauth2-callback').then((m) => m.Oauth2Callback),
   },
 
   // ── 404 ───────────────────────────────────────────────────────

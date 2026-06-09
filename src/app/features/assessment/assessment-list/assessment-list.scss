@@ -207,3 +207,27 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+.q-window {
+  display: flex; align-items: center; gap: 6px;
+  margin: 8px 0 4px; padding: 6px 10px;
+  border-radius: var(--radius-sm); font-size: 12.5px;
+
+  .win-icon { font-size: 17px; width: 17px; height: 17px; }
+
+  &.win-open     { background: rgba(16,185,129,0.1);  color: #0f7a52; }
+  &.win-upcoming { background: rgba(200,168,75,0.16); color: #8a6d1f; }
+  &.win-closed   { background: rgba(239,68,68,0.1);   color: var(--danger); }
+}
+
+.q-unavailable {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px; padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(0,0,0,0.04); color: var(--text-secondary);
+  font-size: 13px;
+
+  mat-icon { color: var(--text-secondary); }
+}
+
+.section-hint { color: var(--text-secondary); font-size: 13px; margin: 0; }

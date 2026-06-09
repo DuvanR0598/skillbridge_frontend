@@ -1,0 +1,150 @@
+<div class="qf-shell">
+  <div class="qf-header">
+    <a mat-icon-button routerLink="/app/questionnaires" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h2 class="qf-title">
+        {{ isEdit() ? 'Editar cuestionario' : 'Nuevo cuestionario' }}
+      </h2>
+      <p class="qf-sub">
+        {{
+          isEdit()
+            ? 'Modifica la configuración del encabezado.'
+            : 'Define el encabezado. Luego agregarás las preguntas.'
+        }}
+      </p>
+    </div>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert alert-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMsg() }}</span>
+    </div>
+  }
+
+  <div class="qf-card">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <!-- Nombre -->
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre del cuestionario *</mat-label>
+        <input
+          matInput
+          formControlName="name"
+          placeholder="Evaluación de Pensamiento Crítico"
+        />
+        <mat-hint align="end"> {{ form.get('name')?.value?.length ?? 0 }}/200 </mat-hint>
+        @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+          <mat-error>El nombre es obligatorio</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Finalidad -->
+      <mat-form-field appearance="outline" class="mt-3">
+        <mat-label>Finalidad / objetivo</mat-label>
+        <textarea
+          matInput
+          formControlName="purpose"
+          rows="3"
+          placeholder="Describe el objetivo del cuestionario..."
+        >
+        </textarea>
+        <mat-hint align="end"> {{ form.get('purpose')?.value?.length ?? 0 }}/500 </mat-hint>
+      </mat-form-field>
+
+      <!-- Instrucciones -->
+      <mat-form-field appearance="outline" class="mt-3">
+        <mat-label>Instrucciones para el estudiante</mat-label>
+        <textarea
+          matInput
+          formControlName="instructions"
+          rows="3"
+          placeholder="Lee cada pregunta con atención. No hay respuestas correctas o incorrectas..."
+        >
+        </textarea>
+        <mat-hint align="end"> {{ form.get('instructions')?.value?.length ?? 0 }}/1000 </mat-hint>
+      </mat-form-field>
+
+      <!-- Período de disponibilidad -->
+      <p class="section-hint mt-4">
+        Define desde y hasta cuándo el cuestionario estará disponible para responder.
+        Después de la fecha y hora de fin se inhabilita automáticamente.
+      </p>
+
+      <div class="date-row mt-2">
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha de inicio</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="appPeriodStart" />
+          <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
+          <mat-datepicker #startPicker />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Hora de inicio</mat-label>
+          <input matInput type="time" formControlName="startTime" />
+        </mat-form-field>
+      </div>
+
+      <div class="date-row mt-2">
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha de fin</mat-label>
+          <input matInput [matDatepicker]="endPicker" formControlName="appPeriodEnd" />
+          <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
+          <mat-datepicker #endPicker />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Hora de fin</mat-label>
+          <input matInput type="time" formControlName="endTime" />
+        </mat-form-field>
+      </div>
+
+      @if (dateRangeError()) {
+        <div class="alert alert-error" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ dateRangeError() }}</span>
+        </div>
+      }
+
+      <!-- Población objetivo -->
+      <mat-form-field appearance="outline" class="mt-3">
+        <mat-label>Población objetivo</mat-label>
+        <input
+          matInput
+          formControlName="targetPopulation"
+          placeholder="Estudiantes de ingeniería"
+        />
+      </mat-form-field>
+
+      <!-- Orden aleatorio -->
+      <div class="toggle-row mt-4">
+        <div class="toggle-info">
+          <span class="toggle-label">Preguntas en orden aleatorio</span>
+          <span class="toggle-desc">
+            Cada estudiante verá las preguntas en un orden diferente. Reduce el sesgo de posición.
+          </span>
+        </div>
+        <mat-slide-toggle formControlName="randomOrder" color="primary" />
+      </div>
+
+      <!-- Acciones -->
+      <div class="form-actions mt-6">
+        <a mat-stroked-button routerLink="/app/questionnaires" class="btn-cancel"> Cancelar </a>
+        <button
+          mat-flat-button
+          type="submit"
+          class="btn-save"
+          [disabled]="form.invalid || saving()"
+        >
+          @if (saving()) {
+            <mat-spinner diameter="18" class="btn-sp" />
+          } @else {
+            <mat-icon>{{ isEdit() ? 'save' : 'arrow_forward' }}</mat-icon>
+          }
+          {{ isEdit() ? 'Guardar cambios' : 'Crear y agregar preguntas' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -41,6 +41,17 @@
       </div>
     </div>
 
+    <!-- Instrucciones del cuestionario -->
+    @if (delivery()!.instrucciones) {
+      <div class="player-instructions" role="note">
+        <mat-icon class="instr-icon">info</mat-icon>
+        <div class="instr-body">
+          <span class="instr-title">Instrucciones</span>
+          <p class="instr-text">{{ delivery()!.instrucciones }}</p>
+        </div>
+      </div>
+    }
+
     <!-- Error -->
     @if (errorMsg()) {
       <div class="alert alert-error" role="alert">
