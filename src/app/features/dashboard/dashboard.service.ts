@@ -84,7 +84,7 @@ export class DashboardService {
   private mapSkillProgress(progress: any[]): SkillSummary[] {
     return progress.map((p) => ({
       skill: p.skill,
-      dimension: p.dimension ?? 'GLOBAL',
+      dimension: p.dimensionNombre ?? 'GLOBAL',
       prePercentage: p.prePercentage ?? null,
       postPercentage: p.postPercentage ?? null,
       level: p.postLevel ?? p.preLevel ?? null,

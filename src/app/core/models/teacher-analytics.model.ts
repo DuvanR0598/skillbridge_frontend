@@ -15,7 +15,6 @@ export interface ReporteGrupoResponse {
 
 export interface AnalisisDimensionalResponse {
   skill:                 string;
-  dimension:             string | null;
   idDimension?:          number | null;
   dimensionNombre?:      string | null;
   avgPrePorcentaje:      number;
@@ -33,7 +32,8 @@ export interface AnalisisDimensionalResponse {
 
 export interface DistribucionNivelesResponse {
   skill:                   string;
-  dimension:               string | null;
+  idDimension?:            number | null;
+  dimensionNombre?:        string | null;
   fase:                    string;
   recuentoBasico:          number;
   recuentoIntermedio:      number;
@@ -47,7 +47,8 @@ export interface DistribucionNivelesResponse {
 export interface NivelEstudianteResumenResponse {
   idEstudiante:      number;
   skill:             string;
-  dimension:         string | null;
+  idDimension?:      number | null;
+  dimensionNombre?:  string | null;
   fase:              string;
   totalPuntaje:      number;
   maxPosiblePuntaje: number;
@@ -68,10 +69,11 @@ export interface EstudianteQueNecesitaApoyoResponse {
   idEstudiante:            number;
   idPreTestEvaluacion:     number;
   dimensionBaja: {
-    skill:      string;
-    dimension:  string | null;
-    puntaje:    number;
-    porcentaje: number;
+    skill:          string;
+    idDimension?:     number | null;
+    dimensionNombre?: string | null;
+    puntaje:        number;
+    porcentaje:     number;
   }[];
 }
 

@@ -19,9 +19,9 @@
             <span
               class="dim-chip"
               [class]="getUrgencyClass(dim.porcentaje)"
-              [title]="getSkillLabel(dim.skill) + ' · ' + getDimLabel(dim.dimension)"
+              [title]="getSkillLabel(dim.skill) + ' · ' + (dim.dimensionNombre ?? 'Global')"
             >
-              {{ getSkillLabel(dim.skill) }} · {{ getDimLabel(dim.dimension) }}
+              {{ getSkillLabel(dim.skill) }} · {{ dim.dimensionNombre ?? 'Global' }}
               <span class="dim-pct">{{ dim.porcentaje | number: '1.0-0' }}%</span>
             </span>
           }

@@ -41,14 +41,8 @@ export class EscalationCard {
       PENSAMIENTO_CRITICO: 'PC',
       ADAPTABILIDAD: 'AD',
     };
-    const dimMap: Record<string, string> = {
-      INTERPRETACION: 'Interpretación',
-      INFERENCIA: 'Inferencia',
-      GESTION_DEL_CAMBIO: 'G. Cambio',
-      GESTION_DE_INCERTIDUMBRE: 'Incertidumbre',
-    };
     const skill = skillMap[s.skill] ?? s.skill;
-    const dim = s.dimension ? (dimMap[s.dimension] ?? s.dimension) : '';
+    const dim = s.dimensionNombre ?? '';
     return dim ? `${skill} · ${dim}` : skill;
   }
 }

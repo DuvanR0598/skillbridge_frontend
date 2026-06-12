@@ -88,7 +88,7 @@ export class GroupReportComponent implements OnInit {
       ['Skill', 'Dimensión', 'PRE avg', 'POST avg', 'Delta', 'Mejoraron %'],
       ...r.analisiDimensional.map((a) => [
         a.skill,
-        a.dimension ?? 'Global',
+        a.dimensionNombre ?? 'Global',
         a.avgPrePorcentaje.toFixed(1),
         a.avgPostPorcentaje.toFixed(1),
         a.avgDelta.toFixed(1),

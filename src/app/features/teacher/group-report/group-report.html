@@ -91,7 +91,7 @@
             <p class="hl-dim">
               {{ mc.skill === 'PENSAMIENTO_CRITICO'
                  ? 'Pensamiento Crítico' : 'Adaptabilidad' }}
-              @if (mc.dimension) { · {{ mc.dimension }} }
+              @if (mc.dimensionNombre) { · {{ mc.dimensionNombre }} }
             </p>
             <p class="hl-val">Promedio PRE: {{ formatPct(mc.avgPrePorcentaje) }}</p>
           </div>
@@ -105,7 +105,7 @@
             <p class="hl-dim">
               {{ mi.skill === 'PENSAMIENTO_CRITICO'
                  ? 'Pensamiento Crítico' : 'Adaptabilidad' }}
-              @if (mi.dimension) { · {{ mi.dimension }} }
+              @if (mi.dimensionNombre) { · {{ mi.dimensionNombre }} }
             </p>
             <p class="hl-val">Delta: +{{ formatPct(mi.avgDelta) }}</p>
           </div>
@@ -126,7 +126,7 @@
           <div class="dist-block">
             <p class="dist-label">
               {{ a.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
-              @if (a.dimension) { · {{ a.dimension }} }
+              @if (a.dimensionNombre) { · {{ a.dimensionNombre }} }
             </p>
             <app-level-distribution-chart
               [pre]="a.preDistribucion"
@@ -198,7 +198,7 @@
             <div class="st-skill">
               {{ row.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
             </div>
-            <div class="st-dim">{{ row.dimension ?? '—' }}</div>
+            <div class="st-dim">{{ row.dimensionNombre ?? '—' }}</div>
             <div>
               <span class="phase-chip"
                     [class]="row.fase === 'PRE_TEST' ? 'chip-pre' : 'chip-post'">

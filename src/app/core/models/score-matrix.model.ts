@@ -41,7 +41,6 @@ export interface PuntuacionMatrixResponse {
   idPregunta?:                number | null;
   textoPregunta?:             string | null;
   skill:                      SkillTipo;
-  dimension?:                 string | null;   // enum legado
   idDimension?:               number | null;
   dimensionNombre?:           string | null;
   nivel:                      SkillNivel;

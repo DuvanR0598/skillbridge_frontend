@@ -42,7 +42,7 @@ export class SkillRadarChartComponent implements OnChanges, AfterViewInit {
     ctx.clearRect(0, 0, 280, 280);
 
     const labels = data.map((s) =>
-      s.dimension ? this.shortLabel(s.dimension) : this.shortSkill(s.skill),
+      s.dimensionNombre ? this.shortLabel(s.dimensionNombre) : this.shortSkill(s.skill),
     );
     const preVals = data.map((s) => (s.prePorcentaje ?? 0) / 100);
     const postVals = data.map((s) => (s.postPorcentaje ?? 0) / 100);

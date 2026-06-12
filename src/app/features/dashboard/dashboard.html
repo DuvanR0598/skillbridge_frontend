@@ -110,7 +110,7 @@
             </h3>
           </div>
           <div class="skills-list">
-            @for (skill of skills(); track skill.dimension) {
+            @for (skill of skills(); track $index) {
               <div class="skill-row">
                 <div class="skill-meta">
                   <span class="skill-name">

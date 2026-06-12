@@ -92,7 +92,8 @@ export interface InformeEvaluacionResponse {
 export interface PuntuacionResultadoResponse {
   id:                          number;
   skill:                       string;
-  dimension:                   string | null;
+  // El estudiante no ve la dimensión al resolver; el backend ya no la envía.
+  dimension?:                  string | null;
   totalPuntaje:                number;
   maxPuntuacionPosible:        number;
   porcentajePuntuacion:        number;

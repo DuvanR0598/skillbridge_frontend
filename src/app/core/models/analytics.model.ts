@@ -1,19 +1,9 @@
 export type SkillTipo = 'PENSAMIENTO_CRITICO' | 'ADAPTABILIDAD';
 export type SkillNivel = 'BAJO' | 'INTERMEDIO' | 'AVANZADO';
-export type SkillDimension =
-  | 'INTERPRETACION'
-  | 'INFERENCIA'
-  | 'ANALISIS'
-  | 'EVALUACION'
-  | 'EXPLICACION'
-  | 'AUTORREGULACION'
-  | 'GESTION_DEL_CAMBIO'
-  | 'GESTION_DE_INCERTIDUMBRE';
 export type DecisionEscala = 'CERTIFICAR' | 'REINICIAR' | 'PENDIENTE';
 
 export interface SkillProgresoResponse {
   skill: SkillTipo;
-  dimension: SkillDimension | null;
   idDimension?: number | null;
   dimensionNombre?: string | null;
   prePuntaje: number | null;
@@ -75,7 +65,8 @@ export interface HistorialIntentosResponse {
 
 export interface PuntuacionIntentosResponse {
   skill: SkillTipo;
-  dimension: SkillDimension | null;
+  idDimension?: number | null;
+  dimensionNombre?: string | null;
   totalPuntuacion: number;
   porcentajePuntuacion: number;
   nivel: string;
