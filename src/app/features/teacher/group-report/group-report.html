@@ -209,7 +209,7 @@
             <div>{{ row.puntajePorcentaje | number:'1.0-0' }}%</div>
             <div>
               <span class="level-pill"
-                    [class]="'pill-' + (row.nivel ?? '').toLowerCase()">
+                    [class]="'pill-' + row.nivel.toLowerCase()">
                 {{ row.nivel === 'BAJO' ? 'Básico'
                  : row.nivel === 'INTERMEDIO' ? 'Interm.'
                  : row.nivel === 'AVANZADO' ? 'Avanzado' : '—' }}

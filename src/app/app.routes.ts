@@ -37,6 +37,11 @@ export const routes: Routes = [
     canActivate: [authGuard, perfilGuard],
     children: [
       {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+      },
+      {
         path: 'dashboard',
         loadComponent: () =>
           import('./features/dashboard/dashboard').then((m) => m.DashboardComponent),
@@ -65,6 +70,19 @@ export const routes: Routes = [
           import('./features/questionnaires/question-bank/question-bank').then(
             (m) => m.QuestionBank,
           ),
+      },
+      {
+        path: 'dimensions',
+        canActivate: [rolGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_COORDINADOR'] },
+        loadComponent: () => import('./features/dimensions/dimensions').then((m) => m.Dimensions),
+      },
+      {
+        path: 'score-matrix',
+        canActivate: [rolGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_COORDINADOR'] },
+        loadComponent: () =>
+          import('./features/score-matrix/score-matrix').then((m) => m.ScoreMatrix),
       },
       {
         path: 'analytics',

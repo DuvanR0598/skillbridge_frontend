@@ -79,10 +79,16 @@
                 <mat-icon class="meta-icon">calendar_today</mat-icon>
                 {{ formatDate(q.createdAt) }}
               </span>
-              @if (q.appPeriodEnd) {
+              @if (q.creadoPor) {
+                <span class="meta-item">
+                  <mat-icon class="meta-icon">person</mat-icon>
+                  {{ q.creadoPor }}
+                </span>
+              }
+              @if (q.fechaFin) {
                 <span class="meta-item">
                   <mat-icon class="meta-icon">event</mat-icon>
-                  Hasta {{ formatDate(q.appPeriodEnd) }}
+                  Hasta {{ formatDate(q.fechaFin) }}
                 </span>
               }
               @if (q.ordenAleatorio) {

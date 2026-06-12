@@ -1,0 +1,207 @@
+.profile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.profile-shell {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ── Hero ──────────────────────────────────────────────────────
+.profile-hero {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+// Avatar con ring de completitud
+.hero-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hero-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid var(--bg-card);
+  box-shadow: 0 0 0 3px var(--primary);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.hero-initials {
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+}
+
+// Ring de progreso SVG (CSS hack con conic-gradient)
+.completion-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--primary) calc(var(--pct) * 1%),
+    var(--border) calc(var(--pct) * 1%)
+  );
+  z-index: -1;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+// Info del hero
+.hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.hero-email {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.role-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 99px;
+
+  &.role-admin {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+  }
+  &.role-teacher {
+    background: rgba(245, 158, 11, 0.12);
+    color: #92400e;
+  }
+  &.role-student {
+    background: rgba(16, 185, 129, 0.12);
+    color: #065f46;
+  }
+}
+
+.verified-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+
+.vf-icon {
+  font-size: 14px !important;
+}
+
+.provider-badge {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+
+// Completitud
+.completion-wrap {
+  max-width: 400px;
+}
+
+.completion-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.completion-pct {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.completion-bar {
+  height: 6px;
+  border-radius: 3px;
+  --mdc-linear-progress-active-indicator-color: var(--primary);
+  --mdc-linear-progress-track-color: var(--border);
+}
+
+.missing-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: #d97706;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.hint-icon {
+  font-size: 14px !important;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+.profile-tabs {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-icon {
+  font-size: 18px !important;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.tab-content {
+  padding: 28px;
+}

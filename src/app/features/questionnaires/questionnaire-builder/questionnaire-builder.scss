@@ -1,3 +1,8 @@
+// questionnaire-builder/questionnaire-builder.scss
+
+// ============================================
+// ESTADO DE CARGA
+// ============================================
 .builder-loading {
   display: flex;
   flex-direction: column;
@@ -9,6 +14,9 @@
   font-size: 15px;
 }
 
+// ============================================
+// CONTENEDOR PRINCIPAL
+// ============================================
 .builder-shell {
   max-width: 1080px;
   margin: 0 auto;
@@ -17,7 +25,9 @@
   gap: 16px;
 }
 
-// ── Encabezado ────────────────────────────────────────────────
+// ============================================
+// ENCABEZADO
+// ============================================
 .builder-header {
   display: flex;
   justify-content: space-between;
@@ -50,6 +60,9 @@
   flex-wrap: wrap;
 }
 
+// ============================================
+// BADGES DE ESTADO
+// ============================================
 .status-badge {
   font-size: 11px;
   font-weight: 600;
@@ -60,7 +73,8 @@
     background: #f3f4f6;
     color: #6b7280;
   }
-  &.st-complete {
+  &.st-complete,
+  &.st-completo {
     background: #dbeafe;
     color: #1d4ed8;
   }
@@ -77,6 +91,7 @@
 .meta-sep {
   color: var(--border);
 }
+
 .meta-txt {
   font-size: 13px;
   color: var(--text-secondary);
@@ -108,7 +123,9 @@
   --mdc-circular-progress-active-indicator-color: white;
 }
 
-// ── Alertas ───────────────────────────────────────────────────
+// ============================================
+// ALERTAS Y BANNERS
+// ============================================
 .alert {
   display: flex;
   align-items: center;
@@ -117,11 +134,13 @@
   border-radius: var(--radius-sm);
   font-size: 14px;
 }
+
 .alert-error {
   background: #fee2e2;
   color: #b91c1c;
   border: 1px solid #fca5a5;
 }
+
 .alert-success {
   background: #d1fae5;
   color: #065f46;
@@ -138,25 +157,108 @@
   color: #1d4ed8;
   border: 1px solid #bfdbfe;
   font-size: 14px;
+
   mat-icon {
     font-size: 18px;
     flex-shrink: 0;
   }
 }
 
-// ── Grid ──────────────────────────────────────────────────────
+// ============================================
+// TABS PRINCIPALES
+// ============================================
+.builder-tabs {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+
+  // Estilo para los tabs de Material
+  .mat-mdc-tab-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+
+  .mat-mdc-tab-label-container {
+    padding: 0 8px;
+  }
+
+  .mat-mdc-tab {
+    min-width: 120px;
+    font-weight: 500;
+  }
+
+  .mat-mdc-tab.mdc-tab--active {
+    .mdc-tab__text-label {
+      color: var(--primary) !important;
+    }
+  }
+}
+
+.tab-icon {
+  font-size: 18px !important;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.tab-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: #7c3aed;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 99px;
+  margin-left: 6px;
+}
+
+.tab-body {
+  padding: 0;
+}
+
+// ============================================
+// HINT CUANDO ESTÁ BLOQUEADO
+// ============================================
+.locked-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  font-size: 14px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-top: 1px solid #bfdbfe;
+
+  &.info {
+    background: #f0f9ff;
+    color: #0369a1;
+    border-color: #bae6fd;
+  }
+
+  mat-icon {
+    flex-shrink: 0;
+  }
+}
+
+// ============================================
+// GRID DE DOS COLUMNAS
+// ============================================
 .builder-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: start;
+  padding: 16px;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    padding: 12px;
   }
 }
 
-// ── Paneles ───────────────────────────────────────────────────
+// ============================================
+// PANELES (Banco de preguntas y preguntas añadidas)
+// ============================================
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -214,7 +316,9 @@
   border-bottom: 1px solid var(--border);
 }
 
-// ── Banco ─────────────────────────────────────────────────────
+// ============================================
+// BANCO DE PREGUNTAS
+// ============================================
 .bank-list {
   max-height: 560px;
   overflow-y: auto;
@@ -230,6 +334,7 @@
   gap: 8px;
   color: var(--text-secondary);
   font-size: 13px;
+
   mat-icon {
     font-size: 36px;
     color: var(--border);
@@ -247,6 +352,7 @@
   &:last-child {
     border-bottom: none;
   }
+
   &:hover {
     background: var(--bg-app);
   }
@@ -257,6 +363,9 @@
   min-width: 0;
 }
 
+// ============================================
+// CHIPS DE TIPO DE PREGUNTA
+// ============================================
 .type-chip {
   display: inline-block;
   font-size: 10px;
@@ -309,7 +418,9 @@
   margin-top: 2px;
 }
 
-// ── Preguntas añadidas ────────────────────────────────────────
+// ============================================
+// PREGUNTAS AÑADIDAS AL CUESTIONARIO
+// ============================================
 .added-list {
   max-height: 560px;
   overflow-y: auto;
@@ -363,24 +474,88 @@
   flex-shrink: 0;
 }
 
-/* ── Opciones y chips de preguntas añadidas ── */
-.added-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.req-chip, .cond-chip {
-  font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 99px;
+// ============================================
+// CHIPS DE PREGUNTAS AÑADIDAS
+// ============================================
+.added-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
 }
-.req-chip  { background: rgba(26, 92, 56, 0.12);  color: var(--primary); }
-.cond-chip { background: rgba(200, 168, 75, 0.18); color: #8a6d1f; }
 
-.opt-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.req-chip,
+.cond-chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 99px;
+}
+
+.req-chip {
+  background: rgba(26, 92, 56, 0.12);
+  color: var(--primary);
+}
+
+.cond-chip {
+  background: rgba(200, 168, 75, 0.18);
+  color: #8a6d1f;
+}
+
+// ============================================
+// LISTA DE OPCIONES DE PREGUNTA
+// ============================================
+.opt-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .opt-row {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 12.5px; color: var(--text-secondary);
-  padding: 3px 6px; border-radius: 6px;
-}
-.opt-row.opt-correct { background: rgba(16, 185, 129, 0.1); color: #0f7a52; font-weight: 500; }
-.opt-ic { font-size: 16px; width: 16px; height: 16px; color: #10b981; }
-.opt-ic.muted { color: var(--border); }
-.opt-text { flex: 1; }
-.opt-peso { font-size: 11px; opacity: 0.7; }
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  padding: 3px 6px;
+  border-radius: 6px;
 
-.btn-remove { color: var(--danger) !important; flex-shrink: 0; }
+  &.opt-correct {
+    background: rgba(16, 185, 129, 0.1);
+    color: #0f7a52;
+    font-weight: 500;
+  }
+}
+
+.opt-ic {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #10b981;
+
+  &.muted {
+    color: var(--border);
+  }
+}
+
+.opt-text {
+  flex: 1;
+}
+
+.opt-peso {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.btn-remove {
+  color: var(--danger) !important;
+  flex-shrink: 0;
+}
+
+.dim-chip {
+  font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 99px;
+  background: rgba(26,92,56,0.12); color: var(--primary);
+}

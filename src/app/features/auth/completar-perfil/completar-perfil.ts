@@ -63,10 +63,10 @@ export class CompletarPerfil implements OnInit{
   minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 100));
 
   genderOptions = [
-    { value: 'MALE',              label: 'Masculino' },
-    { value: 'FEMALE',            label: 'Femenino' },
-    { value: 'NON_BINARY',        label: 'No binario' },
-    { value: 'PREFER_NOT_TO_SAY', label: 'Prefiero no decirlo' },
+    { value: 'MASCULINO',              label: 'Masculino' },
+    { value: 'FEMENINO',            label: 'Femenino' },
+    { value: 'NO_BINARIO',        label: 'No binario' },
+    { value: 'PREFIERO_NO_DECIRLO', label: 'Prefiero no decirlo' },
   ];
 
   semesterOptions = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -168,7 +168,7 @@ export class CompletarPerfil implements OnInit{
     };
 
     this.http.patch<ApiResponse<unknown>>(
-      `${this.API}/users/me/profile`, payload
+      `${this.API}/usuarios/me/perfil`, payload
     ).subscribe({
       next: () => {
         localStorage.setItem('profileCompleted', 'true');

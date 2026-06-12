@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import {
@@ -11,6 +11,9 @@ import {
   PreguntaResponse,
   PreguntaDeCuestionarioResponse,
   ActualizarCuestionarioRequest,
+  QuestionnaireQuestion,
+  QuestionCondition,
+  CondicionPreguntaRequest,
 } from '../../core/models/questionnaire-admin.model';
 
 @Injectable({ providedIn: 'root' })
@@ -109,4 +112,72 @@ export class QuestionnairesService {
   deleteQuestion(id: number): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.API}/preguntas/eliminar_pregunta/${id}`);
   }
+
+// ── Condiciones de ramificación ────────────────────────────
+
+getQuestionsOfQuestionnaire(
+  idCuestionario: number
+): Observable<ApiResponse<QuestionnaireQuestion[]>> {
+  // Endpoint correcto: plural /preguntas (GET). Mapeamos los campos del
+  // backend (texto/obligatoria/opciones) al shape QuestionnaireQuestion.
+  return this.http
+    .get<ApiResponse<PreguntaDeCuestionarioResponse[]>>(
+      `${this.API}/cuestionario/${idCuestionario}/preguntas`
+    )
+    .pipe(
+      map((res) => ({
+        ...res,
+        data: (res.data ?? []).map((p): QuestionnaireQuestion => ({
+          idPregunta:    p.idPregunta,
+          textoPregunta: p.texto,
+          tipoPregunta:  p.tipoPregunta,
+          obligatorio:   p.obligatoria,
+          peso:          p.peso,
+          isCondicional: p.isCondicional,
+          dimension:     p.dimension,
+          CondicionesActivacion: [], // se cargan aparte (lógica de ramificación)
+        })),
+      })),
+    );
+}
+
+// Listar las condiciones (ramificación) de un cuestionario.
+// El backend devuelve más campos (textos); QuestionCondition toma el subconjunto.
+listConditions(
+  idCuestionario: number
+): Observable<ApiResponse<QuestionCondition[]>> {
+  return this.http.get<ApiResponse<QuestionCondition[]>>(
+    `${this.API}/condicion_pregunta/${idCuestionario}/listar_condicion`
+  );
+}
+
+createCondition(
+  idCuestionario: number,
+  req: CondicionPreguntaRequest
+): Observable<ApiResponse<QuestionCondition>> {
+  return this.http.post<ApiResponse<QuestionCondition>>(
+    `${this.API}/condicion_pregunta/${idCuestionario}/crear_condicion`,
+    req
+  );
+}
+
+updateCondition(
+  idCuestionario: number,
+  idCondicion:    number,
+  req: CondicionPreguntaRequest
+): Observable<ApiResponse<QuestionCondition>> {
+  return this.http.put<ApiResponse<QuestionCondition>>(
+    `${this.API}/condicion_pregunta/${idCuestionario}/${idCondicion}`,
+    req
+  );
+}
+
+deleteCondition(
+  idCuestionario: number,
+  idCondicion:     number
+): Observable<ApiResponse<void>> {
+  return this.http.delete<ApiResponse<void>>(
+    `${this.API}/condicion_pregunta/${idCuestionario}/${idCondicion}`
+  );
+}
 }

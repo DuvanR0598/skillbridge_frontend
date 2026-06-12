@@ -60,6 +60,9 @@ import { PreguntaResponse } from '../../../core/models/questionnaire-admin.model
                 <span class="type-chip" [class]="getTypeClass(q.tipoPregunta)">
                   {{ getTypeLabel(q.tipoPregunta) }}
                 </span>
+                @if (q.dimension) {
+                  <span class="dim-chip" matTooltip="Dimensión">{{ q.dimension.nombre }}</span>
+                }
                 <p class="q-text">{{ q.texto }}</p>
                 <button
                   mat-icon-button
@@ -93,28 +96,129 @@ import { PreguntaResponse } from '../../../core/models/questionnaire-admin.model
     </section>
   `,
   styles: `
-    .bank { max-width: 900px; margin: 2rem auto; padding: 0 1.5rem; }
-    .bank__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
-    .bank__header h1 { margin: 0.25rem 0 0.25rem; }
-    .bank__header p { color: var(--text-secondary); margin: 0; max-width: 48ch; }
-    .bank__form { margin-bottom: 1.5rem; }
-    .bank__loading { display: flex; justify-content: center; padding: 3rem 0; }
-    .bank__empty { color: var(--text-secondary); }
-    .bank__list { display: flex; flex-direction: column; gap: 0.75rem; }
-    .q-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; }
-    .q-card__head { display: flex; align-items: center; gap: 0.6rem; }
-    .q-text { flex: 1; margin: 0; font-weight: 500; }
-    .type-chip { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: rgba(0,0,0,0.06); white-space: nowrap; }
-    .btn-del { color: var(--danger) !important; }
-    .opt-list { list-style: none; margin: 0.75rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-    .opt-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); padding: 3px 6px; border-radius: 6px; }
-    .opt-row.opt-correct { background: rgba(16,185,129,0.1); color: #0f7a52; font-weight: 500; }
-    .opt-ic { font-size: 17px; width: 17px; height: 17px; color: #10b981; }
-    .opt-ic.muted { color: var(--border); }
-    .opt-text { flex: 1; }
-    .opt-peso { font-size: 11px; opacity: 0.7; }
-    .no-opts { color: var(--text-secondary); font-size: 13px; margin: 0.5rem 0 0; font-style: italic; }
-    .alert-error { background: rgba(239,68,68,0.1); color: var(--danger); padding: 0.6rem 0.9rem; border-radius: var(--radius-sm); margin-bottom: 1rem; }
+    .bank {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .bank__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .bank__header h1 {
+      margin: 0.25rem 0 0.25rem;
+    }
+    .bank__header p {
+      color: var(--text-secondary);
+      margin: 0;
+      max-width: 48ch;
+    }
+    .bank__form {
+      margin-bottom: 1.5rem;
+    }
+    .bank__loading {
+      display: flex;
+      justify-content: center;
+      padding: 3rem 0;
+    }
+    .bank__empty {
+      color: var(--text-secondary);
+    }
+    .bank__list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .q-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+    }
+    .q-card__head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .q-text {
+      flex: 1;
+      margin: 0;
+      font-weight: 500;
+    }
+    .type-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(0, 0, 0, 0.06);
+      white-space: nowrap;
+    }
+    .btn-del {
+      color: var(--danger) !important;
+    }
+    .dim-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(26, 92, 56, 0.12);
+      color: var(--primary);
+      white-space: nowrap;
+    }
+    .opt-list {
+      list-style: none;
+      margin: 0.75rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .opt-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 3px 6px;
+      border-radius: 6px;
+    }
+    .opt-row.opt-correct {
+      background: rgba(16, 185, 129, 0.1);
+      color: #0f7a52;
+      font-weight: 500;
+    }
+    .opt-ic {
+      font-size: 17px;
+      width: 17px;
+      height: 17px;
+      color: #10b981;
+    }
+    .opt-ic.muted {
+      color: var(--border);
+    }
+    .opt-text {
+      flex: 1;
+    }
+    .opt-peso {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+    .no-opts {
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin: 0.5rem 0 0;
+      font-style: italic;
+    }
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      padding: 0.6rem 0.9rem;
+      border-radius: var(--radius-sm);
+      margin-bottom: 1rem;
+    }
   `,
 })
 export class QuestionBank implements OnInit {

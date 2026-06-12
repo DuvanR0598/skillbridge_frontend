@@ -55,9 +55,12 @@ export class QuestionnaireForm implements OnInit {
     randomOrder: [false]
   });
 
-  /** Combina fecha (Date) + hora ("HH:mm") en un LocalDateTime ISO sin zona. */
-  private toLocalDateTime(date: Date | null, time: string | null): string | undefined {
-    if (!date) return undefined;
+  // Fecha mínima seleccionable en los date pickers: hoy (no se programa en el pasado)
+  minDate = new Date();
+
+  /** Combina fecha (Date) + hora ("HH:mm") en un objeto Date local. */
+  private toDate(date: Date | null, time: string | null): Date | null {
+    if (!date) return null;
     const d = new Date(date);
     let h = 0, m = 0;
     if (time && /^\d{1,2}:\d{2}$/.test(time)) {
@@ -65,18 +68,34 @@ export class QuestionnaireForm implements OnInit {
       h = +hh; m = +mm;
     }
     d.setHours(h, m, 0, 0);
+    return d;
+  }
+
+  /** Combina fecha + hora en un LocalDateTime ISO sin zona (para el backend). */
+  private toLocalDateTime(date: Date | null, time: string | null): string | undefined {
+    const d = this.toDate(date, time);
+    if (!d) return undefined;
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
          + `T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
   }
 
-  /** Valida que el inicio sea anterior al fin. Devuelve mensaje o null. */
+  /** Valida la ventana de disponibilidad. Devuelve mensaje o null. */
   dateRangeError(): string | null {
     const v = this.form.value;
-    const start = this.toLocalDateTime(v.appPeriodStart, v.startTime);
-    const end = this.toLocalDateTime(v.appPeriodEnd, v.endTime);
-    if (start && end && start >= end) {
-      return 'La fecha/hora de inicio debe ser anterior a la de fin.';
+
+    // Si se eligió una fecha, la hora es obligatoria (evita comparaciones a medianoche)
+    if (v.appPeriodStart && !v.startTime) return 'Indica la hora de inicio.';
+    if (v.appPeriodEnd && !v.endTime)     return 'Indica la hora de fin.';
+
+    const start = this.toDate(v.appPeriodStart, v.startTime);
+    const end   = this.toDate(v.appPeriodEnd, v.endTime);
+
+    if (start && end && start.getTime() >= end.getTime()) {
+      return 'La fecha y hora de inicio deben ser anteriores a las de fin.';
+    }
+    if (end && end.getTime() <= Date.now()) {
+      return 'La fecha y hora de fin deben ser futuras.';
     }
     return null;
   }

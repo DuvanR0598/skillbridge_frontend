@@ -49,6 +49,24 @@
       />
     </mat-form-field>
 
+    <!-- Dimensión (opcional) — solo la ve el coordinador -->
+    <mat-form-field appearance="outline" class="mt-3">
+      <mat-label>Dimensión (opcional)</mat-label>
+      <mat-select formControlName="dimensionId">
+        <mat-option [value]="null">Sin clasificar</mat-option>
+        @for (sk of skillGroups; track sk.value) {
+          @if (dimsBySkill(sk.value).length > 0) {
+            <mat-optgroup [label]="sk.label">
+              @for (d of dimsBySkill(sk.value); track d.id) {
+                <mat-option [value]="d.id">{{ d.nombre }}</mat-option>
+              }
+            </mat-optgroup>
+          }
+        }
+      </mat-select>
+      <mat-hint>Define a qué dimensión pertenece la pregunta para el cálculo de resultados.</mat-hint>
+    </mat-form-field>
+
     <!-- maxOptions para MULTIPLE_CHOICE -->
     @if (selectedType === 'OPCION_MULTIPLE') {
       <mat-form-field appearance="outline" class="mt-3">

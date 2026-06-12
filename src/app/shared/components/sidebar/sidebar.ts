@@ -21,12 +21,7 @@ interface NavGroup {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [
-    CommonModule, 
-    RouterLink, 
-    RouterLinkActive, 
-    MatIconModule, 
-    MatTooltipModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, MatIconModule, MatTooltipModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
 })
@@ -99,6 +94,16 @@ export class Sidebar {
             label: 'Banco de preguntas',
             icon: 'library_books',
             route: '/app/question-bank',
+          },
+          {
+            label: 'Dimensiones',
+            icon: 'category',
+            route: '/app/dimensions',
+          },
+          {
+            label: 'Matriz de puntuación',
+            icon: 'grid_on',
+            route: '/app/score-matrix',
           },
         ],
       });

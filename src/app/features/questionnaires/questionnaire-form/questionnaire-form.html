@@ -75,7 +75,7 @@
       <div class="date-row mt-2">
         <mat-form-field appearance="outline">
           <mat-label>Fecha de inicio</mat-label>
-          <input matInput [matDatepicker]="startPicker" formControlName="appPeriodStart" />
+          <input matInput [min]="minDate" [matDatepicker]="startPicker" formControlName="appPeriodStart" />
           <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
           <mat-datepicker #startPicker />
         </mat-form-field>
@@ -89,7 +89,7 @@
       <div class="date-row mt-2">
         <mat-form-field appearance="outline">
           <mat-label>Fecha de fin</mat-label>
-          <input matInput [matDatepicker]="endPicker" formControlName="appPeriodEnd" />
+          <input matInput [min]="minDate" [matDatepicker]="endPicker" formControlName="appPeriodEnd" />
           <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
           <mat-datepicker #endPicker />
         </mat-form-field>

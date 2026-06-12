@@ -1,0 +1,74 @@
+<!-- profile-academic.component.html -->
+<div class="pa-shell">
+  @if (errorMsg()) {
+    <div class="alert alert-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMsg() }}</span>
+    </div>
+  }
+
+  @if (successMsg()) {
+    <div class="alert alert-success" role="status">
+      <mat-icon>check_circle</mat-icon>
+      <span>{{ successMsg() }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <h3 class="section-title">Programa académico</h3>
+
+    <!-- Programa de ingeniería -->
+    <mat-form-field appearance="outline">
+      <mat-label>Programa de ingeniería *</mat-label>
+      <mat-icon matPrefix class="fi">school</mat-icon>
+      <mat-select formControlName="engineeringProgram">
+        @for (p of programs(); track p.value) {
+          <mat-option [value]="p.value">{{ p.displayName }}</mat-option>
+        }
+      </mat-select>
+      @if (
+        form.get('engineeringProgram')?.hasError('required') &&
+        form.get('engineeringProgram')?.touched
+      ) {
+        <mat-error>El programa es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Semestre y año de ingreso -->
+    <div class="two-col mt-3">
+      <mat-form-field appearance="outline">
+        <mat-label>Semestre actual *</mat-label>
+        <mat-select formControlName="academicSemester">
+          @for (s of semesterOptions; track s) {
+            <mat-option [value]="s">Semestre {{ s }}</mat-option>
+          }
+        </mat-select>
+        @if (
+          form.get('academicSemester')?.hasError('required') &&
+          form.get('academicSemester')?.touched
+        ) {
+          <mat-error>El semestre es obligatorio</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Código estudiantil -->
+      <mat-form-field appearance="outline">
+        <mat-label>Código estudiantil</mat-label>
+        <mat-icon matPrefix class="fi">badge</mat-icon>
+        <input matInput formControlName="studentCode" placeholder="504" />
+        <mat-hint>Código universitario asignado por la institución</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions mt-6">
+      <button mat-flat-button type="submit" class="btn-save" [disabled]="form.invalid || saving()">
+        @if (saving()) {
+          <mat-spinner diameter="18" class="btn-sp" />
+        } @else {
+          <mat-icon>save</mat-icon>
+        }
+        Guardar cambios
+      </button>
+    </div>
+  </form>
+</div>

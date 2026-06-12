@@ -24,30 +24,28 @@ export interface CompleteProfileRequest {
   academicYear?: number;
 }
 
-export interface UserProfileResponse {
+export interface UsuarioPerfilResponse {
   id: number;
-  userId: number;
+  idUsuario: number;
   avatarUrl?: string;
-  dateOfBirth?: string;
-  gender?: Gender;
-  genderDisplay?: string;
-  biography?: string;
-  engineeringProgram?: EngineeringProgram;
-  engineeringProgramDisplay?: string;
-  academicSemester?: number;
-  studentCode?: string;
-  academicYear?: number;
-  profileComplete: boolean;
-  completionPercentage: number;
+  fechaNacimiento?: string;
+  genero?: Gender;
+  visualizacionGenero?: string;
+  biografia?: string;
+  programaIngenieria?: EngineeringProgram;
+  visualizacionProgramaIngenieria?: string;
+  semestreAcademico?: number;
+  perfilCompleto: boolean;
+  porcentajeCompleto: number;
   updatedAt: string;
 }
 
 export interface ProfileStatusResponse {
-  profileComplete: boolean;
-  completionPercentage: number;
-  missingRequiredFields: string[];
-  missingOptionalFields: string[];
-  message: string;
+  perfilCompleto: boolean;
+  porcentajeCompleto: number;
+  camposObligatoriosFaltantes: string[];
+  camposOpcionalesFaltantes: string[];
+  mensaje: string;
 }
 
 export interface EngineeringProgramResponse {

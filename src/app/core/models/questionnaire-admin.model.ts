@@ -1,3 +1,5 @@
+import { DimensionResponse } from './dimension.model';
+
 export type EstadoCuestionario =
   | 'BORRADOR' | 'COMPLETO' | 'PUBLICADO' | 'ARCHIVADO' | 'ELIMINADO';
 
@@ -14,6 +16,7 @@ export interface CuestionarioResponse {
   ordenAleatorio:     boolean;
   estadoCuestionario: EstadoCuestionario;
   createdAt:          string;
+  creadoPor?:         string;  // nombre y apellido de quien lo creó
   totalPreguntas:     number;
   editable:           boolean;
   // Ventana de disponibilidad
@@ -55,10 +58,11 @@ export interface PreguntaResponse {
   maxOpciones?:   number;
   createdAt:      string;
   updatedAt:      string;
-  opcionPregunta: OpcionResponse[];
+  dimension?:     DimensionResponse;
+  opcionPregunta: OptionResponse[];
 }
 
-export interface OpcionResponse {
+export interface OptionResponse {
   idOpcion:           number;
   texto:              string;
   isCorrecta:         boolean;
@@ -77,7 +81,8 @@ export interface PreguntaDeCuestionarioResponse {
   obligatoria:   boolean;
   peso:          number;
   isCondicional: boolean;
-  opciones:      OpcionResponse[];
+  dimension?:    DimensionResponse;
+  opciones:      OptionResponse[];
 }
 
 export interface PreguntaRequest {
@@ -86,6 +91,7 @@ export interface PreguntaRequest {
   imagenUrl?:             string;
   ayuda?:                 string;
   maxOpciones?:           number;
+  idDimension?:           number;
   opcionPreguntaRequest?: OpcionPreguntaRequest[];
 }
 
@@ -103,10 +109,42 @@ export interface AddQuestionToQuestionnaireRequest {
 }
 
 export interface QuestionnaireQuestion {
-  questionId:    number;
-  questionText:  string;
-  questionType:  QuestionType;
-  mandatory:     boolean;
-  weight:        number;
-  isConditional: boolean;
+  idPregunta:    number;
+  textoPregunta:  string;
+  tipoPregunta:  QuestionType;
+  obligatorio:     boolean;
+  peso:        number;
+  isCondicional: boolean;
+}
+
+export interface QuestionCondition {
+  id:                number;
+  idCuestionario:    number;
+  triggerIdPregunta: number;
+  triggerIdOpcion:   number;
+  targetIdPregunta:  number;
+}
+
+export interface CondicionPreguntaRequest {
+  triggerIdPregunta: number;
+  triggerIdOpcion:   number;
+  targetIdPregunta:  number;
+}
+
+// Extender QuestionnaireQuestion para incluir condiciones
+export interface QuestionnaireQuestion {
+  idPregunta:           number;
+  textoPregunta:        string;
+  tipoPregunta:         QuestionType;
+  obligatorio:          boolean;
+  peso:                 number;
+  isCondicional:        boolean;
+  dimension?:           DimensionResponse;
+  CondicionesActivacion: QuestionCondition[];
+}
+
+// Extender QuestionnaireResponse para incluir las preguntas del cuestionario
+export interface QuestionnaireWithQuestions extends CuestionarioResponse {
+  questions:            QuestionnaireQuestion[];
+  conditionalQuestions: QuestionnaireQuestion[];
 }

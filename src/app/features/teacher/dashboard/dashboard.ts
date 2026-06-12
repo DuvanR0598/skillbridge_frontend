@@ -1,8 +1,7 @@
-// dashboard/teacher-dashboard.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
@@ -21,7 +20,6 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     MatButtonModule,
     MatIconModule,
     MatSelectModule,

@@ -1,3 +1,5 @@
+<!-- questionnaire-builder/questionnaire-builder.html -->
+
 @if (loading()) {
   <div class="builder-loading">
     <mat-spinner diameter="48" />
@@ -7,7 +9,9 @@
 
 @if (!loading() && questionnaire(); as q) {
   <div class="builder-shell">
-    <!-- Encabezado -->
+    <!-- ============================================ -->
+    <!-- ENCABEZADO -->
+    <!-- ============================================ -->
     <div class="builder-header">
       <div class="builder-header-left">
         <a mat-icon-button routerLink="/app/questionnaires" class="back-btn">
@@ -17,7 +21,7 @@
           <h2 class="builder-title">{{ q.nombre }}</h2>
           <div class="builder-meta">
             <span class="status-badge" [class]="'st-' + q.estadoCuestionario.toLowerCase()">
-              {{ q.estadoCuestionario }}
+              {{ getStatusLabel(q.estadoCuestionario) }}
             </span>
             <span class="meta-sep">·</span>
             <span class="meta-txt">
@@ -35,8 +39,13 @@
       </div>
 
       <!-- Acción principal según estado -->
-      @if (q.editable && q.totalPreguntas >= 2) {
-        <button mat-flat-button class="btn-complete" [disabled]="saving()" (click)="complete()">
+      @if (q.editable && q.totalPreguntas >= 2 && q.estadoCuestionario !== 'COMPLETO') {
+        <button 
+          mat-flat-button 
+          class="btn-complete" 
+          [disabled]="saving()" 
+          (click)="completeQuestionnaire()"
+        >
           @if (saving()) {
             <mat-spinner diameter="18" class="btn-sp" />
           } @else {
@@ -47,7 +56,9 @@
       }
     </div>
 
-    <!-- Mensajes -->
+    <!-- ============================================ -->
+    <!-- MENSAJES -->
+    <!-- ============================================ -->
     @if (errorMsg()) {
       <div class="alert alert-error" role="alert">
         <mat-icon>error_outline</mat-icon>
@@ -71,142 +82,192 @@
       </div>
     }
 
-    <!-- Layout: banco izquierda + preguntas añadidas derecha -->
-    <div class="builder-grid">
-      <!-- Panel izquierdo: banco de preguntas -->
-      <div class="panel panel-bank">
-        <div class="panel-header">
-          <h3 class="panel-title">
-            <mat-icon class="pi">library_books</mat-icon>
-            Banco de preguntas
-          </h3>
-          @if (q.editable) {
-            <button
-              mat-flat-button
-              class="btn-new-q"
-              (click)="showNewQuestionForm.set(!showNewQuestionForm())"
-            >
-              <mat-icon>{{ showNewQuestionForm() ? 'close' : 'add' }}</mat-icon>
-              {{ showNewQuestionForm() ? 'Cancelar' : 'Nueva pregunta' }}
-            </button>
-          }
-        </div>
+    <!-- ============================================ -->
+    <!-- TABS PRINCIPALES -->
+    <!-- ============================================ -->
+    <mat-tab-group animationDuration="150ms" class="builder-tabs">
 
-        <!-- Formulario de nueva pregunta -->
-        @if (showNewQuestionForm()) {
-          <div class="new-q-wrap">
-            <app-question-form
-              (questionCreated)="onQuestionCreated($event)"
-              (cancelled)="showNewQuestionForm.set(false)"
-            />
-          </div>
-        }
-
-        <!-- Lista del banco -->
-        <div class="bank-list">
-          @if (availableBank().length === 0 && !showNewQuestionForm()) {
-            <div class="bank-empty">
-              <mat-icon>quiz</mat-icon>
-              <p>Sin preguntas disponibles en el banco.</p>
-              <p>Crea una nueva pregunta para comenzar.</p>
-            </div>
-          }
-
-          @for (bq of availableBank(); track bq.idPregunta) {
-            <div class="bank-item">
-              <div class="bank-item-info">
-                <span class="type-chip" [class]="getTypeClass(bq.tipoPregunta)">
-                  {{ getTypeLabel(bq.tipoPregunta) }}
-                </span>
-                <p class="bank-item-text">{{ bq.texto }}</p>
-                @if (bq.opcionPregunta.length > 0) {
-                  <span class="bank-item-opts"> {{ bq.opcionPregunta.length }} opciones </span>
+      <!-- ============================================ -->
+      <!-- TAB 1: PREGUNTAS -->
+      <!-- ============================================ -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">playlist_add_check</mat-icon>
+          Preguntas
+        </ng-template>
+        
+        <div class="tab-body">
+          <div class="builder-grid">
+            
+            <!-- Panel izquierdo: banco de preguntas -->
+            <div class="panel panel-bank">
+              <div class="panel-header">
+                <h3 class="panel-title">
+                  <mat-icon class="pi">library_books</mat-icon>
+                  Banco de preguntas
+                </h3>
+                @if (q.editable) {
+                  <button
+                    mat-flat-button
+                    class="btn-new-q"
+                    (click)="showNewQuestionForm.set(!showNewQuestionForm())"
+                  >
+                    <mat-icon>{{ showNewQuestionForm() ? 'close' : 'add' }}</mat-icon>
+                    {{ showNewQuestionForm() ? 'Cancelar' : 'Nueva pregunta' }}
+                  </button>
                 }
               </div>
-              @if (q.editable) {
-                <button
-                  mat-icon-button
-                  class="btn-add-bank"
-                  [disabled]="saving()"
-                  (click)="addFromBank(bq.idPregunta)"
-                  matTooltip="Agregar al cuestionario"
-                >
-                  <mat-icon>add_circle</mat-icon>
-                </button>
-              }
-            </div>
-          }
-        </div>
-      </div>
 
-      <!-- Panel derecho: preguntas en el cuestionario -->
-      <div class="panel panel-added">
-        <div class="panel-header">
-          <h3 class="panel-title">
-            <mat-icon class="pi">playlist_add_check</mat-icon>
-            En este cuestionario
-            <span class="count-badge">{{ q.totalPreguntas }}</span>
-          </h3>
-        </div>
-
-        <div class="added-list">
-          @if (questionnaireQuestions().length === 0) {
-            <div class="added-empty">
-              <mat-icon>playlist_add</mat-icon>
-              <p>Agrega preguntas desde el banco.</p>
-            </div>
-          }
-
-          @for (item of questionnaireQuestions(); track item.idPregunta) {
-            <div class="added-item">
-              <div class="added-num">{{ $index + 1 }}</div>
-              <div class="added-info">
-                <div class="added-row">
-                  <span class="type-chip" [class]="getTypeClass(item.tipoPregunta)">
-                    {{ getTypeLabel(item.tipoPregunta) }}
-                  </span>
-                  @if (item.obligatoria) {
-                    <span class="req-chip">Obligatoria</span>
-                  }
-                  @if (item.isCondicional) {
-                    <span class="cond-chip">Condicional</span>
-                  }
+              <!-- Formulario de nueva pregunta -->
+              @if (showNewQuestionForm()) {
+                <div class="new-q-wrap">
+                  <app-question-form
+                    (questionCreated)="onQuestionCreated($event)"
+                    (cancelled)="showNewQuestionForm.set(false)"
+                  />
                 </div>
-                <p class="added-text">{{ item.texto }}</p>
+              }
 
-                <!-- Opciones de la pregunta -->
-                @if (item.opciones.length > 0) {
-                  <ul class="opt-list">
-                    @for (opt of item.opciones; track opt.idOpcion) {
-                      <li class="opt-row" [class.opt-correct]="opt.isCorrecta">
-                        @if (opt.isCorrecta) {
-                          <mat-icon class="opt-ic">check_circle</mat-icon>
-                        } @else {
-                          <mat-icon class="opt-ic muted">radio_button_unchecked</mat-icon>
-                        }
-                        <span class="opt-text">{{ opt.texto }}</span>
-                        <span class="opt-peso">peso {{ opt.peso }}</span>
-                      </li>
+              <!-- Lista del banco -->
+              <div class="bank-list">
+                @if (availableBank().length === 0 && !showNewQuestionForm()) {
+                  <div class="bank-empty">
+                    <mat-icon>quiz</mat-icon>
+                    <p>Sin preguntas disponibles en el banco.</p>
+                    <p>Crea una nueva pregunta para comenzar.</p>
+                  </div>
+                }
+
+                @for (bq of availableBank(); track bq.idPregunta) {
+                  <div class="bank-item">
+                    <div class="bank-item-info">
+                      <span class="type-chip" [class]="getTypeClass(bq.tipoPregunta)">
+                        {{ getTypeLabel(bq.tipoPregunta) }}
+                      </span>
+                      <p class="bank-item-text">{{ bq.texto }}</p>
+                      @if (bq.opcionPregunta && bq.opcionPregunta.length > 0) {
+                        <span class="bank-item-opts">
+                          {{ bq.opcionPregunta.length }} opciones
+                        </span>
+                      }
+                    </div>
+                    @if (q.editable) {
+                      <button
+                        mat-icon-button
+                        class="btn-add-bank"
+                        [disabled]="saving()"
+                        (click)="addFromBank(bq.idPregunta)"
+                        matTooltip="Agregar al cuestionario"
+                      >
+                        <mat-icon>add_circle</mat-icon>
+                      </button>
                     }
-                  </ul>
+                  </div>
                 }
               </div>
-
-              @if (q.editable) {
-                <button
-                  mat-icon-button
-                  class="btn-remove"
-                  [disabled]="saving()"
-                  (click)="removeQuestion(item.idPregunta)"
-                  matTooltip="Quitar del cuestionario"
-                >
-                  <mat-icon>remove_circle_outline</mat-icon>
-                </button>
-              }
             </div>
+
+            <!-- Panel derecho: preguntas en el cuestionario -->
+            <div class="panel panel-added">
+              <div class="panel-header">
+                <h3 class="panel-title">
+                  <mat-icon class="pi">playlist_add_check</mat-icon>
+                  En este cuestionario
+                  <span class="count-badge">{{ q.totalPreguntas }}</span>
+                </h3>
+              </div>
+
+              <div class="added-list">
+                @if (qqQuestions().length === 0) {
+                  <div class="added-empty">
+                    <mat-icon>playlist_add</mat-icon>
+                    <p>Agrega preguntas desde el banco.</p>
+                  </div>
+                }
+
+                @for (item of qqQuestions(); track item.idPregunta) {
+                  <div class="added-item">
+                    <div class="added-num">{{ $index + 1 }}</div>
+                    <div class="added-info">
+                      <div class="added-row">
+                        <span class="type-chip" [class]="getTypeClass(item.tipoPregunta)">
+                          {{ getTypeLabel(item.tipoPregunta) }}
+                        </span>
+                        @if (item.obligatorio) {
+                          <span class="req-chip">Obligatoria</span>
+                        }
+                        @if (item.isCondicional) {
+                          <span class="cond-chip">Condicional</span>
+                        }
+                        @if (item.dimension) {
+                          <span class="dim-chip">{{ item.dimension.nombre }}</span>
+                        }
+                      </div>
+                      <p class="added-text">{{ item.textoPregunta }}</p>
+
+                      <!-- Las opciones se muestran desde el banco, no desde aquí -->
+                    </div>
+
+                    @if (q.editable) {
+                      <button
+                        mat-icon-button
+                        class="btn-remove"
+                        [disabled]="saving()"
+                        (click)="removeQuestion(item.idPregunta)"
+                        matTooltip="Quitar del cuestionario"
+                      >
+                        <mat-icon>remove_circle_outline</mat-icon>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- ============================================ -->
+      <!-- TAB 2: LÓGICA CONDICIONAL (BRANCHING) -->
+      <!-- ============================================ -->
+      <mat-tab [disabled]="!q.editable">
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">account_tree</mat-icon>
+          Ramificación
+          @if (conditions().length > 0) {
+            <span class="tab-badge">{{ conditions().length }}</span>
+          }
+        </ng-template>
+        
+        <div class="tab-body">
+          @if (!q.editable) {
+            <div class="locked-hint">
+              <mat-icon>lock</mat-icon>
+              <p>El cuestionario está publicado. No se puede modificar la lógica condicional.</p>
+            </div>
+          } @else if (qqQuestions().length < 2) {
+            <div class="locked-hint info">
+              <mat-icon>info</mat-icon>
+              <p>
+                Agrega al menos <strong>2 preguntas</strong> al cuestionario en la pestaña anterior
+                para poder configurar la ramificación condicional.
+              </p>
+            </div>
+          } @else {
+            <app-branching-editor
+              [questionnaireId]="questionnaireId()"
+              [allQuestions]="qqQuestions()"
+              [bankQuestions]="bankQuestions()"
+              [existingConditions]="conditions()"
+              (conditionCreated)="onConditionCreated($event)"
+              (conditionUpdated)="onConditionUpdated($event)"
+              (conditionDeleted)="onConditionDeleted($event)"
+            />
           }
         </div>
-      </div>
-    </div>
+      </mat-tab>
+
+    </mat-tab-group>
   </div>
 }

@@ -1,0 +1,112 @@
+@if (loading()) {
+  <div class="profile-loading">
+    <mat-spinner diameter="48" />
+    <p>Cargando tu perfil...</p>
+  </div>
+}
+
+@if (!loading()) {
+  <div class="profile-shell">
+    <!-- Hero del perfil -->
+    <div class="profile-hero">
+      <!-- Avatar grande -->
+      <div class="hero-avatar-wrap">
+        <div class="hero-avatar">
+          @if (profile()?.avatarUrl) {
+            <img [src]="profile()!.avatarUrl" [alt]="currentUser()?.firstName" />
+          } @else {
+            <span class="hero-initials">{{ getInitials() }}</span>
+          }
+        </div>
+
+        <!-- Badge de completitud -->
+        <div
+          class="completion-ring"
+          [style]="'--pct:' + (status()?.porcentajeCompleto ?? 0)"
+        ></div>
+      </div>
+
+      <!-- Info del hero -->
+      <div class="hero-info">
+        <h2 class="hero-name">{{ currentUser()?.firstName }} {{ currentUser()?.lastName }}</h2>
+        <p class="hero-email">{{ currentUser()?.email }}</p>
+        <div class="hero-badges">
+          <span class="role-badge" [class]="getRoleClass()">
+            {{ getRoleLabel() }}
+          </span>
+          @if (currentUser()?.emailVerified) {
+            <span class="verified-badge">
+              <mat-icon class="vf-icon">verified</mat-icon>
+              Email verificado
+            </span>
+          }
+          <span class="provider-badge">
+            {{ currentUser()?.authProvider === 'GOOGLE' ? 'Google' : 'Email y contraseña' }}
+          </span>
+        </div>
+
+        <!-- Barra de completitud del perfil -->
+        @if (status()) {
+          <div class="completion-wrap">
+            <div class="completion-label">
+              <span>Completitud del perfil</span>
+              <span class="completion-pct"> {{ status()!.porcentajeCompleto }}% </span>
+            </div>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="status()!.porcentajeCompleto"
+              class="completion-bar"
+            />
+            @if (status()!.camposObligatoriosFaltantes.length > 0) {
+              <p class="missing-hint">
+                <mat-icon class="hint-icon">info</mat-icon>
+                Faltan campos obligatorios:
+                {{ status()!.camposObligatoriosFaltantes.join(', ') }}
+              </p>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Tabs de secciones -->
+    <mat-tab-group animationDuration="200ms" class="profile-tabs">
+      <!-- Tab 1: Información personal -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">person</mat-icon>
+          Información personal
+        </ng-template>
+        <div class="tab-content">
+          <app-profile-info [profile]="profile()" (profileUpdated)="onProfileUpdated($event)" />
+        </div>
+      </mat-tab>
+
+      <!-- Tab 2: Información académica -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">school</mat-icon>
+          Académico
+        </ng-template>
+        <div class="tab-content">
+          <app-profile-academic
+            [profile]="profile()"
+            [programs]="programs()"
+            (profileUpdated)="onProfileUpdated($event)"
+          />
+        </div>
+      </mat-tab>
+
+      <!-- Tab 3: Seguridad -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">security</mat-icon>
+          Seguridad
+        </ng-template>
+        <div class="tab-content">
+          <app-profile-security />
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+}

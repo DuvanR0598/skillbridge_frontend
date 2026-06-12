@@ -1,0 +1,220 @@
+.ps-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+// ── Proveedor activo ──────────────────────────────────────────
+.provider-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-app);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.provider-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0, 121, 107, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  mat-icon {
+    font-size: 20px;
+  }
+}
+
+.provider-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.provider-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.divider-section {
+  margin: 0 0 24px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.fi {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+// ── Alertas ───────────────────────────────────────────────────
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+.alert-success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+// ── Fuerza de contraseña ──────────────────────────────────────
+.strength-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.strength-bars {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.bar {
+  height: 4px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background 0.25s;
+
+  &.weak {
+    background: #ef4444;
+  }
+  &.medium {
+    background: #f59e0b;
+  }
+  &.strong {
+    background: #10b981;
+  }
+}
+
+.strength-label {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  &.sl-weak {
+    color: #ef4444;
+  }
+  &.sl-medium {
+    color: #f59e0b;
+  }
+  &.sl-strong {
+    color: #10b981;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-save {
+  height: 44px;
+  background: var(--primary) !important;
+  color: white !important;
+  border-radius: var(--radius-sm) !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  &:disabled {
+    opacity: 0.65;
+  }
+}
+
+.btn-sp {
+  --mdc-circular-progress-active-indicator-color: white;
+}
+
+// ── Zona de peligro ───────────────────────────────────────────
+.danger-zone {
+  padding-top: 24px;
+}
+
+.danger-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #dc2626;
+}
+
+.dz-icon {
+  font-size: 18px !important;
+}
+
+.danger-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  background: #fef2f2;
+  flex-wrap: wrap;
+}
+
+.danger-info {
+  flex: 1;
+}
+.danger-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.danger-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.btn-danger {
+  height: 40px;
+  border-color: #fecaca !important;
+  color: #b91c1c !important;
+  border-radius: var(--radius-sm) !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: #fee2e2 !important;
+  }
+}
+
+.mt-1 {
+  margin-top: 4px;
+}
+.mt-3 {
+  margin-top: 12px;
+}
+.mt-6 {
+  margin-top: 24px;
+}

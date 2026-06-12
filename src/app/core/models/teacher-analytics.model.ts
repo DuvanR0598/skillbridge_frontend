@@ -16,6 +16,8 @@ export interface ReporteGrupoResponse {
 export interface AnalisisDimensionalResponse {
   skill:                 string;
   dimension:             string | null;
+  idDimension?:          number | null;
+  dimensionNombre?:      string | null;
   avgPrePorcentaje:      number;
   avgPostPorcentaje:     number;
   avgDelta:              number;

@@ -14,6 +14,8 @@ export type DecisionEscala = 'CERTIFICAR' | 'REINICIAR' | 'PENDIENTE';
 export interface SkillProgresoResponse {
   skill: SkillTipo;
   dimension: SkillDimension | null;
+  idDimension?: number | null;
+  dimensionNombre?: string | null;
   prePuntaje: number | null;
   preMaxPuntaje: number | null;
   prePorcentaje: number | null;

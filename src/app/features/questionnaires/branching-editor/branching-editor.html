@@ -1,0 +1,270 @@
+<div class="be-shell">
+  <div class="be-intro">
+    <mat-icon class="intro-icon">account_tree</mat-icon>
+    <div>
+      <p class="intro-title">Lógica de ramificación</p>
+      <p class="intro-desc">
+        Define qué pregunta se activa cuando un estudiante elige una opción específica. La pregunta
+        destino solo aparece si se cumple la condición.
+      </p>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  @if (errorMsg()) {
+    <div class="alert alert-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMsg() }}</span>
+    </div>
+  }
+
+  @if (successMsg()) {
+    <div class="alert alert-success" role="status">
+      <mat-icon>check_circle</mat-icon>
+      <span>{{ successMsg() }}</span>
+    </div>
+  }
+
+  <!-- Condiciones existentes -->
+  @if (conditionsByTrigger().length > 0) {
+    <div class="conditions-list">
+      <h4 class="conditions-title">Condiciones configuradas</h4>
+
+      @for (group of conditionsByTrigger(); track group.triggerQuestionId) {
+        <div class="condition-group">
+          <div class="trigger-q-header">
+            <mat-icon class="tq-icon">help_outline</mat-icon>
+            <span class="tq-text">
+              {{ group.triggerQuestionText | slice: 0 : 80 }}
+              {{ group.triggerQuestionText.length > 80 ? '...' : '' }}
+            </span>
+          </div>
+
+          @for (item of group.items; track item.condition.id) {
+            <div class="condition-row">
+              <!-- Flecha visual del flujo -->
+              <div class="condition-flow">
+                <div class="flow-option">
+                  <mat-icon class="flow-icon">radio_button_checked</mat-icon>
+                  <span class="flow-option-text">
+                    {{ item.triggerOption?.texto ?? 'Opción #' + item.condition.triggerIdOpcion }}
+                  </span>
+                </div>
+                <div class="flow-arrow">
+                  <mat-icon>arrow_forward</mat-icon>
+                </div>
+                <div class="flow-target">
+                  <span class="type-chip" [class]="getTypeClass(item.targetQuestion.tipoPregunta)">
+                    {{ getTypeLabel(item.targetQuestion.tipoPregunta) }}
+                  </span>
+                  <span class="flow-target-text">
+                    {{ item.targetQuestion.textoPregunta | slice: 0 : 60 }}
+                    {{ item.targetQuestion.textoPregunta.length > 60 ? '...' : '' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="condition-actions">
+                <!-- Editar condición -->
+                <button
+                  mat-icon-button
+                  class="btn-edit-cond"
+                  [class.editing]="editingConditionId() === item.condition.id"
+                  (click)="startEdit(item.condition)"
+                  matTooltip="Editar condición"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <!-- Eliminar condición -->
+                <button
+                  mat-icon-button
+                  class="btn-del-cond"
+                  [disabled]="deleting() === item.condition.id"
+                  (click)="deleteCondition(item.condition.id)"
+                  matTooltip="Eliminar condición"
+                >
+                  @if (deleting() === item.condition.id) {
+                    <mat-spinner diameter="16" />
+                  } @else {
+                    <mat-icon>delete_outline</mat-icon>
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Formulario para nueva condición / edición -->
+  <div class="new-condition-form" [class.editing]="isEditing">
+    <h4 class="form-section-title">
+      <mat-icon>{{ isEditing ? 'edit' : 'add_circle_outline' }}</mat-icon>
+      {{ isEditing ? 'Editar condición' : 'Nueva condición' }}
+      @if (isEditing) {
+        <button mat-button class="btn-cancel-edit" (click)="cancelEdit()">
+          <mat-icon>close</mat-icon>
+          Cancelar edición
+        </button>
+      }
+    </h4>
+
+    @if (triggerCandidates().length < 2) {
+      <div class="no-candidates-hint">
+        <mat-icon>info</mat-icon>
+        <p>
+          Necesitas al menos una pregunta base con opciones (Única, Múltiple, V/F o Likert) y otra
+          pregunta que se activará como destino. Agrega más preguntas al cuestionario primero.
+        </p>
+      </div>
+    } @else {
+      <!-- Paso 1: Pregunta trigger -->
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <label class="step-label"> Cuando el estudiante responde la pregunta... </label>
+          <select
+            class="custom-select"
+            [value]="newTriggerQuestionId() ?? ''"
+            (change)="
+              newTriggerQuestionId.set(+$any($event.target).value || null);
+              onTriggerQuestionChange()
+            "
+          >
+            <option value="">Selecciona una pregunta</option>
+            @for (q of triggerCandidates(); track q.idPregunta) {
+              <option [value]="q.idPregunta">
+                {{ q.textoPregunta | slice: 0 : 70 }}
+                {{ q.textoPregunta.length > 70 ? '...' : '' }}
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Paso 2: Opción que activa el branch (solo si hay trigger) -->
+      @if (newTriggerQuestionId()) {
+        <div class="step-connector">
+          <div class="connector-line"></div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <label class="step-label"> ...y elige la opción... </label>
+            @if (triggerOptions().length === 0) {
+              <p class="no-opts-hint">Esta pregunta no tiene opciones configuradas en el banco.</p>
+            } @else {
+              <div class="options-radio-list">
+                @for (opt of triggerOptions(); track opt.idOpcion) {
+                  <label class="opt-radio-item" [class.selected]="newTriggerOptionId() === opt.idOpcion">
+                    <input
+                      type="radio"
+                      [name]="'trigger-opt-' + questionnaireId()"
+                      [value]="opt.idOpcion"
+                      [checked]="newTriggerOptionId() === opt.idOpcion"
+                      (change)="newTriggerOptionId.set(opt.idOpcion); onTriggerOptionChange()"
+                    />
+                    <span class="opt-radio-indicator"></span>
+                    <span class="opt-radio-text">{{ opt.texto }}</span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Paso 3: Pregunta destino (solo si hay trigger + opción) -->
+      @if (newTriggerOptionId()) {
+        <div class="step-connector">
+          <div class="connector-line"></div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <label class="step-label"> ...mostrar la pregunta... </label>
+            @if (targetCandidates().length === 0) {
+              <p class="no-opts-hint">
+                No hay preguntas disponibles como destino. Todas ya están vinculadas a esta opción.
+              </p>
+            } @else {
+              <div class="target-list">
+                @for (q of targetCandidates(); track q.idPregunta) {
+                  <label
+                    class="target-item"
+                    [class.selected]="newTargetQuestionId() === q.idPregunta"
+                  >
+                    <input
+                      type="radio"
+                      [name]="'target-q-' + questionnaireId()"
+                      [value]="q.idPregunta"
+                      [checked]="newTargetQuestionId() === q.idPregunta"
+                      (change)="newTargetQuestionId.set(q.idPregunta)"
+                    />
+                    <span class="opt-radio-indicator"></span>
+                    <div class="target-item-info">
+                      <span class="type-chip" [class]="getTypeClass(q.tipoPregunta)">
+                        {{ getTypeLabel(q.tipoPregunta) }}
+                      </span>
+                      <span class="target-text">
+                        {{ q.textoPregunta | slice: 0 : 70 }}
+                        {{ q.textoPregunta.length > 70 ? '...' : '' }}
+                      </span>
+                      @if (!q.isCondicional) {
+                        <span class="base-badge">Base</span>
+                      }
+                    </div>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Vista previa del resultado antes de crear -->
+      @if (canCreate()) {
+        <div class="preview-result">
+          <mat-icon class="preview-icon">visibility</mat-icon>
+          <span class="preview-text">
+            Si responde
+            <strong>
+              "{{ triggerOptions().find((o) => o.idOpcion === newTriggerOptionId())?.texto }}"
+            </strong>
+            → se mostrará
+            <strong>
+              "{{
+                allQuestions().find((q) => q.idPregunta === newTargetQuestionId())?.textoPregunta
+                  | slice: 0 : 50
+              }}..."
+            </strong>
+          </span>
+        </div>
+      }
+
+      <!-- Botón crear / actualizar -->
+      <div class="form-actions mt-3">
+        @if (isEditing) {
+          <button mat-stroked-button class="btn-cancel-cond" (click)="cancelEdit()">
+            Cancelar
+          </button>
+        }
+        <button
+          mat-flat-button
+          class="btn-create-cond"
+          [disabled]="!canCreate() || saving()"
+          (click)="submit()"
+        >
+          @if (saving()) {
+            <mat-spinner diameter="18" class="btn-sp" />
+          } @else {
+            <mat-icon>{{ isEditing ? 'save' : 'account_tree' }}</mat-icon>
+          }
+          {{ isEditing ? 'Actualizar condición' : 'Crear condición' }}
+        </button>
+      </div>
+    }
+  </div>
+</div>

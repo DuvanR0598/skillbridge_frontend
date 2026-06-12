@@ -12,7 +12,7 @@
     <div class="table-row" [class.critical]="a.masCritico" [class.improved]="a.masMejoro">
       <div class="col-dim">
         <span class="skill-chip">{{ getSkillLabel(a.skill) }}</span>
-        <span class="dim-name">{{ getDimLabel(a.dimension) }}</span>
+        <span class="dim-name">{{ a.dimensionNombre ?? getDimLabel(a.dimension) }}</span>
       </div>
 
       <div class="col-avg">

@@ -1,0 +1,179 @@
+<div class="ps-shell">
+  <!-- Proveedor activo -->
+  <div class="provider-info">
+    <div class="provider-icon">
+      <mat-icon>
+        {{ isGoogleUser() ? 'account_circle' : 'lock' }}
+      </mat-icon>
+    </div>
+    <div>
+      <p class="provider-title">
+        {{
+          isGoogleUser() ? 'Cuenta vinculada con Google' : 'Inicio de sesión con email y contraseña'
+        }}
+      </p>
+      <p class="provider-sub">
+        {{
+          isGoogleUser()
+            ? 'Tu cuenta está autenticada a través de Google. No puedes cambiar la contraseña desde aquí.'
+            : 'Puedes actualizar tu contraseña cuando lo necesites.'
+        }}
+      </p>
+    </div>
+  </div>
+
+  @if (!isGoogleUser()) {
+    <mat-divider class="divider-section" />
+
+    <h3 class="section-title">Cambiar contraseña</h3>
+
+    @if (errorMsg()) {
+      <div class="alert alert-error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMsg() }}</span>
+      </div>
+    }
+
+    @if (successMsg()) {
+      <div class="alert alert-success" role="status">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ successMsg() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <!-- Contraseña actual -->
+      <mat-form-field appearance="outline">
+        <mat-label>Contraseña actual</mat-label>
+        <mat-icon matPrefix class="fi">lock</mat-icon>
+        <input
+          matInput
+          [type]="showCurrent() ? 'text' : 'password'"
+          formControlName="currentPassword"
+          autocomplete="current-password"
+        />
+        <button mat-icon-button matSuffix type="button" (click)="showCurrent.update((v) => !v)">
+          <mat-icon>
+            {{ showCurrent() ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+        @if (
+          form.get('currentPassword')?.hasError('required') && form.get('currentPassword')?.touched
+        ) {
+          <mat-error>La contraseña actual es obligatoria</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Nueva contraseña -->
+      <mat-form-field appearance="outline" class="mt-3">
+        <mat-label>Nueva contraseña</mat-label>
+        <mat-icon matPrefix class="fi">lock_reset</mat-icon>
+        <input
+          matInput
+          [type]="showNew() ? 'text' : 'password'"
+          formControlName="newPassword"
+          autocomplete="new-password"
+        />
+        <button mat-icon-button matSuffix type="button" (click)="showNew.update((v) => !v)">
+          <mat-icon>
+            {{ showNew() ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+        @if (newPw.hasError('minlength') && newPw.touched) {
+          <mat-error>Mínimo 8 caracteres</mat-error>
+        }
+        @if (newPw.hasError('pattern') && newPw.touched) {
+          <mat-error>Debe tener mayúscula, minúscula y número</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Indicador de fuerza -->
+      @if (newPw.value) {
+        <div class="strength-wrap mt-1">
+          <div class="strength-bars">
+            <div
+              class="bar"
+              [class.weak]="passwordStrength === 'weak'"
+              [class.medium]="passwordStrength === 'medium' || passwordStrength === 'strong'"
+              [class.strong]="passwordStrength === 'strong'"
+            ></div>
+            <div
+              class="bar"
+              [class.medium]="passwordStrength === 'medium'"
+              [class.strong]="passwordStrength === 'strong'"
+            ></div>
+            <div class="bar" [class.strong]="passwordStrength === 'strong'"></div>
+          </div>
+          <span class="strength-label" [class]="'sl-' + passwordStrength">
+            {{
+              passwordStrength === 'weak'
+                ? 'Débil'
+                : passwordStrength === 'medium'
+                  ? 'Media'
+                  : 'Fuerte'
+            }}
+          </span>
+        </div>
+      }
+
+      <!-- Confirmar contraseña -->
+      <mat-form-field appearance="outline" class="mt-3">
+        <mat-label>Confirmar nueva contraseña</mat-label>
+        <mat-icon matPrefix class="fi">lock_reset</mat-icon>
+        <input
+          matInput
+          [type]="showConfirm() ? 'text' : 'password'"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+        />
+        <button mat-icon-button matSuffix type="button" (click)="showConfirm.update((v) => !v)">
+          <mat-icon>
+            {{ showConfirm() ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+        @if (form.hasError('mismatch') && form.get('confirmPassword')?.touched) {
+          <mat-error>Las contraseñas no coinciden</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="form-actions mt-6">
+        <button
+          mat-flat-button
+          type="submit"
+          class="btn-save"
+          [disabled]="form.invalid || saving()"
+        >
+          @if (saving()) {
+            <mat-spinner diameter="18" class="btn-sp" />
+          } @else {
+            <mat-icon>lock</mat-icon>
+          }
+          Actualizar contraseña
+        </button>
+      </div>
+    </form>
+  }
+
+  <mat-divider class="divider-section" />
+
+  <!-- Zona de peligro: cerrar todas las sesiones -->
+  <div class="danger-zone">
+    <h3 class="section-title danger-title">
+      <mat-icon class="dz-icon">warning</mat-icon>
+      Zona de peligro
+    </h3>
+    <div class="danger-row">
+      <div class="danger-info">
+        <p class="danger-label">Cerrar todas las sesiones</p>
+        <p class="danger-sub">
+          Revoca todos los tokens activos en todos los dispositivos. Deberás iniciar sesión de
+          nuevo.
+        </p>
+      </div>
+      <button mat-stroked-button class="btn-danger" (click)="revokeAllSessions()">
+        <mat-icon>logout</mat-icon>
+        Cerrar sesión en todos
+      </button>
+    </div>
+  </div>
+</div>

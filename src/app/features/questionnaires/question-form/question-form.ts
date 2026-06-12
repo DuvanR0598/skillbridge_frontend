@@ -10,6 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { OpcionPreguntaRequest, PreguntaRequest, PreguntaResponse, QuestionType } from '../../../core/models/questionnaire-admin.model';
 import { QuestionnairesService } from '../questionnaires.service';
+import { DimensionsService } from '../../dimensions/dimensions.service';
+import { DimensionResponse, SKILL_OPTIONS, SkillTipo } from '../../../core/models/dimension.model';
 
 @Component({
   selector: 'app-question-form',
@@ -27,6 +29,7 @@ export class QuestionForm {
 
   private fb  = inject(FormBuilder);
   private svc = inject(QuestionnairesService);
+  private dimSvc = inject(DimensionsService);
 
   // Evento: pregunta creada con éxito
   questionCreated = output<PreguntaResponse>();
@@ -34,6 +37,18 @@ export class QuestionForm {
 
   saving   = signal(false);
   errorMsg = signal<string | null>(null);
+
+  // Dimensiones disponibles (para clasificar la pregunta), agrupadas por skill
+  dimensions = signal<DimensionResponse[]>([]);
+  skillGroups = SKILL_OPTIONS;
+
+  constructor() {
+    this.dimSvc.list().subscribe((dims) => this.dimensions.set(dims));
+  }
+
+  dimsBySkill(skill: SkillTipo): DimensionResponse[] {
+    return this.dimensions().filter((d) => d.skill === skill);
+  }
 
   questionTypes: { value: QuestionType; label: string }[] = [
     { value: 'VERDADERO_FALSO',      label: 'Verdadero / Falso' },
@@ -49,6 +64,7 @@ export class QuestionForm {
     help:         ['', Validators.maxLength(300)],
     description:  ['', Validators.maxLength(500)],
     maxOptions:   [null],
+    dimensionId:  [null],
     options:      this.fb.array([])
   });
 
@@ -153,6 +169,7 @@ export class QuestionForm {
       texto:        v.text.trim(),
       ayuda:        v.help     || undefined,
       maxOpciones:  v.maxOptions   || undefined,
+      idDimension:  v.dimensionId  || undefined,
       // Mapear las claves del form (text/isCorrect/weight/displayOrder)
       // a las que espera el backend (texto/isCorrecta/peso/ordenVisualizacion)
       opcionPreguntaRequest: this.needsOptions
