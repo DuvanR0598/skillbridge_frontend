@@ -35,20 +35,6 @@ export class ProgressComparison {
     return skill === 'PENSAMIENTO_CRITICO' ? 'Pensamiento Crítico' : 'Adaptabilidad';
   }
 
-  getDimLabel(dim: string | null): string {
-    const m: Record<string, string> = {
-      INTERPRETACION: 'Interpretación',
-      INFERENCIA: 'Inferencia',
-      ANALISIS: 'Análisis',
-      EVALUACION: 'Evaluación',
-      EXPLICACION: 'Explicación',
-      AUTORREGULACION: 'Autorregulación',
-      GESTION_DEL_CAMBIO: 'Gestión del cambio',
-      GESTION_DE_INCERTIDUMBRE: 'Gestión de la incertidumbre',
-    };
-    return dim ? (m[dim] ?? dim) : 'Global';
-  }
-
   getDeltaClass(delta: number | null): string {
     if (delta === null) return '';
     return delta > 0 ? 'delta-positive' : delta < 0 ? 'delta-negative' : 'delta-neutral';

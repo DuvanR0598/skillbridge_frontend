@@ -14,20 +14,6 @@ import { EstudianteQueNecesitaApoyoResponse } from '../../../../core/models/teac
 export class StudentsSupportList{
   students = input<EstudianteQueNecesitaApoyoResponse[]>([]);
 
-  getDimLabel(dim: string | null): string {
-    const m: Record<string, string> = {
-      INTERPRETACION: 'Interpretación',
-      INFERENCIA: 'Inferencia',
-      GESTION_DEL_CAMBIO: 'G. Cambio',
-      GESTION_DE_INCERTIDUMBRE: 'Incertidumbre',
-      ANALISIS: 'Análisis',
-      EVALUACION: 'Evaluación',
-      EXPLICACION: 'Explicación',
-      AUTORREGULACION: 'Autorregulación',
-    };
-    return dim ? (m[dim] ?? dim) : 'Global';
-  }
-
   getSkillLabel(skill: string): string {
     return skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD';
   }

@@ -55,6 +55,48 @@
   font-size: 16px !important;
 }
 
+.player-countdown {
+  font-weight: 700;
+  color: var(--primary, #2e7d52);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--primary-soft, #e8f4ee);
+
+  .countdown-label {
+    font-weight: 500;
+    font-size: 12.5px;
+  }
+
+  &.time-low {
+    color: #b3261e;
+    background: #fdecea;
+    animation: pulse-low 1s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-low {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.intro-timelimit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-app, #f7f8f7);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+  text-align: left;
+
+  mat-icon {
+    color: var(--primary, #2e7d52);
+    flex-shrink: 0;
+  }
+}
+
 .progress-row {
   display: flex;
   align-items: center;
@@ -308,6 +350,16 @@
   font-size: 12px;
   color: var(--text-secondary);
   padding: 0 10px;
+  gap: 8px;
+
+  > span {
+    flex: 1;
+    &:first-child { text-align: left; }
+    &:last-child  { text-align: right; }
+  }
+}
+.likert-label-mid {
+  text-align: center;
 }
 
 .likert-options {
@@ -446,18 +498,50 @@
   --mdc-circular-progress-active-indicator-color: white;
 }
 
-.player-instructions {
+// ── Pantalla de instrucciones (intro) ──────────────────────────
+.intro-shell {
   display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  margin: 12px 0;
-  padding: 12px 14px;
+  justify-content: center;
+  padding: 32px 16px;
+}
+.intro-card {
+  max-width: 640px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 32px 28px;
   border-radius: var(--radius-md);
-  background: rgba(26, 92, 56, 0.07);
-  border: 1px solid rgba(26, 92, 56, 0.18);
-
-  .instr-icon { color: var(--primary); flex-shrink: 0; }
-  .instr-body { display: flex; flex-direction: column; gap: 2px; }
-  .instr-title { font-weight: 600; font-size: 13px; color: var(--primary); }
-  .instr-text { margin: 0; font-size: 13.5px; color: var(--text-secondary); white-space: pre-line; }
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+.intro-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: var(--primary);
+}
+.intro-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+.intro-subtitle {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.intro-text {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--text-secondary);
+  white-space: pre-line;
+  line-height: 1.6;
+}
+.intro-start {
+  margin-top: 8px;
 }

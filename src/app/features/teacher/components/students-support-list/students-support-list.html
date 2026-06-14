@@ -11,7 +11,14 @@
           <div class="student-avatar">
             {{ s.idEstudiante }}
           </div>
-          <span class="student-label">Estudiante #{{ s.idEstudiante }}</span>
+          <div class="student-info">
+            <span class="student-label">
+              {{ s.nombreCompleto || ('Estudiante #' + s.idEstudiante) }}
+            </span>
+            <span class="student-meta">
+              ID {{ s.idEstudiante }}@if (s.email) { · {{ s.email }} }
+            </span>
+          </div>
         </div>
 
         <div class="dim-chips">

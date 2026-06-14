@@ -54,12 +54,20 @@ export class AssessmentPlayer implements OnInit, OnDestroy {
   delivery = signal<CuestionarioEntregaResponse | null>(null);
   currentIndex = signal(0);
 
+  // Pantalla de instrucciones previa a las preguntas (solo si el cuestionario las tiene)
+  showIntro = signal(false);
+
   // Respuestas acumuladas por pregunta
   answers = signal<Map<number, Answer>>(new Map());
 
   // Temporizador en pantalla
   elapsedSeconds = signal(0);
   private timerSub?: Subscription;
+
+  // Tiempo límite (si el cuestionario lo tiene)
+  hasTimeLimit = signal(false);
+  remainingSeconds = signal<number | null>(null);
+  private timeUpTriggered = false;
 
   // ── Preguntas visibles (base + condicionales activadas) ────
   visibleQuestions = computed<PreguntaEntregaResponse[]>(() => {
@@ -127,10 +135,31 @@ export class AssessmentPlayer implements OnInit, OnDestroy {
 
   isLastQuestion = computed(() => this.currentIndex() === this.visibleQuestions().length - 1);
 
+  /**
+   * Texto de la opción central de una escala LIKERT (el punto medio).
+   * Devuelve null si hay menos de 3 opciones (no hay un "medio" claro).
+   */
+  likertMiddleLabel(opciones: { texto: string }[]): string | null {
+    if (!opciones || opciones.length < 3) return null;
+    return opciones[Math.floor((opciones.length - 1) / 2)]?.texto ?? null;
+  }
+
   get elapsedFormatted(): string {
     const m = Math.floor(this.elapsedSeconds() / 60);
     const s = this.elapsedSeconds() % 60;
     return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  get remainingFormatted(): string {
+    const total = this.remainingSeconds() ?? 0;
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  /** true cuando quedan menos de 60s (para resaltar el contador). */
+  get timeRunningLow(): boolean {
+    return this.hasTimeLimit() && (this.remainingSeconds() ?? 0) <= 60;
   }
 
   // ── Ciclo de vida ──────────────────────────────────────────
@@ -143,10 +172,10 @@ export class AssessmentPlayer implements OnInit, OnDestroy {
       next: (res) => {
         this.delivery.set(res.data);
         this.initAnswers(res.data);
-        // Precargar respuestas ya guardadas (al reanudar una sesión)
-        this.preloadAnswers();
         this.loading.set(false);
-        this.startTimer();
+        // Precargar respuestas y decidir intro/temporizador según sea
+        // un inicio limpio o una reanudación.
+        this.preloadAnswers();
       },
       error: () => {
         this.errorMsg.set('No se pudo cargar el cuestionario.');
@@ -160,12 +189,20 @@ export class AssessmentPlayer implements OnInit, OnDestroy {
    * En una sesión recién iniciada no hay respuestas → no-op.
    */
   private preloadAnswers(): void {
-    if (!this.idEvaluacion) return;
+    // Sin sesión asociada → inicio limpio (puede mostrar instrucciones).
+    if (!this.idEvaluacion) {
+      this.startFresh();
+      return;
+    }
 
     this.assessmentSvc.getAssessment(this.idEvaluacion).subscribe({
       next: (res) => {
         const respuestas = res.data?.respuestas ?? [];
-        if (respuestas.length === 0) return;
+        // Sesión sin respuestas aún → inicio limpio (intro si corresponde).
+        if (respuestas.length === 0) {
+          this.startFresh();
+          return;
+        }
 
         const map = new Map(this.answers());
         for (const r of respuestas) {
@@ -180,6 +217,23 @@ export class AssessmentPlayer implements OnInit, OnDestroy {
         }
         this.answers.set(map);
 
+        // Al reanudar una sesión aleatorizada, agrupar las preguntas YA
+        // respondidas al inicio (en orden estable por id) y dejar solo las NO
+        // respondidas con el orden aleatorio de esta entrega. Así las respondidas
+        // no aparecen intercaladas ni al final, y solo se re-aleatorizan las
+        // pendientes. Las condicionales las reintercala visibleQuestions().
+        const d = this.delivery();
+        if (d) {
+          const ans = this.answers();
+          const answered = d.preguntas
+            .filter((q) => ans.get(q.idPregunta)?.submitted)
+            .sort((a, b) => a.idPregunta - b.idPregunta);
+          const unanswered = d.preguntas.filter((q) => !ans.get(q.idPregunta)?.submitted);
+          if (answered.length > 0) {
+            this.delivery.set({ ...d, preguntas: [...answered, ...unanswered] });
+          }
+        }
+
         // Posicionarse en la primera pregunta sin responder.
         // Si todas están respondidas, ir a la última para poder completar.
         const questions = this.visibleQuestions();
@@ -191,10 +245,33 @@ export class AssessmentPlayer implements OnInit, OnDestroy {
             firstUnanswered === -1 ? questions.length - 1 : firstUnanswered,
           );
         }
+
+        // Reanudación con progreso: NO mostrar instrucciones; ir directo a la
+        // siguiente pregunta sin responder y arrancar el temporizador/conteo.
+        this.showIntro.set(false);
+        this.onAnsweringStarted();
       },
-      // Silencioso: si falla, el player sigue funcionando con el formulario vacío
-      error: () => {},
+      // Si falla la precarga, el player sigue funcionando: inicio limpio.
+      error: () => this.startFresh(),
     });
+  }
+
+  /**
+   * Inicio limpio (sin progreso previo): muestra las instrucciones primero si
+   * el cuestionario las tiene; si no, arranca las preguntas y el temporizador.
+   */
+  private startFresh(): void {
+    if (this.delivery()?.instrucciones) {
+      this.showIntro.set(true);
+    } else {
+      this.onAnsweringStarted();
+    }
+  }
+
+  /** Cierra la pantalla de instrucciones y arranca las preguntas + temporizador. */
+  beginQuestions(): void {
+    this.showIntro.set(false);
+    this.onAnsweringStarted();
   }
 
   ngOnDestroy(): void {
@@ -219,6 +296,75 @@ export class AssessmentPlayer implements OnInit, OnDestroy {
   private startTimer(): void {
     this.timerSub = interval(1000).subscribe(() => {
       this.elapsedSeconds.update((s) => s + 1);
+
+      // Cuenta regresiva del tiempo límite (si aplica).
+      if (this.hasTimeLimit()) {
+        const restante = (this.remainingSeconds() ?? 0) - 1;
+        this.remainingSeconds.set(Math.max(0, restante));
+        if (restante <= 0 && !this.timeUpTriggered) {
+          this.timeUpTriggered = true;
+          this.onTimeUp();
+        }
+      }
+    });
+  }
+
+  /**
+   * Se llama cuando el estudiante EMPIEZA a responder (tras instrucciones, o
+   * directo si no hay). Arranca el temporizador y, si el cuestionario tiene
+   * tiempo límite, ancla/consulta el conteo en el servidor.
+   */
+  private onAnsweringStarted(): void {
+    this.startTimer();
+
+    const limite = this.delivery()?.tiempoLimiteMinutos;
+    if (!limite || !this.idEvaluacion) return;
+
+    this.assessmentSvc.iniciarConteo(this.idEvaluacion).subscribe({
+      next: (res) => {
+        const restante = res.data?.segundosRestantes;
+        if (restante == null) return;
+        this.hasTimeLimit.set(true);
+        this.remainingSeconds.set(Math.max(0, restante));
+        if (restante <= 0 && !this.timeUpTriggered) {
+          this.timeUpTriggered = true;
+          this.onTimeUp();
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  /** Tiempo agotado: cierra la sesión automáticamente y va a resultados. */
+  private onTimeUp(): void {
+    this.timerSub?.unsubscribe();
+    this.completing.set(true);
+    this.autoCompletarPorTiempo(0);
+  }
+
+  /**
+   * Cierra la sesión por tiempo. Si el servidor aún no considera vencido el
+   * deadline (desfase de red), reintenta una vez tras 2s antes de navegar.
+   */
+  private autoCompletarPorTiempo(intento: number): void {
+    this.assessmentSvc.completeAssessment(this.idEvaluacion).subscribe({
+      next: () => {
+        this.completing.set(false);
+        this.router.navigate(['/app/assessment', this.idEvaluacion, 'result'], {
+          queryParams: { timeUp: '1' },
+        });
+      },
+      error: () => {
+        if (intento < 1) {
+          // El servidor puede ir 1-2s atrás: esperar y reintentar una vez.
+          setTimeout(() => this.autoCompletarPorTiempo(intento + 1), 2000);
+        } else {
+          this.completing.set(false);
+          this.router.navigate(['/app/assessment', this.idEvaluacion, 'result'], {
+            queryParams: { timeUp: '1' },
+          });
+        }
+      },
     });
   }
 

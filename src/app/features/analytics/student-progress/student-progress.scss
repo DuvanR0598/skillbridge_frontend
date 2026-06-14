@@ -50,6 +50,17 @@
   flex-wrap: wrap;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.q-selector {
+  min-width: 220px;
+  margin-bottom: -1.25em; // compensa el espacio del subscript del mat-form-field
+}
+
 .page-title {
   font-size: 22px;
   font-weight: 700;
@@ -448,5 +459,30 @@
   &.status-pending {
     background: #fef3c7;
     color: #92400e;
+  }
+}
+
+.btn-view-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary, #2e7d52);
+  text-decoration: none;
+  padding: 5px 10px;
+  border: 1px solid var(--primary, #2e7d52);
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--primary-soft, #e8f4ee);
+  }
+
+  .vr-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
   }
 }

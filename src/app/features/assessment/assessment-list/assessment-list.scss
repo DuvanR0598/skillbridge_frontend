@@ -155,6 +155,13 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 500;
+
+  &:disabled,
+  &.mat-mdc-button-disabled {
+    background: rgba(26, 92, 56, 0.10) !important; // verde primario muy suave
+    color: rgba(0, 0, 0, 0.34) !important;
+    cursor: not-allowed;
+  }
 }
 
 .btn-post {
@@ -169,6 +176,14 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 500;
+
+  &:disabled,
+  &.mat-mdc-button-disabled {
+    border-color: rgba(0, 0, 0, 0.12) !important;
+    color: rgba(0, 0, 0, 0.34) !important;
+    background: transparent !important;
+    cursor: not-allowed;
+  }
 }
 
 .btn-spinner-sm {

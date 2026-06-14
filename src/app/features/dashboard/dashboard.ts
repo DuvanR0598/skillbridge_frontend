@@ -51,10 +51,7 @@ export class DashboardComponent implements OnInit {
   recentActivity = signal<RecentActivity[]>([]);
 
   ngOnInit(): void {
-    // TODO: obtener questionnaireId dinámicamente desde la API
-    const questionnaireId = 1;
-
-    this.dashSvc.loadDashboardData(questionnaireId).subscribe({
+    this.dashSvc.loadDashboardData().subscribe({
       next: ({ stats, skills }) => {
         this.stats.set(stats);
         this.skills.set(skills);

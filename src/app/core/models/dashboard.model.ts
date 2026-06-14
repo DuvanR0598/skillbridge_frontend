@@ -1,6 +1,7 @@
 export interface DashboardStats {
   activeQuestionnaires: number;
   completedAssessments: number;
+  pendingAssessments:   number;   // cuestionarios publicados sin evaluación completada
   currentLevel:         string | null;
   profileCompletion:    number;
 }

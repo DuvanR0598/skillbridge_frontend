@@ -178,46 +178,132 @@
           Resultados individuales por estudiante
         </mat-panel-title>
         <mat-panel-description>
-          {{ r.resumenEstudiantes.length }} registros
+          {{ studentGroups().length }} estudiantes
         </mat-panel-description>
       </mat-expansion-panel-header>
 
-      <div class="student-table">
-        <div class="st-head">
-          <div>ID</div>
-          <div>Skill</div>
-          <div>Dimensión</div>
-          <div>Fase</div>
-          <div>Puntaje</div>
-          <div>%</div>
-          <div>Nivel</div>
+      <!-- Maestro: lista de estudiantes -->
+      @if (!selectedStudent()) {
+        <div class="student-master">
+          @for (g of studentGroups(); track g.idEstudiante) {
+            <button class="student-master-row" (click)="selectStudent(g.idEstudiante)">
+              <div class="sm-avatar">{{ g.idEstudiante }}</div>
+              <div class="sm-info">
+                <span class="sm-name">{{ g.nombreCompleto || ('Estudiante #' + g.idEstudiante) }}</span>
+                <span class="sm-meta">ID {{ g.idEstudiante }}@if (g.email) { · {{ g.email }} }</span>
+              </div>
+              <mat-icon class="sm-arrow">chevron_right</mat-icon>
+            </button>
+          } @empty {
+            <div class="student-empty">Aún no hay resultados de estudiantes.</div>
+          }
         </div>
-        @for (row of r.resumenEstudiantes; track ($index)) {
-          <div class="st-row">
-            <div class="st-id">#{{ row.idEstudiante }}</div>
-            <div class="st-skill">
-              {{ row.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
-            </div>
-            <div class="st-dim">{{ row.dimensionNombre ?? '—' }}</div>
-            <div>
-              <span class="phase-chip"
-                    [class]="row.fase === 'PRE_TEST' ? 'chip-pre' : 'chip-post'">
-                {{ row.fase === 'PRE_TEST' ? 'PRE' : 'POST' }}
+      } @else {
+        <!-- Detalle: estudiante seleccionado + filtro de fase -->
+        <div class="student-detail">
+          <div class="sd-header">
+            <button class="sd-back" (click)="clearStudent()">
+              <mat-icon>arrow_back</mat-icon> Volver
+            </button>
+            <div class="sd-identity">
+              <span class="sd-name">
+                {{ selectedStudent()!.nombreCompleto || ('Estudiante #' + selectedStudent()!.idEstudiante) }}
+              </span>
+              <span class="sd-meta">
+                ID {{ selectedStudent()!.idEstudiante }}@if (selectedStudent()!.email) { · {{ selectedStudent()!.email }} }
               </span>
             </div>
-            <div>{{ row.totalPuntaje }}/{{ row.maxPosiblePuntaje }}</div>
-            <div>{{ row.puntajePorcentaje | number:'1.0-0' }}%</div>
-            <div>
-              <span class="level-pill"
-                    [class]="'pill-' + row.nivel.toLowerCase()">
-                {{ row.nivel === 'BAJO' ? 'Básico'
-                 : row.nivel === 'INTERMEDIO' ? 'Interm.'
-                 : row.nivel === 'AVANZADO' ? 'Avanzado' : '—' }}
-              </span>
-            </div>
+
+            <button class="sd-plan-btn" [class.active]="showPlan()" (click)="togglePlan()">
+              <mat-icon>lightbulb</mat-icon>
+              {{ showPlan() ? 'Ocultar plan' : 'Ver plan de mejoramiento' }}
+            </button>
           </div>
-        }
-      </div>
+
+          <!-- Plan de mejoramiento -->
+          @if (showPlan()) {
+            <div class="sd-plan">
+              @if (planLoading()) {
+                <div class="plan-loading"><mat-spinner diameter="22" /> Cargando plan…</div>
+              } @else if (planError()) {
+                <div class="plan-empty">{{ planError() }}</div>
+              } @else if (studentPlan().length === 0) {
+                <div class="plan-empty">
+                  Este estudiante aún no tiene un plan de mejoramiento asignado.
+                </div>
+              } @else {
+                <div class="plan-grid">
+                  @for (plan of studentPlan(); track plan.id) {
+                    <div class="plan-card">
+                      <div class="plan-card-head">
+                        <span class="plan-axis">{{ getAxisLabel(plan.planAxis) }}</span>
+                        <span class="plan-action">{{ getActionLabel(plan.tipoAccion) }}</span>
+                      </div>
+                      <p class="plan-title">{{ plan.titulo }}</p>
+                      <p class="plan-desc">{{ plan.descripcion }}</p>
+                      @if (plan.recursos.length > 0) {
+                        <div class="plan-res">
+                          @for (url of plan.recursos; track url) {
+                            <a [href]="url" target="_blank" rel="noopener" class="plan-res-link">
+                              <mat-icon>open_in_new</mat-icon> Recurso
+                            </a>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Filtro PRE / POST -->
+          <div class="phase-filter">
+            <button
+              class="pf-btn"
+              [class.active]="selectedPhase() === 'PRE_TEST'"
+              [disabled]="!studentHasPhase('PRE_TEST')"
+              (click)="selectedPhase.set('PRE_TEST')"
+            >PRE_TEST</button>
+            <button
+              class="pf-btn"
+              [class.active]="selectedPhase() === 'POST_TEST'"
+              [disabled]="!studentHasPhase('POST_TEST')"
+              (click)="selectedPhase.set('POST_TEST')"
+            >POST_TEST</button>
+          </div>
+
+          <div class="student-table">
+            <div class="st-head st-head--detail">
+              <div>Skill</div>
+              <div>Dimensión</div>
+              <div>Puntaje</div>
+              <div>%</div>
+              <div>Nivel</div>
+            </div>
+            @for (row of selectedRows(); track ($index)) {
+              <div class="st-row st-row--detail">
+                <div class="st-skill">
+                  {{ row.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                </div>
+                <div class="st-dim">{{ row.dimensionNombre ?? 'General' }}</div>
+                <div>{{ row.totalPuntaje }}/{{ row.maxPosiblePuntaje }}</div>
+                <div>{{ row.puntajePorcentaje | number:'1.0-0' }}%</div>
+                <div>
+                  <span class="level-pill"
+                        [class]="'pill-' + (row.nivel ? row.nivel.toLowerCase() : 'none')">
+                    {{ row.nivel === 'BAJO' ? 'Básico'
+                     : row.nivel === 'INTERMEDIO' ? 'Interm.'
+                     : row.nivel === 'AVANZADO' ? 'Avanzado' : '—' }}
+                  </span>
+                </div>
+              </div>
+            } @empty {
+              <div class="student-empty">Este estudiante no tiene resultados en {{ selectedPhase() }}.</div>
+            }
+          </div>
+        </div>
+      }
     </mat-expansion-panel>
 
   </div>

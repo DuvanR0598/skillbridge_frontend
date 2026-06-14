@@ -59,6 +59,18 @@
         </div>
       </div>
 
+      @if (isStudent()) {
+        <div class="stat-card">
+          <div class="stat-icon icon-amber">
+            <mat-icon>pending_actions</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats()!.pendingAssessments }}</span>
+            <span class="stat-label">Sin evaluar</span>
+          </div>
+        </div>
+      }
+
       <div class="stat-card">
         <div class="stat-icon icon-purple">
           <mat-icon>emoji_events</mat-icon>

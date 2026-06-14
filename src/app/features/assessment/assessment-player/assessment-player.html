@@ -5,16 +5,49 @@
   </div>
 }
 
-@if (!loading() && delivery()) {
+@if (!loading() && delivery() && showIntro()) {
+  <!-- Pantalla de instrucciones (antes de comenzar) -->
+  <div class="intro-shell">
+    <div class="intro-card">
+      <mat-icon class="intro-icon">menu_book</mat-icon>
+      <h2 class="intro-title">{{ delivery()!.nombre }}</h2>
+      <span class="intro-subtitle">Instrucciones</span>
+      <p class="intro-text">{{ delivery()!.instrucciones }}</p>
+      @if (delivery()!.tiempoLimiteMinutos) {
+        <div class="intro-timelimit">
+          <mat-icon>timer</mat-icon>
+          <span>
+            Tiempo límite: <strong>{{ delivery()!.tiempoLimiteMinutos }} minutos</strong>.
+            El conteo empieza al pulsar «Comenzar» y continúa aunque salgas.
+          </span>
+        </div>
+      }
+      <button mat-flat-button class="intro-start" (click)="beginQuestions()">
+        <mat-icon>play_arrow</mat-icon>
+        Comenzar
+      </button>
+    </div>
+  </div>
+}
+
+@if (!loading() && delivery() && !showIntro()) {
   <div class="player-shell">
     <!-- Header del player -->
     <div class="player-header">
       <div class="player-title-row">
         <h2 class="player-title">{{ delivery()!.nombre }}</h2>
-        <div class="player-timer">
-          <mat-icon class="timer-icon">schedule</mat-icon>
-          {{ elapsedFormatted }}
-        </div>
+        @if (hasTimeLimit()) {
+          <div class="player-timer player-countdown" [class.time-low]="timeRunningLow">
+            <mat-icon class="timer-icon">timer</mat-icon>
+            <span class="countdown-label">Tiempo restante:</span>
+            {{ remainingFormatted }}
+          </div>
+        } @else {
+          <div class="player-timer">
+            <mat-icon class="timer-icon">schedule</mat-icon>
+            {{ elapsedFormatted }}
+          </div>
+        }
       </div>
 
       <!-- Barra de progreso -->
@@ -40,17 +73,6 @@
         }
       </div>
     </div>
-
-    <!-- Instrucciones del cuestionario -->
-    @if (delivery()!.instrucciones) {
-      <div class="player-instructions" role="note">
-        <mat-icon class="instr-icon">info</mat-icon>
-        <div class="instr-body">
-          <span class="instr-title">Instrucciones</span>
-          <p class="instr-text">{{ delivery()!.instrucciones }}</p>
-        </div>
-      </div>
-    }
 
     <!-- Error -->
     @if (errorMsg()) {
@@ -121,6 +143,9 @@
             <div class="likert-wrap">
               <div class="likert-labels">
                 <span>{{ q.opciones[0]?.texto }}</span>
+                @if (likertMiddleLabel(q.opciones); as middle) {
+                  <span class="likert-label-mid">{{ middle }}</span>
+                }
                 <span>{{ q.opciones[q.opciones.length - 1]?.texto }}</span>
               </div>
               <div class="likert-options" role="radiogroup">

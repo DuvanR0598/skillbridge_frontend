@@ -108,7 +108,8 @@
               <button
                 mat-flat-button
                 class="btn-pre"
-                [disabled]="starting() === q.id"
+                [disabled]="starting() === q.id || preDisabled(q.id)"
+                [matTooltip]="preDisabled(q.id) ? 'Ya realizaste el PRE_TEST' : ''"
                 (click)="startAssessment(q.id, 'PRE_TEST')"
               >
                 @if (starting() === q.id) {
@@ -122,7 +123,8 @@
               <button
                 mat-stroked-button
                 class="btn-post"
-                [disabled]="starting() === q.id"
+                [disabled]="starting() === q.id || !postEnabled(q.id)"
+                [matTooltip]="!postEnabled(q.id) ? 'Disponible al completar el PRE_TEST' : ''"
                 (click)="startAssessment(q.id, 'POST_TEST')"
               >
                 @if (starting() === q.id) {

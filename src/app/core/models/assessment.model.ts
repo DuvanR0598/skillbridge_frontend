@@ -12,8 +12,16 @@ export interface CuestionarioEntregaResponse {
   instrucciones?:         string;
   ordenAleatorio:         boolean;
   totalPreguntas:         number;
+  tiempoLimiteMinutos?:   number | null; // null = sin límite
   preguntas:              PreguntaEntregaResponse[];
   preguntasCondicionales: PreguntaEntregaResponse[];
+}
+
+// Estado del tiempo límite (respuesta de iniciar-conteo)
+export interface TiempoConteoResponse {
+  tiempoLimiteMinutos: number | null;
+  segundosRestantes:   number | null; // null = sin límite
+  tiempoAgotado:       boolean;
 }
 
 export interface PreguntaEntregaResponse {
@@ -92,8 +100,10 @@ export interface InformeEvaluacionResponse {
 export interface PuntuacionResultadoResponse {
   id:                          number;
   skill:                       string;
-  // El estudiante no ve la dimensión al resolver; el backend ya no la envía.
-  dimension?:                  string | null;
+  // Dimensión evaluada (null = resultado general del cuestionario).
+  // No se ve al resolver, pero sí en los resultados finales.
+  idDimension?:                number | null;
+  dimensionNombre?:            string | null;
   totalPuntaje:                number;
   maxPuntuacionPosible:        number;
   porcentajePuntuacion:        number;

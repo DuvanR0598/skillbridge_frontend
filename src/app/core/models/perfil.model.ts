@@ -20,8 +20,6 @@ export interface CompleteProfileRequest {
   biography?: string;
   engineeringProgram?: EngineeringProgram;
   academicSemester?: number;
-  studentCode?: string;
-  academicYear?: number;
 }
 
 export interface UsuarioPerfilResponse {

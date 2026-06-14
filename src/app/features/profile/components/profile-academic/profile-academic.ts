@@ -43,9 +43,6 @@ export class ProfileAcademic implements OnChanges {
   form: FormGroup = this.fb.group({
     engineeringProgram: [null, Validators.required],
     academicSemester: [null, [Validators.required, Validators.min(1), Validators.max(10)]],
-    studentCode: ['', Validators.maxLength(30)],
-    academicYear: [null, [Validators.min(2000), Validators.max(2100)]],
-    institution: ['Universidad de Antioquia', Validators.maxLength(200)],
   });
 
   ngOnChanges(): void {
@@ -69,8 +66,6 @@ export class ProfileAcademic implements OnChanges {
       .updateProfile({
         engineeringProgram: v.engineeringProgram,
         academicSemester: v.academicSemester,
-        studentCode: v.studentCode || undefined,
-        academicYear: v.academicYear || undefined,
       })
       .subscribe({
         next: (res) => {

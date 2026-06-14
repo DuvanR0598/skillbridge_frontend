@@ -46,6 +46,8 @@ export interface DistribucionNivelesResponse {
 
 export interface NivelEstudianteResumenResponse {
   idEstudiante:      number;
+  nombreCompleto?:   string | null;
+  email?:            string | null;
   skill:             string;
   idDimension?:      number | null;
   dimensionNombre?:  string | null;
@@ -67,6 +69,8 @@ export interface CompletionStats {
 
 export interface EstudianteQueNecesitaApoyoResponse {
   idEstudiante:            number;
+  nombreCompleto?:         string | null;
+  email?:                  string | null;
   idPreTestEvaluacion:     number;
   dimensionBaja: {
     skill:          string;

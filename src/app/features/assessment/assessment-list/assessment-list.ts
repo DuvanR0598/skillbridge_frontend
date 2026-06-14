@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AssessmentService } from '../assessment.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -12,6 +13,11 @@ import { forkJoin, of, map, catchError } from 'rxjs';
 interface ActiveSession {
   assessmentId: number;
   phase: string;
+}
+
+interface PhaseState {
+  hasPreAttempt: boolean; // existe al menos un intento PRE_TEST (cualquier estado)
+  preCompleted: boolean; // existe un PRE_TEST COMPLETADO
 }
 
 @Component({
@@ -23,6 +29,7 @@ interface ActiveSession {
     MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
+    MatTooltipModule,
   ],
   templateUrl: './assessment-list.html',
   styleUrl: './assessment-list.scss',
@@ -40,6 +47,9 @@ export class AssessmentList implements OnInit {
 
   // Sesiones EN_PROGRESO del estudiante, indexadas por idCuestionario
   activeSessions = signal<Map<number, ActiveSession>>(new Map());
+
+  // Estado de fases (PRE/POST) del estudiante por idCuestionario
+  phaseStates = signal<Map<number, PhaseState>>(new Map());
 
   ngOnInit(): void {
     this.assessmentSvc.getPublishedQuestionnaires().subscribe({
@@ -66,18 +76,36 @@ export class AssessmentList implements OnInit {
 
     forkJoin(calls).subscribe(results => {
       const map = new Map<number, ActiveSession>();
+      const phases = new Map<number, PhaseState>();
       for (const r of results) {
         const active = r.sessions.find(s => s.estado === 'EN_PROGRESO');
         if (active) {
           map.set(r.qId, { assessmentId: active.id, phase: active.evaluacionFase });
         }
+        phases.set(r.qId, {
+          hasPreAttempt: r.sessions.some(s => s.evaluacionFase === 'PRE_TEST'),
+          preCompleted: r.sessions.some(
+            s => s.evaluacionFase === 'PRE_TEST' && s.estado === 'COMPLETADO',
+          ),
+        });
       }
       this.activeSessions.set(map);
+      this.phaseStates.set(phases);
     });
   }
 
   activeSession(questionnaireId: number): ActiveSession | null {
     return this.activeSessions().get(questionnaireId) ?? null;
+  }
+
+  /** El PRE_TEST se deshabilita una vez el estudiante ya lo intentó. */
+  preDisabled(questionnaireId: number): boolean {
+    return this.phaseStates().get(questionnaireId)?.hasPreAttempt ?? false;
+  }
+
+  /** El POST_TEST solo se habilita cuando el PRE_TEST está COMPLETADO. */
+  postEnabled(questionnaireId: number): boolean {
+    return this.phaseStates().get(questionnaireId)?.preCompleted ?? false;
   }
 
   /** Retoma la sesión en progreso navegando al player con su assessmentId. */

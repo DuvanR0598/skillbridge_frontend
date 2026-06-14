@@ -15,21 +15,7 @@ export class DimensionAnalysisTable {
   analyses = input<AnalisisDimensionalResponse[]>([]);
 
   getSkillLabel(skill: string): string {
-    return skill === 'CRITICAL_THINKING' ? 'PC' : 'AD';
-  }
-
-  getDimLabel(dim: string | null): string {
-    const m: Record<string, string> = {
-      INTERPRETACION: 'Interpretación',
-      INFERENCIA: 'Inferencia',
-      ANALISIS: 'Análisis',
-      EVALUACION: 'Evaluación',
-      EXPLICACION: 'Explicación',
-      AUTORREGULACION: 'Autorregulación',
-      GESTION_DEL_CAMBIO: 'G. Cambio',
-      GESTION_DE_INCERTIDUMBRE: 'Incertidumbre',
-    };
-    return dim ? (m[dim] ?? dim) : 'Global';
+    return skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD';
   }
 
   getDeltaClass(delta: number): string {

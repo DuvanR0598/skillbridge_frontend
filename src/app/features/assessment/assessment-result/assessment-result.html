@@ -49,8 +49,10 @@
               <span class="result-skill">
                 {{ getSkillLabel(result.skill) }}
               </span>
-              @if (result.dimension) {
-                <span class="result-dimension">{{ result.dimension }}</span>
+              @if (result.dimensionNombre) {
+                <span class="result-dimension">{{ result.dimensionNombre }}</span>
+              } @else {
+                <span class="result-dimension result-dimension--general">General</span>
               }
             </div>
             <span

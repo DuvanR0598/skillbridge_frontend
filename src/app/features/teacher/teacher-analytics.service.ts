@@ -9,6 +9,7 @@ import {
   QuestionnaireSummary,
   EstudianteQueNecesitaApoyoResponse,
 } from '../../core/models/teacher-analytics.model';
+import { InformeProgresoEstudianteResponse } from '../../core/models/analytics.model';
 
 @Injectable({ providedIn: 'root' })
 export class TeacherAnalyticsService {
@@ -41,5 +42,15 @@ export class TeacherAnalyticsService {
 
   getPublishedQuestionnaires(): Observable<ApiResponse<any[]>> {
     return this.http.get<ApiResponse<any[]>>(`${this.API}/cuestionario/listar_cuestionarios_activos`);
+  }
+
+  /** Progreso de un estudiante (incluye su plan de mejoramiento actual). */
+  getStudentProgress(
+    idEstudiante: number,
+    idCuestionario: number,
+  ): Observable<ApiResponse<InformeProgresoEstudianteResponse>> {
+    return this.http.get<ApiResponse<InformeProgresoEstudianteResponse>>(
+      `${this.API}/analitica/estudiante/${idEstudiante}/cuestionario/${idCuestionario}/progreso`,
+    );
   }
 }

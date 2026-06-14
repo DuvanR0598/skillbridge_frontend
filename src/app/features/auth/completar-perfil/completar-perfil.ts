@@ -74,21 +74,13 @@ export class CompletarPerfil implements OnInit{
   // ── Paso 1: datos personales ──────────────────────────────
   personalForm: FormGroup = this.fb.group({
     dateOfBirth: [null, Validators.required],
-    gender:      [null, Validators.required],
-    phoneNumber: ['', [
-      Validators.pattern(/^\+?[\d\s\-()]{7,20}$/)
-    ]]
+    gender:      [null, Validators.required]
   });
 
   // ── Paso 2: datos académicos ──────────────────────────────
   academicForm: FormGroup = this.fb.group({
     engineeringProgram: [null, Validators.required],
-    academicSemester:   [null, Validators.required],
-    studentCode:        [''],
-    academicYear:       [null, [
-      Validators.min(2000),
-      Validators.max(2100)
-    ]],
+    academicSemester:   [null, Validators.required]
   });
 
   // ── Paso 3: sobre mí (opcional) ───────────────────────────
@@ -128,17 +120,15 @@ export class CompletarPerfil implements OnInit{
   // Calcular porcentaje de completitud en tiempo real
   get completionPct(): number {
     let filled = 0;
-    const total = 7;
+    const total = 5;
     const pv = this.personalForm.value;
     const av = this.academicForm.value;
     const bv = this.bioForm.value;
 
     if (pv.dateOfBirth)        filled++;
     if (pv.gender)             filled++;
-    if (pv.phoneNumber)        filled++;
     if (av.engineeringProgram) filled++;
     if (av.academicSemester)   filled++;
-    if (av.studentCode)        filled++;
     if (bv.biography)          filled++;
 
     return Math.round((filled / total) * 100);
@@ -162,8 +152,6 @@ export class CompletarPerfil implements OnInit{
       gender:             pv.gender        || undefined,
       engineeringProgram: av.engineeringProgram,
       academicSemester:   av.academicSemester,
-      studentCode:        av.studentCode   || undefined,
-      academicYear:       av.academicYear  || undefined,
       biography:          bv.biography     || undefined,
     };
 

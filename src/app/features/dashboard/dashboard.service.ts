@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin, map, catchError, of } from 'rxjs';
+import { Observable, forkJoin, map, catchError, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import { DashboardStats, RecentActivity, SkillSummary } from '../../core/models/dashboard.model';
@@ -15,57 +15,129 @@ export class DashboardService {
 
   /**
    * Carga las estadísticas del dashboard según el rol.
-   * Estudiante → su propio progreso.
-   * Docente/Admin → resumen del cuestionario más reciente.
+   * Estudiante → datos reales derivados de sus cuestionarios publicados y
+   * sus evaluaciones; el nivel y las barras vienen del progreso del último
+   * cuestionario que el estudiante completó.
    */
-  loadDashboardData(idCuestionario?: number): Observable<{
+  loadDashboardData(): Observable<{
     stats: DashboardStats;
     skills: SkillSummary[];
   }> {
     const idEstudiante = this.authSvc.currentUser()?.id;
     const isStudent = this.authSvc.isStudent();
 
-    if (isStudent && idEstudiante && idCuestionario) {
-      return forkJoin({
-        progress: this.http
-          .get<
-            ApiResponse<any>
-          >(`${this.API}/analitica/estudiante/${idEstudiante}/cuestionario/${idCuestionario}/progreso`)
-          .pipe(catchError(() => of({ data: null }))),
-        status: this.http
-          .get<ApiResponse<any>>(`${this.API}/usuarios/me/perfil/estado`)
-          .pipe(catchError(() => of({ data: { completionPercentage: 0 } }))),
-      }).pipe(
-        map(({ progress, status }) => {
-          const p = progress?.data;
-          return {
-            stats: { 
-              activeQuestionnaires: 1,
-              completedAssessments: p ? (p.postTestAssessmentId ? 2 : 1) : 0,
-              currentLevel:
-                p?.skillProgress?.[0]?.postLevel ?? p?.skillProgress?.[0]?.preLevel ?? null,
-              profileCompletion: status?.data?.completionPercentage ?? 0,
-            } as DashboardStats,
-            skills: this.mapSkillProgress(p?.skillProgress ?? []),
-          };
-        }),
-      );
+    // Coordinador/Admin: el dashboard no muestra estadísticas de estudiante.
+    if (!isStudent || !idEstudiante) {
+      return of({
+        stats: {
+          activeQuestionnaires: 0,
+          completedAssessments: 0,
+          pendingAssessments: 0,
+          currentLevel: null,
+          profileCompletion: 100,
+        },
+        skills: [],
+      });
     }
 
-    // Default para coordinador/admin o sin cuestionario
-    return of({
-      stats: {
-        activeQuestionnaires: 0,
-        completedAssessments: 0,
-        currentLevel: null,
-        profileCompletion: 100,
-      },
-      skills: [],
-    });
-  }
+    return forkJoin({
+      published: this.http
+        .get<ApiResponse<any[]>>(`${this.API}/cuestionario/listar_cuestionarios_activos`)
+        .pipe(
+          map((r) => (r.data ?? []).filter((q) => q.estadoCuestionario === 'PUBLICADO')),
+          catchError(() => of([] as any[])),
+        ),
+      status: this.http
+        .get<ApiResponse<any>>(`${this.API}/usuarios/me/perfil/estado`)
+        .pipe(catchError(() => of({ data: { porcentajeCompleto: 0 } }))),
+    }).pipe(
+      switchMap(({ published, status }) => {
+        const profileCompletion = status?.data?.porcentajeCompleto ?? 0;
 
-  getActiveQuestionnaires(): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(`${this.API}/cuestionario?status=PUBLICADO`);
+        if (published.length === 0) {
+          return of({
+            stats: {
+              activeQuestionnaires: 0,
+              completedAssessments: 0,
+              pendingAssessments: 0,
+              currentLevel: null,
+              profileCompletion,
+            } as DashboardStats,
+            skills: [] as SkillSummary[],
+          });
+        }
+
+        // Historial del estudiante por cada cuestionario publicado.
+        const histories = published.map((q) =>
+          this.http
+            .get<ApiResponse<any[]>>(
+              `${this.API}/evaluacion/estudiante/${idEstudiante}/cuestionario/${q.idCuestionario}`,
+            )
+            .pipe(
+              map((r) => ({ idCuestionario: q.idCuestionario, sessions: r.data ?? [] })),
+              catchError(() => of({ idCuestionario: q.idCuestionario, sessions: [] as any[] })),
+            ),
+        );
+
+        return forkJoin(histories).pipe(
+          switchMap((results) => {
+            const completedAssessments = results.reduce(
+              (acc, r) => acc + r.sessions.filter((s) => s.estado === 'COMPLETADO').length,
+              0,
+            );
+            const pendingAssessments = results.filter(
+              (r) => !r.sessions.some((s) => s.estado === 'COMPLETADO'),
+            ).length;
+
+            // Cuestionario con la evaluación COMPLETADA más reciente → fuente del nivel/barras.
+            let targetId: number | null = null;
+            let latest = -Infinity;
+            for (const r of results) {
+              for (const s of r.sessions) {
+                if (s.estado !== 'COMPLETADO') continue;
+                const t = s.finishedAt ? new Date(s.finishedAt).getTime() : 0;
+                if (t >= latest) {
+                  latest = t;
+                  targetId = r.idCuestionario;
+                }
+              }
+            }
+
+            const baseStats: DashboardStats = {
+              activeQuestionnaires: published.length,
+              completedAssessments,
+              pendingAssessments,
+              currentLevel: null,
+              profileCompletion,
+            };
+
+            if (targetId === null) {
+              return of({ stats: baseStats, skills: [] as SkillSummary[] });
+            }
+
+            return this.http
+              .get<ApiResponse<any>>(
+                `${this.API}/analitica/estudiante/${idEstudiante}/cuestionario/${targetId}/progreso`,
+              )
+              .pipe(
+                map((res) => {
+                  const skillProgreso = res?.data?.skillProgreso ?? [];
+                  const skills = this.mapSkillProgress(skillProgreso);
+                  return {
+                    stats: {
+                      ...baseStats,
+                      currentLevel:
+                        skillProgreso[0]?.postNivel ?? skillProgreso[0]?.preNivel ?? null,
+                    },
+                    skills,
+                  };
+                }),
+                catchError(() => of({ stats: baseStats, skills: [] as SkillSummary[] })),
+              );
+          }),
+        );
+      }),
+    );
   }
 
   /**
@@ -84,11 +156,11 @@ export class DashboardService {
   private mapSkillProgress(progress: any[]): SkillSummary[] {
     return progress.map((p) => ({
       skill: p.skill,
-      dimension: p.dimensionNombre ?? 'GLOBAL',
-      prePercentage: p.prePercentage ?? null,
-      postPercentage: p.postPercentage ?? null,
-      level: p.postLevel ?? p.preLevel ?? null,
-      delta: p.percentageDelta ?? null,
+      dimension: p.dimensionNombre ?? 'Global',
+      prePercentage: p.prePorcentaje ?? null,
+      postPercentage: p.postPorcentaje ?? null,
+      level: p.postNivel ?? p.preNivel ?? null,
+      delta: p.porcentajeDelta ?? null,
     }));
   }
 }

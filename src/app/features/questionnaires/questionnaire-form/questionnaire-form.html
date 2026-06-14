@@ -75,7 +75,7 @@
       <div class="date-row mt-2">
         <mat-form-field appearance="outline">
           <mat-label>Fecha de inicio</mat-label>
-          <input matInput [min]="minDate" [matDatepicker]="startPicker" formControlName="appPeriodStart" />
+          <input matInput [min]="isEdit() ? null : minDate" [matDatepicker]="startPicker" formControlName="appPeriodStart" />
           <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
           <mat-datepicker #startPicker />
         </mat-form-field>
@@ -89,7 +89,7 @@
       <div class="date-row mt-2">
         <mat-form-field appearance="outline">
           <mat-label>Fecha de fin</mat-label>
-          <input matInput [min]="minDate" [matDatepicker]="endPicker" formControlName="appPeriodEnd" />
+          <input matInput [min]="isEdit() ? null : minDate" [matDatepicker]="endPicker" formControlName="appPeriodEnd" />
           <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
           <mat-datepicker #endPicker />
         </mat-form-field>
@@ -107,14 +107,20 @@
         </div>
       }
 
-      <!-- Población objetivo -->
+      <!-- Tiempo límite (opcional) -->
       <mat-form-field appearance="outline" class="mt-3">
-        <mat-label>Población objetivo</mat-label>
+        <mat-label>Tiempo límite (minutos)</mat-label>
         <input
           matInput
-          formControlName="targetPopulation"
-          placeholder="Estudiantes de ingeniería"
+          type="number"
+          min="1"
+          formControlName="timeLimitMinutes"
+          placeholder="Sin límite"
         />
+        <mat-hint>Déjalo vacío para que no tenga límite de tiempo.</mat-hint>
+        @if (form.get('timeLimitMinutes')?.hasError('min')) {
+          <mat-error>El tiempo debe ser de al menos 1 minuto.</mat-error>
+        }
       </mat-form-field>
 
       <!-- Orden aleatorio -->

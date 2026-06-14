@@ -1,5 +1,5 @@
 // group-report/group-report.component.ts
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,7 +8,19 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { forkJoin, catchError, of } from 'rxjs';
 import { TeacherAnalyticsService } from '../teacher-analytics.service';
-import { ReporteGrupoResponse, EstudianteQueNecesitaApoyoResponse } from '../../../core/models/teacher-analytics.model';
+import {
+  ReporteGrupoResponse,
+  EstudianteQueNecesitaApoyoResponse,
+  NivelEstudianteResumenResponse,
+} from '../../../core/models/teacher-analytics.model';
+import { PlanActual } from '../../../core/models/analytics.model';
+
+interface StudentGroup {
+  idEstudiante: number;
+  nombreCompleto: string | null;
+  email: string | null;
+  rows: NivelEstudianteResumenResponse[];
+}
 import { LevelDistributionChart } from '../components/level-distribution-chart/level-distribution-chart';
 import { DimensionAnalysisTable } from '../components/dimension-analysis-table/dimension-analysis-table';
 import { StudentsSupportList} from '../components/students-support-list/students-support-list';
@@ -39,6 +51,116 @@ export class GroupReportComponent implements OnInit {
   needingSupport = signal<EstudianteQueNecesitaApoyoResponse[]>([]);
   errorMsg = signal<string | null>(null);
   questionnaireId = 0;
+
+  // Maestro-detalle de resultados individuales
+  selectedStudentId = signal<number | null>(null);
+  selectedPhase = signal<'PRE_TEST' | 'POST_TEST'>('PRE_TEST');
+
+  /** Estudiantes que realizaron el cuestionario, agrupando sus resultados. */
+  studentGroups = computed<StudentGroup[]>(() => {
+    const rows = this.report()?.resumenEstudiantes ?? [];
+    const map = new Map<number, StudentGroup>();
+    for (const r of rows) {
+      let g = map.get(r.idEstudiante);
+      if (!g) {
+        g = {
+          idEstudiante: r.idEstudiante,
+          nombreCompleto: r.nombreCompleto ?? null,
+          email: r.email ?? null,
+          rows: [],
+        };
+        map.set(r.idEstudiante, g);
+      }
+      g.rows.push(r);
+    }
+    return [...map.values()];
+  });
+
+  selectedStudent = computed<StudentGroup | null>(() =>
+    this.studentGroups().find((g) => g.idEstudiante === this.selectedStudentId()) ?? null,
+  );
+
+  /** Filas del estudiante seleccionado para la fase elegida. */
+  selectedRows = computed<NivelEstudianteResumenResponse[]>(() =>
+    (this.selectedStudent()?.rows ?? []).filter((r) => r.fase === this.selectedPhase()),
+  );
+
+  // Plan de mejoramiento del estudiante seleccionado
+  showPlan = signal(false);
+  planLoading = signal(false);
+  planError = signal<string | null>(null);
+  studentPlan = signal<PlanActual[]>([]);
+
+  selectStudent(id: number): void {
+    this.selectedStudentId.set(id);
+    // Por defecto mostrar PRE_TEST si existe, si no POST_TEST.
+    const fases = (this.selectedStudent()?.rows ?? []).map((r) => r.fase);
+    this.selectedPhase.set(fases.includes('PRE_TEST') ? 'PRE_TEST' : 'POST_TEST');
+    // Reset del panel de plan al cambiar de estudiante.
+    this.showPlan.set(false);
+    this.studentPlan.set([]);
+    this.planError.set(null);
+  }
+
+  clearStudent(): void {
+    this.selectedStudentId.set(null);
+    this.showPlan.set(false);
+  }
+
+  /** Carga y muestra el plan de mejoramiento del estudiante seleccionado. */
+  togglePlan(): void {
+    const id = this.selectedStudentId();
+    if (id == null) return;
+
+    // Si ya está visible, ocultar.
+    if (this.showPlan()) {
+      this.showPlan.set(false);
+      return;
+    }
+
+    this.showPlan.set(true);
+    // Cargar solo la primera vez.
+    if (this.studentPlan().length > 0 || this.planLoading()) return;
+
+    this.planLoading.set(true);
+    this.planError.set(null);
+    this.teacherSvc.getStudentProgress(id, this.questionnaireId).subscribe({
+      next: (res) => {
+        // El backend puede repetir el mismo plan (varias dimensiones comparten
+        // la misma entrada de matriz). Deduplicar por id.
+        const planes = res.data?.planActual ?? [];
+        const unicos = Array.from(new Map(planes.map((p) => [p.id, p])).values());
+        this.studentPlan.set(unicos);
+        this.planLoading.set(false);
+      },
+      error: () => {
+        this.planError.set('No se pudo cargar el plan de mejoramiento.');
+        this.planLoading.set(false);
+      },
+    });
+  }
+
+  getAxisLabel(axis: string): string {
+    const m: Record<string, string> = {
+      ACADEMICO: 'Académico',
+      EXPERIMENTAL: 'Experiencial',
+      PERSONAL: 'Personal',
+    };
+    return m[axis] ?? axis;
+  }
+
+  getActionLabel(tipo: string): string {
+    const m: Record<string, string> = {
+      LEER: 'Leer',
+      VER: 'Ver',
+      PRACTICAR: 'Practicar',
+    };
+    return m[tipo?.trim()] ?? tipo;
+  }
+
+  studentHasPhase(phase: 'PRE_TEST' | 'POST_TEST'): boolean {
+    return (this.selectedStudent()?.rows ?? []).some((r) => r.fase === phase);
+  }
 
   ngOnInit(): void {
     this.questionnaireId = Number(this.route.snapshot.paramMap.get('questionnaireId'));

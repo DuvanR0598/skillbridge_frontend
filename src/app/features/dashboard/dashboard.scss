@@ -47,7 +47,8 @@
 // ── Grid de estadísticas ──────────────────────────────────────
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  // auto-fit para adaptarse a 4 (coordinador/admin) o 5 (estudiante) tarjetas
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 

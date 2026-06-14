@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { SkillRadarChartComponent } from '../components/skill-radar-chart/skill-radar-chart';
 import { ProgressComparison } from '../components/progress-comparison/progress-comparison';
@@ -16,7 +18,7 @@ import {
   InformeProgresoEstudianteResponse,
 } from '../../../core/models/analytics.model';
 import { AuthService } from '../../../core/auth/auth.service';
-import { AnalyticsService } from '../analytics.service';
+import { AnalyticsService, EvaluatedQuestionnaire } from '../analytics.service';
 
 @Component({
   selector: 'app-student-progress',
@@ -29,6 +31,8 @@ import { AnalyticsService } from '../analytics.service';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    MatFormFieldModule,
+    MatTooltipModule,
     SkillRadarChartComponent,
     ProgressComparison,
     EscalationCard,
@@ -46,14 +50,20 @@ export class StudentProgress implements OnInit {
   escalation = signal<EscalamientoResponse | null>(null);
   history = signal<HistorialIntentosResponse[]>([]);
 
-  // TODO: obtener cuestionarios del estudiante dinámicamente
-  // Por ahora usamos id=1 como placeholder
-  idCuestionario = 1;
+  // Cuestionarios que el estudiante ha evaluado + el seleccionado.
+  questionnaires = signal<EvaluatedQuestionnaire[]>([]);
+  selectedId = signal<number | null>(null);
 
   usuarioActual = this.authSvc.currentUser;
 
   hasPreTest = computed(() => !!this.report()?.idPreTestEvaluacion);
   hasPostTest = computed(() => !!this.report()?.idPostTestEvaluacion);
+
+  /** Plan de mejoramiento sin duplicados (varias dimensiones comparten plan). */
+  planActual = computed(() => {
+    const planes = this.report()?.planActual ?? [];
+    return Array.from(new Map(planes.map((p) => [p.id, p])).values());
+  });
 
   overallImprovement = computed(() => {
     const r = this.report();
@@ -77,15 +87,48 @@ export class StudentProgress implements OnInit {
       return;
     }
 
+    this.analyticsSvc.getEvaluatedQuestionnaires(userId).subscribe({
+      next: (list) => {
+        this.questionnaires.set(list);
+        if (list.length === 0) {
+          // Sin evaluaciones → estado vacío
+          this.errorMsg.set('Aún no has completado ninguna evaluación.');
+          this.loading.set(false);
+          return;
+        }
+        this.selectedId.set(list[0].idCuestionario);
+        this.loadProgress(list[0].idCuestionario);
+      },
+      error: () => {
+        this.errorMsg.set('No se pudo cargar tu progreso.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  /** Cambia el cuestionario seleccionado y recarga su progreso. */
+  onSelectQuestionnaire(idCuestionario: number): void {
+    if (idCuestionario === this.selectedId()) return;
+    this.selectedId.set(idCuestionario);
+    this.loadProgress(idCuestionario);
+  }
+
+  private loadProgress(idCuestionario: number): void {
+    const userId = this.usuarioActual()?.id;
+    if (!userId) return;
+
+    this.loading.set(true);
+    this.errorMsg.set(null);
+
     forkJoin({
       progress: this.analyticsSvc
-        .getStudentProgress(userId, this.idCuestionario)
+        .getStudentProgress(userId, idCuestionario)
         .pipe(catchError(() => of({ data: null }))),
       escalation: this.analyticsSvc
-        .getEscalation(userId, this.idCuestionario)
+        .getEscalation(userId, idCuestionario)
         .pipe(catchError(() => of({ data: null }))),
       history: this.analyticsSvc
-        .getAttemptHistory(userId, this.idCuestionario)
+        .getAttemptHistory(userId, idCuestionario)
         .pipe(catchError(() => of({ data: [] }))),
     }).subscribe({
       next: ({ progress, escalation, history }) => {

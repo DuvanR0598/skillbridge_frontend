@@ -9,7 +9,8 @@ import {
   EvaluacionFase,
   CuestionarioEntregaResponse,
   EvaluacionEstudianteResponse,
-  EnviarRespuestaRequest
+  EnviarRespuestaRequest,
+  TiempoConteoResponse
 } from '../../core/models/assessment.model';
 
 @Injectable({ providedIn: 'root' })
@@ -61,6 +62,17 @@ export class AssessmentService {
       `${this.API}/evaluacion/cuestionario/${idCuestionario}/iniciar`,
       {},
       { params }
+    );
+  }
+
+  // Inicia (o consulta) el conteo del tiempo límite. Idempotente: fija el ancla
+  // la primera vez y devuelve los segundos restantes calculados en el servidor.
+  iniciarConteo(
+    idEvaluacion: number
+  ): Observable<ApiResponse<TiempoConteoResponse>> {
+    return this.http.post<ApiResponse<TiempoConteoResponse>>(
+      `${this.API}/evaluacion/${idEvaluacion}/iniciar-conteo`,
+      {}
     );
   }
 

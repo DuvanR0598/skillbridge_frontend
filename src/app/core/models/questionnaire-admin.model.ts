@@ -23,11 +23,8 @@ export interface CuestionarioResponse {
   fechaInicio?:       string;
   fechaFin?:          string;
   disponible?:        boolean;  // PUBLICADO y dentro de la ventana
-  // ⚠️ Aún no existen en el backend (se ignoran); opcionales hasta implementarlos
-  appPeriodStart?:    string;
-  appPeriodEnd?:      string;
-  responsibleUserId?: number;
-  targetPopulation?:  string;
+  // Tiempo límite para responder, en minutos. null/undefined = sin límite.
+  tiempoLimiteMinutos?: number | null;
 }
 
 export interface CuestionarioRequest {
@@ -37,6 +34,7 @@ export interface CuestionarioRequest {
   fechaInicio?:    string;  // ISO LocalDateTime (sin zona)
   fechaFin?:       string;
   ordenAleatorio:  boolean;
+  tiempoLimiteMinutos?: number | null;
 }
 
 export interface ActualizarCuestionarioRequest {
@@ -46,6 +44,7 @@ export interface ActualizarCuestionarioRequest {
   fechaInicio?:    string;
   fechaFin?:       string;
   ordenAleatorio?: boolean;
+  tiempoLimiteMinutos?: number | null;
 }
 
 export interface PreguntaResponse {

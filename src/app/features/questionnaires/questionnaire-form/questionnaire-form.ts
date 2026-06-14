@@ -51,7 +51,7 @@ export class QuestionnaireForm implements OnInit {
     startTime:      [''],
     appPeriodEnd:   [null],
     endTime:        [''],
-    targetPopulation: ['', Validators.maxLength(300)],
+    timeLimitMinutes: [null, [Validators.min(1)]],
     randomOrder: [false]
   });
 
@@ -127,7 +127,7 @@ export class QuestionnaireForm implements OnInit {
           startTime:        hhmm(start),
           appPeriodEnd:     end,
           endTime:          hhmm(end),
-          targetPopulation: q.targetPopulation ?? '',
+          timeLimitMinutes: q.tiempoLimiteMinutos ?? null,
           randomOrder:      q.ordenAleatorio
         });
         if (!q.editable) this.form.disable();
@@ -153,6 +153,7 @@ export class QuestionnaireForm implements OnInit {
 
     const fechaInicio = this.toLocalDateTime(v.appPeriodStart, v.startTime);
     const fechaFin    = this.toLocalDateTime(v.appPeriodEnd, v.endTime);
+    const tiempoLimiteMinutos = v.timeLimitMinutes ? Number(v.timeLimitMinutes) : null;
 
     if (this.isEdit()) {
       this.svc.updateSettings(this.qId()!, {
@@ -161,7 +162,8 @@ export class QuestionnaireForm implements OnInit {
         instrucciones:     v.instructions || undefined,
         fechaInicio,
         fechaFin,
-        ordenAleatorio:    v.randomOrder
+        ordenAleatorio:    v.randomOrder,
+        tiempoLimiteMinutos
       }).subscribe({
         next: () => {
           this.saving.set(false);
@@ -179,7 +181,8 @@ export class QuestionnaireForm implements OnInit {
         instrucciones:     v.instructions || undefined,
         fechaInicio,
         fechaFin,
-        ordenAleatorio:    v.randomOrder
+        ordenAleatorio:    v.randomOrder,
+        tiempoLimiteMinutos
       }).subscribe({
         next: res => {
           this.saving.set(false);

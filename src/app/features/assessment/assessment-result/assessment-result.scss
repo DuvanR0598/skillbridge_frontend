@@ -145,6 +145,15 @@
   color: var(--text-secondary);
 }
 
+.result-dimension--general {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--primary, #2e7d52);
+  background: var(--primary-soft, #e8f4ee);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
 .level-badge {
   font-size: 12px;
   font-weight: 600;
