@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
@@ -14,6 +14,7 @@ import {
   QuestionnaireQuestion,
   QuestionCondition,
   CondicionPreguntaRequest,
+  PageResponse,
 } from '../../core/models/questionnaire-admin.model';
 
 @Injectable({ providedIn: 'root' })
@@ -105,8 +106,51 @@ export class QuestionnairesService {
     return this.http.get<ApiResponse<PreguntaResponse[]>>(`${this.API}/preguntas/listar`);
   }
 
+  /** Banco de preguntas paginado (page es 0-based); filtro opcional por tipo. */
+  getQuestionsPaged(
+    page: number,
+    size: number,
+    tipoPregunta?: string | null,
+  ): Observable<ApiResponse<PageResponse<PreguntaResponse>>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (tipoPregunta) {
+      params = params.set('tipoPregunta', tipoPregunta);
+    }
+    return this.http.get<ApiResponse<PageResponse<PreguntaResponse>>>(
+      `${this.API}/preguntas/paginado`,
+      { params },
+    );
+  }
+
   createQuestion(req: PreguntaRequest): Observable<ApiResponse<PreguntaResponse>> {
     return this.http.post<ApiResponse<PreguntaResponse>>(`${this.API}/preguntas/crear_pregunta`, req);
+  }
+
+  /** Actualiza solo los pesos de las opciones. Body: { pesos: { idOpcion: peso } }. */
+  updateOptionWeights(
+    id: number,
+    pesos: Record<number, number>,
+  ): Observable<ApiResponse<PreguntaResponse>> {
+    return this.http.patch<ApiResponse<PreguntaResponse>>(
+      `${this.API}/preguntas/${id}/opcion_peso`,
+      { pesos },
+    );
+  }
+
+  /** Asigna o cambia la dimensión (idDimension null = desasignar). */
+  assignDimension(
+    id: number,
+    idDimension: number | null,
+  ): Observable<ApiResponse<PreguntaResponse>> {
+    let params = new HttpParams();
+    if (idDimension != null) {
+      params = params.set('idDimension', idDimension);
+    }
+    return this.http.patch<ApiResponse<PreguntaResponse>>(
+      `${this.API}/preguntas/${id}/dimension`,
+      {},
+      { params },
+    );
   }
 
   deleteQuestion(id: number): Observable<ApiResponse<void>> {

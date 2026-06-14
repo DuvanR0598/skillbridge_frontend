@@ -7,6 +7,17 @@ export type QuestionType =
   | 'VERDADERO_FALSO' | 'LIKERT' | 'OPCION_UNICA'
   | 'OPCION_MULTIPLE' | 'DESCRIPCION';
 
+// Envoltura genérica de respuestas paginadas (espejo de PaginaResponse del backend)
+export interface PageResponse<T> {
+  content:       T[];
+  page:          number;  // 0-based
+  size:          number;
+  totalElements: number;
+  totalPages:    number;
+  first:         boolean;
+  last:          boolean;
+}
+
 export interface CuestionarioResponse {
   idCuestionario:     number;
   nombre:             string;
