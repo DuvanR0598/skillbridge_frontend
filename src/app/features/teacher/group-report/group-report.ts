@@ -14,6 +14,7 @@ import {
   NivelEstudianteResumenResponse,
 } from '../../../core/models/teacher-analytics.model';
 import { PlanActual } from '../../../core/models/analytics.model';
+import { DetalleRespuestaResponse } from '../../../core/models/assessment.model';
 
 interface StudentGroup {
   idEstudiante: number;
@@ -91,15 +92,67 @@ export class GroupReportComponent implements OnInit {
   planError = signal<string | null>(null);
   studentPlan = signal<PlanActual[]>([]);
 
+  // Respuestas del estudiante (PRE/POST) — endpoint /evaluacion/consultar-id
+  showAnswers = signal(false);
+  answersLoading = signal(false);
+  answersError = signal<string | null>(null);
+  answers = signal<DetalleRespuestaResponse[]>([]);
+
   selectStudent(id: number): void {
     this.selectedStudentId.set(id);
     // Por defecto mostrar PRE_TEST si existe, si no POST_TEST.
     const fases = (this.selectedStudent()?.rows ?? []).map((r) => r.fase);
     this.selectedPhase.set(fases.includes('PRE_TEST') ? 'PRE_TEST' : 'POST_TEST');
-    // Reset del panel de plan al cambiar de estudiante.
+    // Reset de paneles al cambiar de estudiante.
     this.showPlan.set(false);
     this.studentPlan.set([]);
     this.planError.set(null);
+    this.resetAnswers();
+  }
+
+  private resetAnswers(): void {
+    this.showAnswers.set(false);
+    this.answers.set([]);
+    this.answersError.set(null);
+  }
+
+  /** id de la sesión (evaluación) del estudiante para la fase seleccionada. */
+  private selectedEvaluacionId(): number | null {
+    return this.selectedRows()[0]?.idEvaluacion ?? null;
+  }
+
+  /** Carga/oculta las respuestas del estudiante en la fase seleccionada. */
+  toggleAnswers(): void {
+    if (this.showAnswers()) {
+      this.showAnswers.set(false);
+      return;
+    }
+    const idEval = this.selectedEvaluacionId();
+    if (idEval == null) {
+      this.answersError.set('No hay una evaluación para esta fase.');
+      this.showAnswers.set(true);
+      return;
+    }
+
+    this.showAnswers.set(true);
+    this.answersLoading.set(true);
+    this.answersError.set(null);
+    this.teacherSvc.getEvaluationDetail(idEval).subscribe({
+      next: (res) => {
+        this.answers.set(res.data?.respuestas ?? []);
+        this.answersLoading.set(false);
+      },
+      error: () => {
+        this.answersError.set('No se pudieron cargar las respuestas.');
+        this.answersLoading.set(false);
+      },
+    });
+  }
+
+  /** Cambia la fase y resetea el panel de respuestas (cambia la sesión). */
+  setPhase(phase: 'PRE_TEST' | 'POST_TEST'): void {
+    this.selectedPhase.set(phase);
+    this.resetAnswers();
   }
 
   clearStudent(): void {

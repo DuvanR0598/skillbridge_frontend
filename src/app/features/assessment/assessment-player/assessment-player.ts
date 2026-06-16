@@ -37,9 +37,9 @@ interface Answer {
   styleUrl: './assessment-player.scss',
 })
 export class AssessmentPlayer implements OnInit, OnDestroy {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private assessmentSvc = inject(AssessmentService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly assessmentSvc = inject(AssessmentService);
 
   // ── IDs desde la ruta ──────────────────────────────────────
   idCuestionario = 0;

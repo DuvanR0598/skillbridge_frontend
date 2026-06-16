@@ -342,17 +342,3 @@
     color: #dc2626;
   }
 }
-
-// ── Botón reporte ─────────────────────────────────────────────
-.btn-full-report {
-  height: 48px;
-  background: var(--primary) !important;
-  color: white !important;
-  border-radius: var(--radius-sm) !important;
-  font-size: 15px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}

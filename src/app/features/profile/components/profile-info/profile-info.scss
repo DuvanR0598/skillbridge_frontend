@@ -140,19 +140,6 @@ mat-form-field {
   justify-content: flex-end;
 }
 
-.btn-save {
-  height: 44px;
-  background: var(--primary) !important;
-  color: white !important;
-  border-radius: var(--radius-sm) !important;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  &:disabled {
-    opacity: 0.65;
-  }
-}
-
 .btn-sp {
   --mdc-circular-progress-active-indicator-color: white;
 }

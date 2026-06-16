@@ -106,15 +106,19 @@ export class QuestionnairesService {
     return this.http.get<ApiResponse<PreguntaResponse[]>>(`${this.API}/preguntas/listar`);
   }
 
-  /** Banco de preguntas paginado (page es 0-based); filtro opcional por tipo. */
+  /** Banco de preguntas paginado (page 0-based); filtros opcionales por tipo y texto. */
   getQuestionsPaged(
     page: number,
     size: number,
     tipoPregunta?: string | null,
+    search?: string | null,
   ): Observable<ApiResponse<PageResponse<PreguntaResponse>>> {
     let params = new HttpParams().set('page', page).set('size', size);
     if (tipoPregunta) {
       params = params.set('tipoPregunta', tipoPregunta);
+    }
+    if (search && search.trim()) {
+      params = params.set('search', search.trim());
     }
     return this.http.get<ApiResponse<PageResponse<PreguntaResponse>>>(
       `${this.API}/preguntas/paginado`,

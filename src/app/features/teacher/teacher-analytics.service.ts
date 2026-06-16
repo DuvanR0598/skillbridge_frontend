@@ -10,6 +10,7 @@ import {
   EstudianteQueNecesitaApoyoResponse,
 } from '../../core/models/teacher-analytics.model';
 import { InformeProgresoEstudianteResponse } from '../../core/models/analytics.model';
+import { EvaluacionEstudianteResponse } from '../../core/models/assessment.model';
 
 @Injectable({ providedIn: 'root' })
 export class TeacherAnalyticsService {
@@ -51,6 +52,15 @@ export class TeacherAnalyticsService {
   ): Observable<ApiResponse<InformeProgresoEstudianteResponse>> {
     return this.http.get<ApiResponse<InformeProgresoEstudianteResponse>>(
       `${this.API}/analitica/estudiante/${idEstudiante}/cuestionario/${idCuestionario}/progreso`,
+    );
+  }
+
+  /** Detalle de una evaluación (sesión) con las respuestas del estudiante. */
+  getEvaluationDetail(
+    idEvaluacion: number,
+  ): Observable<ApiResponse<EvaluacionEstudianteResponse>> {
+    return this.http.get<ApiResponse<EvaluacionEstudianteResponse>>(
+      `${this.API}/evaluacion/consultar-id/${idEvaluacion}`,
     );
   }
 }

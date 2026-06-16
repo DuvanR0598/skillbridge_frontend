@@ -138,6 +138,7 @@ export class AuthService {
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('currentUser', JSON.stringify(data.user));
+    localStorage.setItem('profileCompleted', String(data.profileCompleted));
 
     this._accessToken.set(data.accessToken);
     this._currentUser.set(data.user);
@@ -159,6 +160,7 @@ export class AuthService {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('profileCompleted');
     this._accessToken.set(null);
     this._currentUser.set(null);
   }

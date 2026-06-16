@@ -1,0 +1,185 @@
+<section class="bank">
+  <p-confirmdialog />
+  <header class="bank__header">
+    <div>
+      <a mat-icon-button routerLink="/app/questionnaires" class="back-btn">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      <h1>Banco de preguntas</h1>
+      <p>Preguntas reutilizables y sus opciones (con la respuesta correcta y el peso).</p>
+    </div>
+    <button mat-flat-button class="btn-action-primary" (click)="showForm.set(true)">
+      <mat-icon>add</mat-icon>
+      Nueva pregunta
+    </button>
+  </header>
+
+  <p-dialog
+    header="Nueva pregunta"
+    [visible]="showForm()"
+    (visibleChange)="showForm.set($event)"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    [style]="{ width: '840px', maxWidth: '95vw' }"
+    maskStyleClass="bank-dialog-mask"
+    [transitionOptions]="'1ms'"
+  >
+    <app-question-form (questionCreated)="onCreated()" (cancelled)="showForm.set(false)" />
+  </p-dialog>
+
+  @if (errorMsg()) {
+    <div class="alert-error" role="alert">{{ errorMsg() }}</div>
+  }
+
+  <!-- Buscador -->
+  <div class="bank__search">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar pregunta por enunciado..."
+      [value]="searchText()"
+      (input)="onSearch($any($event.target).value)"
+    />
+    @if (searchText()) {
+      <button type="button" class="search-clear" (click)="onSearch('')" aria-label="Limpiar búsqueda">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Filtro por tipo de pregunta -->
+  <div class="bank__filter" role="group" aria-label="Filtrar por tipo de pregunta">
+    @for (opt of typeOptions; track opt.value) {
+      <button
+        type="button"
+        class="filter-chip"
+        [class.active]="selectedType() === opt.value"
+        (click)="onFilter(opt.value)"
+      >
+        {{ opt.label }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="bank__loading"><mat-spinner diameter="36" /></div>
+  } @else if (questions().length === 0) {
+    <p class="bank__empty">
+      @if (selectedType()) {
+        No hay preguntas de este tipo.
+      } @else {
+        No hay preguntas en el banco todavía.
+      }
+    </p>
+  } @else {
+    <div class="bank__list">
+      @for (q of questions(); track q.idPregunta) {
+        <article class="q-card">
+          <div class="q-card__head">
+            <span class="type-chip" [class]="getTypeClass(q.tipoPregunta)">
+              {{ getTypeLabel(q.tipoPregunta) }}
+            </span>
+            @if (q.dimension) {
+              <span class="dim-chip" matTooltip="Dimensión">{{ q.dimension.nombre }}</span>
+            }
+            <p class="q-text">{{ q.texto }}</p>
+            <button
+              mat-icon-button
+              class="btn-edit"
+              (click)="startEdit(q)"
+              matTooltip="Editar dimensión y pesos"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="btn-del"
+              (click)="remove(q)"
+              matTooltip="Eliminar (solo si no está en uso)"
+            >
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+
+          @if (editingId() === q.idPregunta) {
+            <!-- Panel de edición -->
+            <div class="q-edit">
+              <label class="edit-label">Dimensión</label>
+              <select
+                class="edit-select"
+                [ngModel]="editDimId()"
+                (ngModelChange)="editDimId.set($event)"
+              >
+                <option [ngValue]="null">(Sin dimensión)</option>
+                @for (d of dimensions(); track d.id) {
+                  <option [ngValue]="d.id">
+                    {{ d.nombre }} · {{ d.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                  </option>
+                }
+              </select>
+
+              @if (q.opcionPregunta.length > 0) {
+                <label class="edit-label">Pesos de las opciones</label>
+                <ul class="edit-opts">
+                  @for (opt of q.opcionPregunta; track opt.idOpcion) {
+                    <li class="edit-opt">
+                      <span class="edit-opt-text">{{ opt.texto }}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        class="edit-weight"
+                        [ngModel]="editWeights()[opt.idOpcion]"
+                        (ngModelChange)="setWeight(opt.idOpcion, $event)"
+                      />
+                    </li>
+                  }
+                </ul>
+              }
+
+              <div class="edit-actions">
+                <button type="button" class="btn-cancel-edit" (click)="cancelEdit()">
+                  Cancelar
+                </button>
+                <button
+                  mat-flat-button
+                  class="btn-save-edit"
+                  [disabled]="savingEdit()"
+                  (click)="saveEdit(q)"
+                >
+                  {{ savingEdit() ? 'Guardando…' : 'Guardar' }}
+                </button>
+              </div>
+            </div>
+          } @else if (q.opcionPregunta.length > 0) {
+            <ul class="opt-list">
+              @for (opt of q.opcionPregunta; track opt.idOpcion) {
+                <li class="opt-row" [class.opt-correct]="opt.isCorrecta">
+                  <mat-icon class="opt-ic" [class.muted]="!opt.isCorrecta">
+                    {{ opt.isCorrecta ? 'check_circle' : 'radio_button_unchecked' }}
+                  </mat-icon>
+                  <span class="opt-text">{{ opt.texto }}</span>
+                  <span class="opt-peso">peso {{ opt.peso }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="no-opts">Pregunta abierta (sin opciones).</p>
+          }
+        </article>
+      }
+    </div>
+
+    <mat-paginator
+      class="bank__paginator"
+      [length]="totalElements()"
+      [pageSize]="pageSize()"
+      [pageIndex]="page()"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      (page)="onPage($event)"
+      aria-label="Paginación del banco de preguntas"
+    />
+  }
+</section>

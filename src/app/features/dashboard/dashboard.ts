@@ -55,7 +55,10 @@ export class DashboardComponent implements OnInit {
       next: ({ stats, skills }) => {
         this.stats.set(stats);
         this.skills.set(skills);
-        this.buildPendingActions(stats, skills);
+        // Las "acciones pendientes" (PRE/POST_TEST) solo aplican al estudiante.
+        if (this.isStudent()) {
+          this.buildPendingActions(stats, skills);
+        }
         this.loading.set(false);
       },
       error: () => {

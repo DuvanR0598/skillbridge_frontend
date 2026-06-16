@@ -4,6 +4,12 @@ export interface DashboardStats {
   pendingAssessments:   number;   // cuestionarios publicados sin evaluación completada
   currentLevel:         string | null;
   profileCompletion:    number;
+  // Métricas para coordinador/admin
+  totalQuestionnaires?: number;   // total de cuestionarios (no eliminados)
+  totalQuestions?:      number;   // preguntas en el banco
+  draftQuestionnaires?:    number; // en BORRADOR
+  completeQuestionnaires?: number; // en COMPLETO (listos para publicar)
+  archivedQuestionnaires?: number; // ARCHIVADO
 }
 
 export interface RecentActivity {

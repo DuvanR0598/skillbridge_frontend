@@ -5,7 +5,7 @@ import {
   Validators,
   ReactiveFormsModule
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,9 +34,8 @@ import { AuthService } from '../../../core/auth/auth.service';
   styleUrl: './login.scss',
 })
 export class Login {
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
 
   // ── Estado reactivo ────────────────────────────────────────
   loading = signal(false);

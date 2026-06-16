@@ -69,6 +69,7 @@ export interface DetalleRespuestaResponse {
   idPregunta:                number;
   textoPregunta?:            string;
   idsOpcionesSeleccionadas?: number[];
+  opcionesSeleccionadas?:    string[];   // textos de las opciones elegidas
   respuestaAbierta?:         string;
   puntajeObtenido?:          number;
   answeredAt?:               string;

@@ -5,12 +5,6 @@
       <h2 class="td-title">Hola, {{ currentUser()?.firstName }} 👋</h2>
       <p class="td-sub">Panel académico · {{ isAdmin() ? 'Administrador' : 'Coordinador' }}</p>
     </div>
-    <div class="td-actions">
-      <button mat-stroked-button class="btn-new" (click)="goToQuestionnaires()">
-        <mat-icon>quiz</mat-icon>
-        Cuestionarios
-      </button>
-    </div>
   </div>
 
   <!-- Selector de cuestionario -->
@@ -191,7 +185,7 @@
     </div>
 
     <!-- Botón al reporte completo -->
-    <button mat-flat-button class="btn-full-report" (click)="goToGroupReport()">
+    <button mat-flat-button class="btn-action-primary" (click)="goToGroupReport()">
       <mat-icon>assessment</mat-icon>
       Ver reporte completo del grupo
     </button>

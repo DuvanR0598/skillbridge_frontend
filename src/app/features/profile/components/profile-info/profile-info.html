@@ -90,7 +90,7 @@
 
     <!-- Guardar -->
     <div class="form-actions mt-6">
-      <button mat-flat-button type="submit" class="btn-save" [disabled]="form.invalid || saving()">
+      <button mat-flat-button type="submit" class="btn-action-primary" [disabled]="form.invalid || saving()">
         @if (saving()) {
           <mat-spinner diameter="18" class="btn-sp" />
         } @else {

@@ -29,10 +29,7 @@
         @if (questionnaires().length > 1) {
           <mat-form-field appearance="outline" class="q-selector">
             <mat-label>Cuestionario</mat-label>
-            <mat-select
-              [ngModel]="selectedId()"
-              (ngModelChange)="onSelectQuestionnaire($event)"
-            >
+            <mat-select [ngModel]="selectedId()" (ngModelChange)="onSelectQuestionnaire($event)">
               @for (q of questionnaires(); track q.idCuestionario) {
                 <mat-option [value]="q.idCuestionario">{{ q.nombre }}</mat-option>
               }
@@ -213,7 +210,9 @@
                     <span class="hist-skill">
                       {{ score.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
                     </span>
-                    <span class="hist-pct"> {{ score.porcentajePuntuacion | number: '1.0-0' }}% </span>
+                    <span class="hist-pct">
+                      {{ score.porcentajePuntuacion | number: '1.0-0' }}%
+                    </span>
                     <span class="hist-level" [class]="getLevelClass(score.nivel)">
                       {{ getLevelLabel(score.nivel) }}
                     </span>

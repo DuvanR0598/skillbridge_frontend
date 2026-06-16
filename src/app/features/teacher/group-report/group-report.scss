@@ -583,3 +583,42 @@
     color: var(--border);
   }
 }
+
+/* ── Respuestas del estudiante ───────────────────────────────── */
+.answers-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.answer-item {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+}
+.answer-q {
+  margin: 0 0 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.answer-opts {
+  margin: 0 0 6px;
+  padding-left: 1.1rem;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.answer-open {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+.answer-empty { color: #b45309; font-style: normal; }
+.answer-score {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--primary, #2e7d52);
+}

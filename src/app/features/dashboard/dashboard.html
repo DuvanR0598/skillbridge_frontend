@@ -23,12 +23,12 @@
     </div>
 
     @if (isStudent()) {
-      <a mat-flat-button class="btn-action" routerLink="/app/assessment">
+      <a mat-flat-button class="btn-action-primary" routerLink="/app/assessment">
         <mat-icon>play_arrow</mat-icon>
         Comenzar evaluación
       </a>
     } @else {
-      <a mat-flat-button class="btn-action" routerLink="/app/questionnaires">
+      <a mat-flat-button class="btn-action-primary" routerLink="/app/questionnaires">
         <mat-icon>add</mat-icon>
         Nuevo cuestionario
       </a>
@@ -39,27 +39,28 @@
   @if (stats()) {
     <div class="stats-grid">
 
-      <div class="stat-card">
-        <div class="stat-icon icon-blue">
-          <mat-icon>quiz</mat-icon>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ stats()!.activeQuestionnaires }}</span>
-          <span class="stat-label">Cuestionarios activos</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon icon-green">
-          <mat-icon>assignment_turned_in</mat-icon>
-        </div>
-        <div class="stat-info">
-          <span class="stat-value">{{ stats()!.completedAssessments }}</span>
-          <span class="stat-label">Evaluaciones completadas</span>
-        </div>
-      </div>
-
       @if (isStudent()) {
+        <!-- ── Estudiante ───────────────────────────────── -->
+        <div class="stat-card">
+          <div class="stat-icon icon-blue">
+            <mat-icon>quiz</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats()!.activeQuestionnaires }}</span>
+            <span class="stat-label">Cuestionarios activos</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon icon-green">
+            <mat-icon>assignment_turned_in</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats()!.completedAssessments }}</span>
+            <span class="stat-label">Evaluaciones completadas</span>
+          </div>
+        </div>
+
         <div class="stat-card">
           <div class="stat-icon icon-amber">
             <mat-icon>pending_actions</mat-icon>
@@ -69,22 +70,53 @@
             <span class="stat-label">Sin evaluar</span>
           </div>
         </div>
-      }
 
-      <div class="stat-card">
-        <div class="stat-icon icon-purple">
-          <mat-icon>emoji_events</mat-icon>
+        <div class="stat-card">
+          <div class="stat-icon icon-purple">
+            <mat-icon>emoji_events</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span
+              class="stat-value level-value"
+              [class]="getLevelClass(stats()!.currentLevel)"
+            >
+              {{ getLevelLabel(stats()!.currentLevel) }}
+            </span>
+            <span class="stat-label">Nivel actual</span>
+          </div>
         </div>
-        <div class="stat-info">
-          <span
-            class="stat-value level-value"
-            [class]="getLevelClass(stats()!.currentLevel)"
-          >
-            {{ getLevelLabel(stats()!.currentLevel) }}
-          </span>
-          <span class="stat-label">Nivel actual</span>
+      } @else {
+        <!-- ── Coordinador / Admin ──────────────────────── -->
+        <div class="stat-card">
+          <div class="stat-icon icon-blue">
+            <mat-icon>quiz</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats()!.activeQuestionnaires }}</span>
+            <span class="stat-label">Cuestionarios publicados</span>
+          </div>
         </div>
-      </div>
+
+        <div class="stat-card">
+          <div class="stat-icon icon-green">
+            <mat-icon>folder_copy</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats()!.totalQuestionnaires ?? 0 }}</span>
+            <span class="stat-label">Cuestionarios totales</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon icon-purple">
+            <mat-icon>help_outline</mat-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats()!.totalQuestions ?? 0 }}</span>
+            <span class="stat-label">Preguntas en el banco</span>
+          </div>
+        </div>
+      }
 
       <div class="stat-card">
         <div class="stat-icon icon-amber">
@@ -184,8 +216,8 @@
         </div>
       }
 
-      <!-- Acciones pendientes -->
-      @if (pendingActions().length > 0) {
+      <!-- Acciones pendientes (solo estudiante) -->
+      @if (isStudent() && pendingActions().length > 0) {
         <div class="card mt-4">
           <div class="card-header">
             <h3 class="card-title">
@@ -214,9 +246,39 @@
         </div>
       }
 
+      <!-- Estado de los cuestionarios (coordinador/admin) -->
+      @if (!isStudent() && stats()) {
+        <div class="card mt-4">
+          <div class="card-header">
+            <h3 class="card-title">
+              <mat-icon class="card-icon">insights</mat-icon>
+              Estado de los cuestionarios
+            </h3>
+          </div>
+          <div class="status-breakdown">
+            <div class="status-item status-draft">
+              <span class="status-num">{{ stats()!.draftQuestionnaires ?? 0 }}</span>
+              <span class="status-label">Borrador</span>
+            </div>
+            <div class="status-item status-complete">
+              <span class="status-num">{{ stats()!.completeQuestionnaires ?? 0 }}</span>
+              <span class="status-label">Completo</span>
+            </div>
+            <div class="status-item status-published">
+              <span class="status-num">{{ stats()!.activeQuestionnaires }}</span>
+              <span class="status-label">Publicado</span>
+            </div>
+            <div class="status-item status-archived">
+              <span class="status-num">{{ stats()!.archivedQuestionnaires ?? 0 }}</span>
+              <span class="status-label">Archivado</span>
+            </div>
+          </div>
+        </div>
+      }
+
       <!-- Panel docente/admin -->
       @if (!isStudent()) {
-        <div class="card">
+        <div class="card mt-4">
           <div class="card-header">
             <h3 class="card-title">
               <mat-icon class="card-icon">dashboard</mat-icon>

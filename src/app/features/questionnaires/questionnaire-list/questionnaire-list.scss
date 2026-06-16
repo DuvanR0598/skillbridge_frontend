@@ -24,16 +24,6 @@
   color: var(--text-secondary);
 }
 
-.btn-new {
-  height: 42px;
-  background: var(--primary) !important;
-  color: white !important;
-  border-radius: var(--radius-sm) !important;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 // ── Filtros ───────────────────────────────────────────────────
 .filter-row {
   display: flex;

@@ -48,6 +48,7 @@ export interface NivelEstudianteResumenResponse {
   idEstudiante:      number;
   nombreCompleto?:   string | null;
   email?:            string | null;
+  idEvaluacion?:     number;
   skill:             string;
   idDimension?:      number | null;
   dimensionNombre?:  string | null;

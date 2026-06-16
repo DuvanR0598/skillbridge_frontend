@@ -26,18 +26,48 @@ export class DashboardService {
     const idEstudiante = this.authSvc.currentUser()?.id;
     const isStudent = this.authSvc.isStudent();
 
-    // Coordinador/Admin: el dashboard no muestra estadísticas de estudiante.
+    // Coordinador/Admin: métricas de gestión (cuestionarios y banco de preguntas).
     if (!isStudent || !idEstudiante) {
-      return of({
-        stats: {
-          activeQuestionnaires: 0,
-          completedAssessments: 0,
-          pendingAssessments: 0,
-          currentLevel: null,
-          profileCompletion: 100,
-        },
-        skills: [],
-      });
+      return forkJoin({
+        cuestionarios: this.http
+          .get<ApiResponse<any[]>>(`${this.API}/cuestionario/listar_cuestionarios`)
+          .pipe(
+            map((r) => (r.data ?? []).filter((q) => q.estadoCuestionario !== 'ELIMINADO')),
+            catchError(() => of([] as any[])),
+          ),
+        preguntas: this.http
+          .get<ApiResponse<any>>(`${this.API}/preguntas/paginado?page=0&size=1`)
+          .pipe(
+            map((r) => r.data?.totalElements ?? 0),
+            catchError(() => of(0)),
+          ),
+        status: this.http
+          .get<ApiResponse<any>>(`${this.API}/usuarios/me/perfil/estado`)
+          .pipe(
+            map((r) => r.data?.porcentajeCompleto ?? 0),
+            catchError(() => of(0)),
+          ),
+      }).pipe(
+        map(({ cuestionarios, preguntas, status }) => {
+          const porEstado = (s: string) =>
+            cuestionarios.filter((q) => q.estadoCuestionario === s).length;
+          return {
+            stats: {
+              activeQuestionnaires: porEstado('PUBLICADO'),
+              completedAssessments: 0,
+              pendingAssessments: 0,
+              currentLevel: null,
+              profileCompletion: status,
+              totalQuestionnaires: cuestionarios.length,
+              totalQuestions: preguntas,
+              draftQuestionnaires: porEstado('BORRADOR'),
+              completeQuestionnaires: porEstado('COMPLETO'),
+              archivedQuestionnaires: porEstado('ARCHIVADO'),
+            } as DashboardStats,
+            skills: [] as SkillSummary[],
+          };
+        }),
+      );
     }
 
     return forkJoin({

@@ -32,18 +32,6 @@
   color: var(--text-secondary);
 }
 
-.btn-action {
-  height: 42px;
-  background: var(--primary) !important;
-  color: white !important;
-  border-radius: var(--radius-sm) !important;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
 // ── Grid de estadísticas ──────────────────────────────────────
 .stats-grid {
   display: grid;
@@ -373,6 +361,40 @@
 }
 
 // ── Quick links (docente/admin) ───────────────────────────────
+.status-breakdown {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 20px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-app);
+}
+.status-num {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+.status-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.status-draft .status-num { color: #6b7280; }
+.status-complete .status-num { color: #2563eb; }
+.status-published .status-num { color: #0f7a52; }
+.status-archived .status-num { color: #b45309; }
+
 .quick-links {
   display: flex;
   gap: 12px;

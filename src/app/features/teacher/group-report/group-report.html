@@ -214,11 +214,49 @@
               </span>
             </div>
 
+            <button class="sd-plan-btn" [class.active]="showAnswers()" (click)="toggleAnswers()">
+              <mat-icon>fact_check</mat-icon>
+              {{ showAnswers() ? 'Ocultar respuestas' : 'Ver respuestas (' + selectedPhase() + ')' }}
+            </button>
+
             <button class="sd-plan-btn" [class.active]="showPlan()" (click)="togglePlan()">
               <mat-icon>lightbulb</mat-icon>
               {{ showPlan() ? 'Ocultar plan' : 'Ver plan de mejoramiento' }}
             </button>
           </div>
+
+          <!-- Respuestas del estudiante en la fase seleccionada -->
+          @if (showAnswers()) {
+            <div class="sd-plan">
+              @if (answersLoading()) {
+                <div class="plan-loading"><mat-spinner diameter="22" /> Cargando respuestas…</div>
+              } @else if (answersError()) {
+                <div class="plan-empty">{{ answersError() }}</div>
+              } @else if (answers().length === 0) {
+                <div class="plan-empty">No hay respuestas registradas para esta fase.</div>
+              } @else {
+                <ol class="answers-list">
+                  @for (a of answers(); track a.id) {
+                    <li class="answer-item">
+                      <p class="answer-q">{{ a.textoPregunta }}</p>
+                      @if (a.respuestaAbierta) {
+                        <p class="answer-open">"{{ a.respuestaAbierta }}"</p>
+                      } @else if (a.opcionesSeleccionadas && a.opcionesSeleccionadas.length > 0) {
+                        <ul class="answer-opts">
+                          @for (op of a.opcionesSeleccionadas; track op) {
+                            <li>{{ op }}</li>
+                          }
+                        </ul>
+                      } @else {
+                        <p class="answer-open answer-empty">Sin respuesta</p>
+                      }
+                      <span class="answer-score">Puntaje: {{ a.puntajeObtenido ?? 0 }}</span>
+                    </li>
+                  }
+                </ol>
+              }
+            </div>
+          }
 
           <!-- Plan de mejoramiento -->
           @if (showPlan()) {
@@ -263,13 +301,13 @@
               class="pf-btn"
               [class.active]="selectedPhase() === 'PRE_TEST'"
               [disabled]="!studentHasPhase('PRE_TEST')"
-              (click)="selectedPhase.set('PRE_TEST')"
+              (click)="setPhase('PRE_TEST')"
             >PRE_TEST</button>
             <button
               class="pf-btn"
               [class.active]="selectedPhase() === 'POST_TEST'"
               [disabled]="!studentHasPhase('POST_TEST')"
-              (click)="selectedPhase.set('POST_TEST')"
+              (click)="setPhase('POST_TEST')"
             >POST_TEST</button>
           </div>
 
