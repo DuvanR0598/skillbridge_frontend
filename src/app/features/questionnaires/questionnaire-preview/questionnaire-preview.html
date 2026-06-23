@@ -1,0 +1,158 @@
+<!-- Barra de control (solo pantalla, no imprime) -->
+<div class="pv-toolbar no-print">
+  <a mat-icon-button routerLink="/app/questionnaires" class="pv-back" aria-label="Volver">
+    <mat-icon>arrow_back</mat-icon>
+  </a>
+  <span class="pv-toolbar-title">Vista previa del cuestionario</span>
+  <button mat-flat-button class="btn-print" (click)="print()" [disabled]="loading()">
+    <mat-icon>print</mat-icon>
+    Imprimir / Guardar PDF
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="pv-loading no-print">
+    <mat-spinner diameter="44" />
+    <p>Cargando cuestionario…</p>
+  </div>
+}
+
+@if (!loading() && errorMsg()) {
+  <div class="pv-error no-print">
+    <mat-icon>error_outline</mat-icon>
+    <p>{{ errorMsg() }}</p>
+  </div>
+}
+
+@if (!loading() && questionnaire(); as q) {
+  <!-- Hoja imprimible -->
+  <div class="pv-page">
+
+    <!-- Encabezado del documento -->
+    <header class="pv-header">
+      <div class="pv-header-top">
+        <div class="pv-institution">SkillBridge · Evaluación de competencias</div>
+        <div class="pv-date">Fecha de impresión: {{ today }}</div>
+      </div>
+      <h1 class="pv-title">{{ q.nombre }}</h1>
+
+      @if (q.objetivo) {
+        <p class="pv-objective">
+          <strong>Objetivo:</strong> {{ q.objetivo }}
+        </p>
+      }
+
+      @if (q.instrucciones) {
+        <div class="pv-instructions">
+          <strong>Instrucciones:</strong> {{ q.instrucciones }}
+        </div>
+      }
+
+      <div class="pv-meta-grid">
+        <div class="pv-meta-item">
+          <span class="pv-meta-lbl">Total de preguntas</span>
+          <span class="pv-meta-val">{{ questions().length }}</span>
+        </div>
+        @if (q.tiempoLimiteMinutos) {
+          <div class="pv-meta-item">
+            <span class="pv-meta-lbl">Tiempo límite</span>
+            <span class="pv-meta-val">{{ q.tiempoLimiteMinutos }} min</span>
+          </div>
+        }
+        @if (q.creadoPor) {
+          <div class="pv-meta-item">
+            <span class="pv-meta-lbl">Creado por</span>
+            <span class="pv-meta-val">{{ q.creadoPor }}</span>
+          </div>
+        }
+      </div>
+    </header>
+
+    <hr class="pv-divider" />
+
+    <!-- Lista de preguntas -->
+    <ol class="pv-questions">
+      @for (p of questions(); track p.idPregunta; let idx = $index) {
+        <li class="pv-question">
+          <!-- Cabecera de la pregunta -->
+          <div class="pv-q-header">
+            <span class="pv-q-num">{{ idx + 1 }}.</span>
+            <div class="pv-q-meta">
+              <span class="pv-type-chip">{{ typeLabel(p.tipoPregunta) }}</span>
+              @if (p.dimension) {
+                <span class="pv-skill-chip" [class]="'pv-skill-chip--' + p.dimension.skill.toLowerCase()">
+                  {{ p.dimension.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                </span>
+                <span class="pv-dim-chip">{{ p.dimension.nombre }}</span>
+              }
+              @if (p.obligatoria) {
+                <span class="pv-req-chip">Obligatoria</span>
+              }
+              @if (p.isCondicional) {
+                <span class="pv-cond-chip">Condicional</span>
+              }
+            </div>
+          </div>
+
+          <p class="pv-q-text">{{ p.texto }}</p>
+
+          @if (p.ayuda) {
+            <p class="pv-q-hint"><em>Ayuda: {{ p.ayuda }}</em></p>
+          }
+
+          <!-- Opciones de respuesta -->
+          @if (p.tipoPregunta === 'VERDADERO_FALSO') {
+            <ul class="pv-options pv-options--tf">
+              <li class="pv-option">
+                <span class="pv-opt-marker">○</span>
+                Verdadero
+              </li>
+              <li class="pv-option">
+                <span class="pv-opt-marker">○</span>
+                Falso
+              </li>
+            </ul>
+          } @else if (p.tipoPregunta === 'LIKERT') {
+            <div class="pv-likert">
+              @for (op of p.opciones; track op.idOpcion) {
+                <div class="pv-likert-item">
+                  <span class="pv-opt-marker">○</span>
+                  <span class="pv-likert-label">{{ op.texto }}</span>
+                </div>
+              }
+            </div>
+          } @else if (p.tipoPregunta === 'OPCION_UNICA' || p.tipoPregunta === 'OPCION_MULTIPLE') {
+            <ul class="pv-options">
+              @for (op of p.opciones; track op.idOpcion; let oi = $index) {
+                <li class="pv-option">
+                  <span class="pv-opt-marker">
+                    {{ p.tipoPregunta === 'OPCION_UNICA' ? '○' : '☐' }}
+                  </span>
+                  <span class="pv-opt-letter">{{ 'ABCDEFGHIJ'[oi] }}.</span>
+                  {{ op.texto }}
+                </li>
+              }
+            </ul>
+            @if (p.tipoPregunta === 'OPCION_MULTIPLE' && p.maxOpciones) {
+              <p class="pv-max-opts">Selecciona máximo {{ p.maxOpciones }} opciones.</p>
+            }
+          } @else if (p.tipoPregunta === 'DESCRIPCION') {
+            <div class="pv-open-answer">
+              <div class="pv-open-line"></div>
+              <div class="pv-open-line"></div>
+              <div class="pv-open-line"></div>
+              <div class="pv-open-line"></div>
+            </div>
+          }
+        </li>
+      }
+    </ol>
+
+    <!-- Pie de página -->
+    <footer class="pv-footer">
+      <p>SkillBridge — Evaluación de competencias de ingeniería</p>
+      <p class="pv-footer-confidential">Universidad de Antioquia.</p>
+    </footer>
+
+  </div>
+}

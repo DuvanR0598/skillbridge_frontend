@@ -10,94 +10,6 @@
     </div>
   </div>
 
-  <!-- Mensajes -->
-  @if (errorMsg()) {
-    <div class="alert alert-error" role="alert">
-      <mat-icon>error_outline</mat-icon>
-      <span>{{ errorMsg() }}</span>
-    </div>
-  }
-
-  @if (successMsg()) {
-    <div class="alert alert-success" role="status">
-      <mat-icon>check_circle</mat-icon>
-      <span>{{ successMsg() }}</span>
-    </div>
-  }
-
-  <!-- Condiciones existentes -->
-  @if (conditionsByTrigger().length > 0) {
-    <div class="conditions-list">
-      <h4 class="conditions-title">Condiciones configuradas</h4>
-
-      @for (group of conditionsByTrigger(); track group.triggerQuestionId) {
-        <div class="condition-group">
-          <div class="trigger-q-header">
-            <mat-icon class="tq-icon">help_outline</mat-icon>
-            <span class="tq-text">
-              {{ group.triggerQuestionText | slice: 0 : 80 }}
-              {{ group.triggerQuestionText.length > 80 ? '...' : '' }}
-            </span>
-          </div>
-
-          @for (item of group.items; track item.condition.id) {
-            <div class="condition-row">
-              <!-- Flecha visual del flujo -->
-              <div class="condition-flow">
-                <div class="flow-option">
-                  <mat-icon class="flow-icon">radio_button_checked</mat-icon>
-                  <span class="flow-option-text">
-                    {{ item.triggerOption?.texto ?? 'Opción #' + item.condition.triggerIdOpcion }}
-                  </span>
-                </div>
-                <div class="flow-arrow">
-                  <mat-icon>arrow_forward</mat-icon>
-                </div>
-                <div class="flow-target">
-                  <span class="type-chip" [class]="getTypeClass(item.targetQuestion.tipoPregunta)">
-                    {{ getTypeLabel(item.targetQuestion.tipoPregunta) }}
-                  </span>
-                  <span class="flow-target-text">
-                    {{ item.targetQuestion.textoPregunta | slice: 0 : 60 }}
-                    {{ item.targetQuestion.textoPregunta.length > 60 ? '...' : '' }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="condition-actions">
-                <!-- Editar condición -->
-                <button
-                  mat-icon-button
-                  class="btn-edit-cond"
-                  [class.editing]="editingConditionId() === item.condition.id"
-                  (click)="startEdit(item.condition)"
-                  matTooltip="Editar condición"
-                >
-                  <mat-icon>edit</mat-icon>
-                </button>
-
-                <!-- Eliminar condición -->
-                <button
-                  mat-icon-button
-                  class="btn-del-cond"
-                  [disabled]="deleting() === item.condition.id"
-                  (click)="deleteCondition(item.condition.id)"
-                  matTooltip="Eliminar condición"
-                >
-                  @if (deleting() === item.condition.id) {
-                    <mat-spinner diameter="16" />
-                  } @else {
-                    <mat-icon>delete_outline</mat-icon>
-                  }
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-      }
-    </div>
-  }
-
   <!-- Formulario para nueva condición / edición -->
   <div class="new-condition-form" [class.editing]="isEditing">
     <h4 class="form-section-title">
@@ -267,4 +179,77 @@
       </div>
     }
   </div>
+
+  <!-- Condiciones existentes -->
+  @if (conditionsByTrigger().length > 0) {
+    <div class="conditions-list">
+      <h4 class="conditions-title">Condiciones configuradas</h4>
+
+      @for (group of conditionsByTrigger(); track group.triggerQuestionId) {
+        <div class="condition-group">
+          <div class="trigger-q-header">
+            <mat-icon class="tq-icon">help_outline</mat-icon>
+            <span class="tq-text">
+              {{ group.triggerQuestionText | slice: 0 : 80 }}
+              {{ group.triggerQuestionText.length > 80 ? '...' : '' }}
+            </span>
+          </div>
+
+          @for (item of group.items; track item.condition.id) {
+            <div class="condition-row">
+              <!-- Flecha visual del flujo -->
+              <div class="condition-flow">
+                <div class="flow-option">
+                  <mat-icon class="flow-icon">radio_button_checked</mat-icon>
+                  <span class="flow-option-text">
+                    {{ item.triggerOption?.texto ?? 'Opción #' + item.condition.triggerIdOpcion }}
+                  </span>
+                </div>
+                <div class="flow-arrow">
+                  <mat-icon>arrow_forward</mat-icon>
+                </div>
+                <div class="flow-target">
+                  <span class="type-chip" [class]="getTypeClass(item.targetQuestion.tipoPregunta)">
+                    {{ getTypeLabel(item.targetQuestion.tipoPregunta) }}
+                  </span>
+                  <span class="flow-target-text">
+                    {{ item.targetQuestion.textoPregunta | slice: 0 : 60 }}
+                    {{ item.targetQuestion.textoPregunta.length > 60 ? '...' : '' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="condition-actions">
+                <!-- Editar condición -->
+                <button
+                  mat-icon-button
+                  class="btn-edit-cond"
+                  [class.editing]="editingConditionId() === item.condition.id"
+                  (click)="startEdit(item.condition)"
+                  matTooltip="Editar condición"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <!-- Eliminar condición -->
+                <button
+                  mat-icon-button
+                  class="btn-del-cond"
+                  [disabled]="deleting() === item.condition.id"
+                  (click)="deleteCondition(item.condition.id)"
+                  matTooltip="Eliminar condición"
+                >
+                  @if (deleting() === item.condition.id) {
+                    <mat-spinner diameter="16" />
+                  } @else {
+                    <mat-icon>delete_outline</mat-icon>
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
 </div>

@@ -50,6 +50,20 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
     <h3 class="section-title">Datos personales</h3>
 
+    <!-- Identificación (solo lectura) -->
+    <div class="two-col">
+      <mat-form-field appearance="outline" class="readonly-field">
+        <mat-label>Tipo de identificación</mat-label>
+        <mat-icon matPrefix class="field-icon">badge</mat-icon>
+        <input matInput [value]="tipoIdentificacionLabel" readonly disabled />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="readonly-field">
+        <mat-label>Número de identificación</mat-label>
+        <input matInput [value]="numeroIdentificacion" readonly disabled />
+      </mat-form-field>
+    </div>
+
     <!-- Fecha de nacimiento -->
     <mat-form-field appearance="outline">
       <mat-label>Fecha de nacimiento</mat-label>

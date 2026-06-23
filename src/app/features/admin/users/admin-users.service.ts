@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import { UserResponse } from '../../../core/models/auth.model';
+import { UsuarioPerfilResponse } from '../../../core/models/perfil.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminUsersService {
@@ -29,5 +30,17 @@ export class AdminUsersService {
     return this.http
       .patch<ApiResponse<void>>(`${this.API}/usuarios/${id}/toggle-enabled`, {})
       .pipe(map(() => undefined));
+  }
+
+  /** Obtiene el perfil detallado de un usuario (solo ADMIN/COORDINADOR). */
+  getUserPerfil(id: number): Observable<UsuarioPerfilResponse> {
+    return this.http
+      .get<ApiResponse<UsuarioPerfilResponse>>(`${this.API}/usuarios/${id}/perfil`)
+      .pipe(map((res) => res.data));
+  }
+
+  /** Descarga la información de todos los usuarios en un XLSX (solo ADMIN). */
+  exportUsers(): Observable<Blob> {
+    return this.http.get(`${this.API}/usuarios/exportar`, { responseType: 'blob' });
   }
 }

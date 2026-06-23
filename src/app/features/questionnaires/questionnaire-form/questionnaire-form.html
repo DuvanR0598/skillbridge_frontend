@@ -66,6 +66,40 @@
         <mat-hint align="end"> {{ form.get('instructions')?.value?.length ?? 0 }}/1000 </mat-hint>
       </mat-form-field>
 
+      <!-- Dirigido a (programa objetivo) -->
+      <mat-form-field appearance="outline" class="mt-3">
+        <mat-label>Dirigido a</mat-label>
+        <mat-icon matPrefix class="field-icon">groups</mat-icon>
+        <mat-select
+          formControlName="targetProgram"
+          panelClass="program-search-panel"
+          (openedChange)="onProgramPanelToggle($event)"
+        >
+          <!-- Buscador dentro del panel -->
+          <div class="select-search-box">
+            <mat-icon class="select-search-icon">search</mat-icon>
+            <input
+              type="text"
+              class="select-search-input"
+              placeholder="Buscar programa..."
+              [value]="programSearch()"
+              (input)="programSearch.set($any($event.target).value)"
+              (keydown)="$event.stopPropagation()"
+              (click)="$event.stopPropagation()"
+            />
+          </div>
+
+          <mat-option value="GENERAL">General — todos los estudiantes</mat-option>
+          @if (filteredPrograms().length === 0) {
+            <mat-option disabled>Sin coincidencias</mat-option>
+          } @else {
+            @for (p of filteredPrograms(); track p.value) {
+              <mat-option [value]="p.value">{{ p.displayName }}</mat-option>
+            }
+          }
+        </mat-select>
+      </mat-form-field>
+
       <!-- Período de disponibilidad -->
       <p class="section-hint mt-4">
         Define desde y hasta cuándo el cuestionario estará disponible para responder.
@@ -140,7 +174,7 @@
         <button
           mat-flat-button
           type="submit"
-          class="btn-save"
+          class="btn-action-primary"
           [disabled]="form.invalid || saving()"
         >
           @if (saving()) {

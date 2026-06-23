@@ -81,6 +81,32 @@ export class GroupReportComponent implements OnInit {
     this.studentGroups().find((g) => g.idEstudiante === this.selectedStudentId()) ?? null,
   );
 
+  /** % real de estudiantes con nivel AVANZADO en POST_TEST */
+  pcAlcanzaronAvanzado = computed<number | null>(() => {
+    const r = this.report();
+    if (!r) return null;
+    // Denominador real: total estudiantes que hicieron POST_TEST según el reporte
+    const total = r.totalEstudiantesConPostTest;
+    if (total === 0) return null;
+
+    const postRows = r.resumenEstudiantes.filter((e) => e.fase === 'POST_TEST');
+
+    // Preferir filas globales (sin dimensión → fila resumen del estudiante)
+    const globalPost = postRows.filter((e) => e.idDimension == null);
+    if (globalPost.length > 0) {
+      const conAvanzado = globalPost.filter((e) => e.nivel === 'AVANZADO').length;
+      return (conAvanzado / total) * 100;
+    }
+
+    // Sin filas globales: un estudiante "alcanzó AVANZADO" solo si TODAS sus
+    // dimensiones POST_TEST son AVANZADO
+    const estudiantesPost = [...new Set(postRows.map((e) => e.idEstudiante))];
+    const conTodosAvanzado = estudiantesPost.filter((id) =>
+      postRows.filter((e) => e.idEstudiante === id).every((e) => e.nivel === 'AVANZADO')
+    ).length;
+    return (conTodosAvanzado / total) * 100;
+  });
+
   /** Filas del estudiante seleccionado para la fase elegida. */
   selectedRows = computed<NivelEstudianteResumenResponse[]>(() =>
     (this.selectedStudent()?.rows ?? []).filter((r) => r.fase === this.selectedPhase()),
@@ -252,34 +278,9 @@ export class GroupReportComponent implements OnInit {
     });
   }
 
-  exportCsv(): void {
-    const r = this.report();
-    if (!r) return;
-
-    const rows = [
-      ['Cuestionario', r.nombreCuestionario],
-      ['Generado el', this.formatDate(r.generatedAt)],
-      [],
-      ['Skill', 'Dimensión', 'PRE avg', 'POST avg', 'Delta', 'Mejoraron %'],
-      ...r.analisiDimensional.map((a) => [
-        a.skill,
-        a.dimensionNombre ?? 'Global',
-        a.avgPrePorcentaje.toFixed(1),
-        a.avgPostPorcentaje.toFixed(1),
-        a.avgDelta.toFixed(1),
-        a.totalEstudiantes > 0
-          ? ((a.estudiantesMejorados / a.totalEstudiantes) * 100).toFixed(0) + '%'
-          : '—',
-      ]),
-    ];
-
-    const csv = rows.map((r) => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `reporte-grupo-${this.questionnaireId}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  exportPdf(): void {
+    document.body.classList.add('print-group-report');
+    window.print();
+    document.body.classList.remove('print-group-report');
   }
 }

@@ -109,16 +109,6 @@
   font-size: 14px !important;
 }
 
-.btn-complete {
-  height: 42px;
-  background: #059669 !important;
-  color: white !important;
-  border-radius: var(--radius-sm) !important;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .btn-sp {
   --mdc-circular-progress-active-indicator-color: white;
 }
@@ -284,9 +274,39 @@
   margin: 0;
 }
 
-.pi {
-  font-size: 18px;
+.panel-icon {
+  font-size: 18px !important;
   color: var(--primary);
+}
+
+// ── Buscador del banco ────────────────────────────────────────
+.bank-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-app);
+
+  mat-icon {
+    font-size: 18px;
+    color: var(--text-secondary); 
+    flex-shrink: 0;
+  }
+}
+
+.bank-search-input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+
+  &::placeholder {
+    color: var(--text-secondary);
+  }
 }
 
 .count-badge {
@@ -297,18 +317,6 @@
   padding: 1px 7px;
   border-radius: 99px;
   margin-left: 4px;
-}
-
-.btn-new-q {
-  height: 34px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: var(--radius-sm) !important;
-  background: var(--primary) !important;
-  color: white !important;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 .new-q-wrap {
@@ -361,6 +369,14 @@
 .bank-item-info {
   flex: 1;
   min-width: 0;
+
+.bank-item-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 4px;
+}
 }
 
 // ============================================
@@ -410,6 +426,115 @@
 .bank-item-opts {
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+// ============================================
+// FILTROS DEL BANCO
+// ============================================
+.bank-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-app);
+}
+
+.bank-filter-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.bank-filter-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+  opacity: .6;
+}
+
+.bank-filter-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding-top: 5px;
+  min-width: 62px;
+  flex-shrink: 0;
+}
+
+.bank-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-app);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+
+  &:hover { border-color: var(--primary); color: var(--primary); }
+
+  &.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+
+  &.dim-filter.active {
+    background: rgba(26,92,56,.15);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+// ── Chip de skill (PC / AD) ───────────────────────────────────
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+
+  &.skill-pensamiento_critico {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+  }
+  &.skill-adaptabilidad {
+    background: rgba(245, 124, 0, 0.12);
+    color: #c05c00;
+  }
+}
+
+// ── Chips de filtro skill ─────────────────────────────────────
+.skill-filter {
+  &.skill-pensamiento_critico {
+    &:hover, &.active {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+  }
+  &.skill-adaptabilidad {
+    &:hover, &.active {
+      background: rgba(245, 124, 0, 0.15);
+      border-color: #c05c00;
+      color: #c05c00;
+    }
+  }
 }
 
 .btn-add-bank {

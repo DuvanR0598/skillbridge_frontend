@@ -47,6 +47,14 @@ export class QuestionnairesService {
     return this.http.post<ApiResponse<CuestionarioResponse>>(`${this.API}/cuestionario/crear_cuestionario`, req);
   }
 
+  /** Duplica un cuestionario completo (preguntas + ramificaciones); la copia queda en BORRADOR. */
+  duplicate(id: number): Observable<ApiResponse<CuestionarioResponse>> {
+    return this.http.post<ApiResponse<CuestionarioResponse>>(
+      `${this.API}/cuestionario/${id}/duplicar`,
+      {},
+    );
+  }
+
   updateSettings(
     id: number,
     req: ActualizarCuestionarioRequest,
@@ -106,20 +114,20 @@ export class QuestionnairesService {
     return this.http.get<ApiResponse<PreguntaResponse[]>>(`${this.API}/preguntas/listar`);
   }
 
-  /** Banco de preguntas paginado (page 0-based); filtros opcionales por tipo y texto. */
+  /** Banco de preguntas paginado (page 0-based); filtros opcionales por tipo, texto, skill y dimensión. */
   getQuestionsPaged(
     page: number,
     size: number,
     tipoPregunta?: string | null,
     search?: string | null,
+    skill?: string | null,
+    idDimension?: number | null,
   ): Observable<ApiResponse<PageResponse<PreguntaResponse>>> {
     let params = new HttpParams().set('page', page).set('size', size);
-    if (tipoPregunta) {
-      params = params.set('tipoPregunta', tipoPregunta);
-    }
-    if (search && search.trim()) {
-      params = params.set('search', search.trim());
-    }
+    if (tipoPregunta) params = params.set('tipoPregunta', tipoPregunta);
+    if (search && search.trim()) params = params.set('search', search.trim());
+    if (skill) params = params.set('skill', skill);
+    if (idDimension != null) params = params.set('idDimension', idDimension);
     return this.http.get<ApiResponse<PageResponse<PreguntaResponse>>>(
       `${this.API}/preguntas/paginado`,
       { params },
@@ -128,6 +136,30 @@ export class QuestionnairesService {
 
   createQuestion(req: PreguntaRequest): Observable<ApiResponse<PreguntaResponse>> {
     return this.http.post<ApiResponse<PreguntaResponse>>(`${this.API}/preguntas/crear_pregunta`, req);
+  }
+
+  /** Sube una imagen para una pregunta y devuelve su URL relativa. */
+  uploadQuestionImage(file: File): Observable<ApiResponse<{ imagenUrl: string }>> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<ApiResponse<{ imagenUrl: string }>>(
+      `${this.API}/preguntas/subir_imagen`,
+      form,
+    );
+  }
+
+  /** Actualiza (o quita, con null) la imagen de una pregunta existente. */
+  updateQuestionImage(
+    id: number,
+    imagenUrl: string | null,
+  ): Observable<ApiResponse<PreguntaResponse>> {
+    let params = new HttpParams();
+    if (imagenUrl) params = params.set('imagenUrl', imagenUrl);
+    return this.http.patch<ApiResponse<PreguntaResponse>>(
+      `${this.API}/preguntas/${id}/imagen`,
+      {},
+      { params },
+    );
   }
 
   /** Actualiza solo los pesos de las opciones. Body: { pesos: { idOpcion: peso } }. */

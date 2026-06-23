@@ -3,36 +3,100 @@
   margin: 2rem auto;
   padding: 0 1.5rem;
 }
-.dims__header h1 {
-  margin: 0 0 0.25rem;
+
+.dims__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 1.5rem;
+
+  h1 { margin: 0 0 0.25rem; }
+  p  { color: var(--text-secondary); margin: 0; }
 }
-.dims__header p {
-  color: var(--text-secondary);
-  margin: 0 0 1.5rem;
+
+// ── Formulario dentro del dialog ─────────────────────────────
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+
+  .full { width: 100%; }
 }
-.dims__form {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
+
+.btn-sp {
+  --mdc-circular-progress-active-indicator-color: white;
+  display: inline-flex;
+}
+
+// ── Barra de filtros ─────────────────────────────────────────
+.dims__filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 1.5rem;
 }
-.dims__form h3 {
-  margin: 0 0 0.75rem;
-}
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-.form-grid .full {
-  grid-column: 1 / -1;
-}
-.form-actions {
+
+.search-wrap {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-icon {
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  padding: 10px 0;
+  outline: none;
+
+  &::placeholder { color: var(--text-secondary); }
+}
+
+.skill-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+
+  &:hover:not(.active) {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
 }
 .dims__loading {
   display: flex;
@@ -63,7 +127,9 @@
 }
 .dim-item {
   display: flex;
-  align-items: center;
+  // Alinear arriba: las acciones quedan a la altura del nombre sin importar
+  // cuánto ocupe la descripción, así se ven uniformes entre todas las tarjetas.
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.6rem 0.9rem;
@@ -74,6 +140,8 @@
 .dim-info {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  min-width: 0; // permite ellipsis/wrap del texto sin empujar las acciones
 }
 .dim-name {
   font-weight: 500;
@@ -82,6 +150,31 @@
   font-size: 0.82rem;
   color: var(--text-secondary);
 }
+
+// Acciones: botones circulares suaves, alineados arriba y de tamaño uniforme.
+.dim-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.dim-actions button {
+  background: var(--bg-app, #f1f3f4) !important;
+  color: var(--text-secondary) !important;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: rgba(26, 92, 56, 0.1) !important; // tinte del color primario
+    color: var(--primary) !important;
+  }
+}
 .dim-actions .del {
   color: var(--danger) !important;
+
+  &:hover {
+    background: rgba(211, 47, 47, 0.1) !important; // tinte del color de peligro
+    color: var(--danger) !important;
+  }
 }

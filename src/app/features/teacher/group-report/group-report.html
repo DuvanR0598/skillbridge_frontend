@@ -11,10 +11,7 @@
     <!-- Encabezado -->
     <div class="gr-header">
       <div class="gr-header-left">
-        <a mat-icon-button routerLink="/app/teacher"
-           class="back-btn" aria-label="Volver">
-          <mat-icon>arrow_back</mat-icon>
-        </a>
+
         <div>
           <h2 class="gr-title">Reporte de grupo</h2>
           <p class="gr-sub">
@@ -24,9 +21,9 @@
         </div>
       </div>
       <button mat-stroked-button class="btn-export"
-              (click)="exportCsv()">
-        <mat-icon>download</mat-icon>
-        Exportar CSV
+              (click)="exportPdf()">
+        <mat-icon>picture_as_pdf</mat-icon>
+        Exportar PDF
       </button>
     </div>
 
@@ -61,9 +58,9 @@
         <div class="sum-icon icon-amber"><mat-icon>trending_up</mat-icon></div>
         <div class="sum-body">
           <span class="sum-val positive">
-            {{ formatPct(r.pcAlcanzadoCualquierNivelAvanzado) }}
+            {{ formatPct(pcAlcanzaronAvanzado()) }}
           </span>
-          <span class="sum-lbl">Alcanzaron ADVANCED</span>
+          <span class="sum-lbl">Alcanzaron AVANZADO</span>
         </div>
       </div>
 

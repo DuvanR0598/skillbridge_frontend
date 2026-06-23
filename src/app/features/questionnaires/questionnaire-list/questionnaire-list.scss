@@ -146,20 +146,18 @@
   box-shadow: var(--shadow-sm);
 }
 
+.q-item-wrap {
+  border-bottom: 1px solid var(--border);
+  &:last-child { border-bottom: none; }
+}
+
 .q-item {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 18px 20px;
-  border-bottom: 1px solid var(--border);
   transition: background 0.15s;
-
-  &:last-child {
-    border-bottom: none;
-  }
-  &:hover {
-    background: var(--bg-app);
-  }
+  &:hover { background: var(--bg-app); }
 }
 
 .q-info {
@@ -238,18 +236,150 @@
 
 .meta-icon {
   font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  line-height: 14px !important;
+  flex-shrink: 0;
 }
 
 .q-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   flex-shrink: 0;
+}
+
+// Botones de acción: estilo circular suave (editar, imprimir, verificar, menú).
+// Fondo translúcido para que contraste tanto sobre la tarjeta como sobre la
+// fila en hover (que usa var(--bg-app)).
+.q-actions a,
+.q-actions button {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text-secondary) !important;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: rgba(26, 92, 56, 0.1) !important; // tinte del color primario
+    color: var(--primary) !important;
+  }
 }
 
 ::ng-deep .danger-item {
   color: #dc2626 !important;
-  mat-icon {
-    color: #dc2626 !important;
+  mat-icon { color: #dc2626 !important; }
+}
+
+// ── Botón verificar activo ────────────────────────────────────
+.active-check {
+  background: rgba(26, 92, 56, 0.12) !important;
+  color: var(--primary) !important;
+}
+
+// ── Panel checklist de pre-publicación ───────────────────────
+.cl-panel {
+  margin: 0 20px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-app);
+  overflow: hidden;
+}
+
+.cl-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cl-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+
+  .cl-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
   }
+}
+
+.cl-icon-ok  { color: #16a34a; font-size: 20px !important; }
+.cl-icon-warn { color: #d97706; font-size: 20px !important; }
+
+.cl-list {
+  list-style: none;
+  padding: 12px 20px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cl-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  &.cl-ok  .cl-item-icon { color: #16a34a; }
+  &.cl-fail .cl-item-icon { color: #dc2626; }
+}
+
+.cl-item-icon {
+  font-size: 18px !important;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cl-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cl-item-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cl-item-detail {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cl-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.cl-btn-publish {
+  background: #16a34a !important;
+  color: #fff !important;
+  gap: 6px;
+}
+
+.cl-hint {
+  font-size: 12px;
+  color: #b45309;
+  flex: 1;
+}
+
+// ── Paginador ─────────────────────────────────────────────────
+.q-paginator {
+  margin-top: 12px;
+  background: transparent;
+  border-radius: var(--radius-sm);
 }

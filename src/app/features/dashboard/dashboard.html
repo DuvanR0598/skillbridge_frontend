@@ -21,18 +21,6 @@
         }
       </p>
     </div>
-
-    @if (isStudent()) {
-      <a mat-flat-button class="btn-action-primary" routerLink="/app/assessment">
-        <mat-icon>play_arrow</mat-icon>
-        Comenzar evaluación
-      </a>
-    } @else {
-      <a mat-flat-button class="btn-action-primary" routerLink="/app/questionnaires">
-        <mat-icon>add</mat-icon>
-        Nuevo cuestionario
-      </a>
-    }
   </div>
 
   <!-- Tarjetas de estadísticas -->
@@ -152,6 +140,12 @@
               <mat-icon class="card-icon">trending_up</mat-icon>
               Progreso por dimensión
             </h3>
+            @if (progressQuestionnaire()) {
+              <span class="progress-source" matTooltip="Cuestionario del cual provienen estos resultados">
+                <mat-icon class="ps-icon">quiz</mat-icon>
+                {{ progressQuestionnaire() }}
+              </span>
+            }
           </div>
           <div class="skills-list">
             @for (skill of skills(); track $index) {

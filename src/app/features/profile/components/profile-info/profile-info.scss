@@ -129,6 +129,32 @@ mat-form-field {
   width: 100%;
 }
 
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Campos de solo lectura: fondo gris para indicar que no son editables
+.readonly-field {
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background: var(--bg-muted, #f1f3f4);
+  }
+
+  ::ng-deep input.mat-mdc-input-element {
+    color: var(--text-secondary, #6b7280);
+    cursor: not-allowed;
+  }
+
+  ::ng-deep .mat-mdc-form-field-hint {
+    color: var(--text-secondary, #9ca3af);
+  }
+}
+
 .fi {
   font-size: 18px;
   color: var(--text-secondary);

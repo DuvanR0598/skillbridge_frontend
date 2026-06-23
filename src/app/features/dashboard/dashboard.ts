@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../core/auth/auth.service';
 import { DashboardService } from './dashboard.service';
 import {
@@ -27,6 +28,7 @@ import {
     MatButtonModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
@@ -43,6 +45,8 @@ export class DashboardComponent implements OnInit {
   loading = signal(true);
   stats = signal<DashboardStats | null>(null);
   skills = signal<SkillSummary[]>([]);
+  // Nombre del cuestionario del cual provienen las barras PRE/POST.
+  progressQuestionnaire = signal<string | null>(null);
 
   // Acciones pendientes según el estado del estudiante
   pendingActions = signal<PendingAction[]>([]);
@@ -52,9 +56,10 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.dashSvc.loadDashboardData().subscribe({
-      next: ({ stats, skills }) => {
+      next: ({ stats, skills, progressQuestionnaire }) => {
         this.stats.set(stats);
         this.skills.set(skills);
+        this.progressQuestionnaire.set(progressQuestionnaire ?? null);
         // Las "acciones pendientes" (PRE/POST_TEST) solo aplican al estudiante.
         if (this.isStudent()) {
           this.buildPendingActions(stats, skills);

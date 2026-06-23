@@ -12,6 +12,7 @@ import { OpcionPreguntaRequest, PreguntaRequest, PreguntaResponse, QuestionType 
 import { QuestionnairesService } from '../questionnaires.service';
 import { DimensionsService } from '../../dimensions/dimensions.service';
 import { DimensionResponse, SKILL_OPTIONS, SkillTipo } from '../../../core/models/dimension.model';
+import { resolveMediaUrl } from '../../../core/utils/media-url';
 
 @Component({
   selector: 'app-question-form',
@@ -37,6 +38,11 @@ export class QuestionForm {
 
   saving   = signal(false);
   errorMsg = signal<string | null>(null);
+
+  // Imagen adjunta de la pregunta
+  imageUrl    = signal<string | null>(null); // URL relativa devuelta por el backend
+  imagePreview = signal<string | null>(null); // src para mostrar (absoluta o base64)
+  uploadingImage = signal(false);
 
   // Dimensiones disponibles (para clasificar la pregunta), agrupadas por skill
   dimensions = signal<DimensionResponse[]>([]);
@@ -85,21 +91,10 @@ export class QuestionForm {
     return !this.needsOptions || this.options.length >= 2;
   }
 
-  /** Opción única/múltiple deben tener al menos una opción marcada como correcta. */
-  get hasCorrectOption(): boolean {
-    if (this.selectedType !== 'OPCION_UNICA' && this.selectedType !== 'OPCION_MULTIPLE') {
-      return true;
-    }
-    return this.options.controls.some((c) => c.get('isCorrect')?.value === true);
-  }
-
   /** Mensaje de validación de opciones para mostrar en la UI (o null si todo OK). */
   get optionsError(): string | null {
     if (!this.hasMinOptions) {
       return 'Debes agregar al menos 2 opciones de respuesta.';
-    }
-    if (!this.hasCorrectOption) {
-      return 'Marca al menos una opción como correcta.';
     }
     return null;
   }
@@ -113,8 +108,8 @@ export class QuestionForm {
     const type = this.selectedType;
 
     if (type === 'VERDADERO_FALSO') {
-      this.addOption('Verdadero', true,  1, 1);
-      this.addOption('Falso',     false, 0, 2);
+      this.addOption('Verdadero', 1, 1);
+      this.addOption('Falso',     0, 2);
     } else if (type === 'LIKERT') {
       const labels = [
         'Totalmente en desacuerdo',
@@ -122,20 +117,18 @@ export class QuestionForm {
         'De acuerdo', 'Totalmente de acuerdo'
       ];
       labels.forEach((lbl, i) =>
-        this.addOption(lbl, false, i + 1, i + 1)
+        this.addOption(lbl, i + 1, i + 1)
       );
     }
   }
 
   addOption(
     text    = '',
-    correct = false,
     weight  = 0,
     order   = this.options.length + 1
   ): void {
     this.options.push(this.fb.group({
       text:         [text,    [Validators.required, Validators.maxLength(500)]],
-      isCorrect:    [correct],
       weight:       [weight,  [Validators.required, Validators.min(0)]],
       displayOrder: [order,   [Validators.required, Validators.min(1)]]
     }));
@@ -167,15 +160,17 @@ export class QuestionForm {
     const req: PreguntaRequest = {
       tipoPregunta: v.questionType,
       texto:        v.text.trim(),
+      imagenUrl:    this.imageUrl() ?? undefined,
       ayuda:        v.help     || undefined,
       maxOpciones:  v.maxOptions   || undefined,
       idDimension:  v.dimensionId  || undefined,
-      // Mapear las claves del form (text/isCorrect/weight/displayOrder)
-      // a las que espera el backend (texto/isCorrecta/peso/ordenVisualizacion)
+      // Mapear las claves del form (text/weight/displayOrder)
+      // a las que espera el backend (texto/peso/ordenVisualizacion).
+      // No se envía "isCorrecta": en soft skills se mide por peso, no hay
+      // respuesta correcta/incorrecta.
       opcionPreguntaRequest: this.needsOptions
         ? (v.options as any[]).map((o, i): OpcionPreguntaRequest => ({
             texto:              (o.text ?? '').trim(),
-            isCorrecta:         !!o.isCorrect,
             peso:               o.weight ?? 0,
             ordenVisualizacion: o.displayOrder ?? i + 1,
           }))
@@ -187,6 +182,7 @@ export class QuestionForm {
         this.saving.set(false);
         this.form.reset({ questionType: 'OPCION_UNICA' });
         this.options.clear();
+        this.removeImage();
         this.questionCreated.emit(res.data);
       },
       error: err => {
@@ -194,6 +190,52 @@ export class QuestionForm {
         this.errorMsg.set(err?.error?.message ?? 'Error al crear la pregunta.');
       }
     });
+  }
+
+  // ── Imagen de la pregunta ──────────────────────────────────
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.errorMsg.set('Formato de imagen no permitido. Usa JPEG, PNG o WebP.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMsg.set('La imagen no puede superar 5 MB.');
+      return;
+    }
+
+    // Preview inmediato (base64) mientras sube
+    const reader = new FileReader();
+    reader.onload = (e) => this.imagePreview.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+
+    this.uploadingImage.set(true);
+    this.errorMsg.set(null);
+    this.svc.uploadQuestionImage(file).subscribe({
+      next: (res) => {
+        this.uploadingImage.set(false);
+        const url = res.data.imagenUrl;
+        this.imageUrl.set(url);
+        this.imagePreview.set(resolveMediaUrl(url));
+      },
+      error: (err) => {
+        this.uploadingImage.set(false);
+        this.imagePreview.set(null);
+        this.errorMsg.set(err?.error?.message ?? 'No se pudo subir la imagen.');
+      },
+    });
+    // Permite volver a elegir el mismo archivo
+    input.value = '';
+  }
+
+  removeImage(): void {
+    this.imageUrl.set(null);
+    this.imagePreview.set(null);
   }
 
   cancel(): void { this.cancelled.emit(); }

@@ -22,6 +22,7 @@ export class DashboardService {
   loadDashboardData(): Observable<{
     stats: DashboardStats;
     skills: SkillSummary[];
+    progressQuestionnaire?: string | null;
   }> {
     const idEstudiante = this.authSvc.currentUser()?.id;
     const isStudent = this.authSvc.isStudent();
@@ -145,6 +146,10 @@ export class DashboardService {
               return of({ stats: baseStats, skills: [] as SkillSummary[] });
             }
 
+            // Nombre del cuestionario fuente de las barras PRE/POST.
+            const progressQuestionnaire =
+              published.find((q) => q.idCuestionario === targetId)?.nombre ?? null;
+
             return this.http
               .get<ApiResponse<any>>(
                 `${this.API}/analitica/estudiante/${idEstudiante}/cuestionario/${targetId}/progreso`,
@@ -160,9 +165,12 @@ export class DashboardService {
                         skillProgreso[0]?.postNivel ?? skillProgreso[0]?.preNivel ?? null,
                     },
                     skills,
+                    progressQuestionnaire,
                   };
                 }),
-                catchError(() => of({ stats: baseStats, skills: [] as SkillSummary[] })),
+                catchError(() =>
+                  of({ stats: baseStats, skills: [] as SkillSummary[], progressQuestionnaire }),
+                ),
               );
           }),
         );

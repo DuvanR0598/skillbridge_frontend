@@ -4,6 +4,21 @@
   gap: 0;
 }
 
+// Campo de usuario oculto para accesibilidad/gestores de contraseña.
+// Se oculta sin usar display:none ni visibility:hidden para que siga
+// presente en el DOM y los gestores lo asocien con la contraseña.
+.visually-hidden-username {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 // ── Proveedor activo ──────────────────────────────────────────
 .provider-info {
   display: flex;

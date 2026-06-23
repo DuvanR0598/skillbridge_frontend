@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../../core/auth/auth.service';
+import { resolveMediaUrl } from '../../../core/utils/media-url';
 
 interface NavItem {
   label: string;
@@ -26,8 +27,7 @@ interface NavGroup {
   styleUrl: './sidebar.scss',
 })
 export class Sidebar {
-  private authSvc = inject(AuthService);
-  private router = inject(Router);
+  private readonly authSvc = inject(AuthService);
 
   // Input/Output con la nueva API de Angular 21
   collapsed = input(false);
@@ -35,6 +35,10 @@ export class Sidebar {
 
   currentUser = this.authSvc.currentUser;
   userRoles = this.authSvc.userRoles;
+
+  avatarSrc(url: string | null | undefined): string | null {
+    return resolveMediaUrl(url);
+  }
 
   navGroups = computed<NavGroup[]>(() => {
     const roles = this.userRoles();
@@ -57,17 +61,17 @@ export class Sidebar {
         title: 'Mi actividad',
         items: [
           {
-            label: 'Mis evaluaciones',
+            label: 'Mis Evaluaciones',
             icon: 'assignment',
             route: '/app/assessment',
           },
           {
-            label: 'Mi progreso',
+            label: 'Mi Progreso',
             icon: 'trending_up',
             route: '/app/analytics',
           },
           {
-            label: 'Mi perfil',
+            label: 'Mi Perfil',
             icon: 'person',
             route: '/app/profile',
           },
@@ -75,15 +79,20 @@ export class Sidebar {
       });
     }
 
-    // Grupo del docente / admin
+    // Grupos del docente / admin
     if (roles.includes('ROLE_COORDINADOR') || roles.includes('ROLE_ADMIN')) {
       groups.push({
         title: 'Gestión académica',
         items: [
           {
-            label: 'Panel coordinador',
-            icon: 'dashboard_customize',
-            route: '/app/teacher',
+            label: 'Dimensiones',
+            icon: 'category',
+            route: '/app/dimensions',
+          },
+          {
+            label: 'Banco de Preguntas',
+            icon: 'library_books',
+            route: '/app/question-bank',
           },
           {
             label: 'Cuestionarios',
@@ -91,22 +100,38 @@ export class Sidebar {
             route: '/app/questionnaires',
           },
           {
-            label: 'Banco de preguntas',
-            icon: 'library_books',
-            route: '/app/question-bank',
-          },
-          {
-            label: 'Dimensiones',
-            icon: 'category',
-            route: '/app/dimensions',
-          },
-          {
-            label: 'Matriz de puntuación',
+            label: 'Matriz de Puntuación',
             icon: 'grid_on',
             route: '/app/score-matrix',
           },
         ],
       });
+
+      groups.push({
+        title: 'Análisis',
+        items: [
+          {
+            label: 'Panel Coordinador',
+            icon: 'dashboard_customize',
+            route: '/app/teacher',
+          },
+        ],
+      });
+
+      // Vista de estudiantes (solo lectura) — para el coordinador.
+      // El admin ya cuenta con el módulo completo "Administración → Usuarios".
+      if (roles.includes('ROLE_COORDINADOR') && !roles.includes('ROLE_ADMIN')) {
+        groups.push({
+          title: 'Otros',
+          items: [
+            {
+              label: 'Usuarios',
+              icon: 'group',
+              route: '/app/students',
+            },
+          ],
+        });
+      }
     }
 
     // Grupo exclusivo del admin

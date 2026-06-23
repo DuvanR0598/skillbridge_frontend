@@ -30,7 +30,7 @@
     <button class="user-menu-btn" [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
       <div class="topbar-avatar">
         @if (currentUser()?.avatarUrl) {
-          <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.firstName" />
+          <img [src]="avatarSrc(currentUser()!.avatarUrl)" [alt]="currentUser()!.firstName" />
         } @else {
           <span class="avatar-initials">{{ getInitials() }}</span>
         }

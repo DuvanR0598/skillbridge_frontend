@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
+import { MessageService } from 'primeng/api';
 
 import { QuestionForm } from '../question-form/question-form';
 import { BranchingEditor } from '../branching-editor/branching-editor';
@@ -44,7 +45,8 @@ export class QuestionnaireBuilder implements OnInit {
   // 1. INYECCIONES
   // ============================================
   private route = inject(ActivatedRoute);
-  private svc = inject(QuestionnairesService);
+  private svc   = inject(QuestionnairesService);
+  private toast = inject(MessageService);
 
   // ============================================
   // 2. SIGNALS - Estado UI
@@ -52,8 +54,11 @@ export class QuestionnaireBuilder implements OnInit {
   loading = signal(true);
   saving = signal(false);
   errorMsg = signal<string | null>(null);
-  successMsg = signal<string | null>(null);
   showNewQuestionForm = signal(false);
+  bankSearch = signal('');
+  filterType = signal<string>('ALL');
+  filterSkill = signal<'ALL' | 'PENSAMIENTO_CRITICO' | 'ADAPTABILIDAD'>('ALL');
+  filterDimension = signal<number | 'ALL' | 'NONE'>('ALL');
 
   // ============================================
   // 3. SIGNALS - Datos principales
@@ -87,6 +92,36 @@ export class QuestionnaireBuilder implements OnInit {
     return this.bankQuestions().filter((q) => !added.has(q.idPregunta));
   });
 
+  /** Dimensiones únicas presentes en el banco disponible */
+  bankDimensions = computed(() => {
+    const map = new Map<number, string>();
+    for (const q of this.availableBank()) {
+      if (q.dimension) map.set(q.dimension.id, q.dimension.nombre);
+    }
+    return [...map.entries()].map(([id, nombre]) => ({ id, nombre }));
+  });
+
+  /** Tipos únicos presentes en el banco disponible */
+  bankTypes = computed(() =>
+    [...new Set(this.availableBank().map((q) => q.tipoPregunta))]
+  );
+
+  /** Banco filtrado por texto, tipo, skill y dimensión */
+  filteredBank = computed(() => {
+    const term  = this.bankSearch().toLowerCase().trim();
+    const type  = this.filterType();
+    const skill = this.filterSkill();
+    const dim   = this.filterDimension();
+    return this.availableBank().filter((q) => {
+      if (term && !q.texto.toLowerCase().includes(term)) return false;
+      if (type !== 'ALL' && q.tipoPregunta !== type) return false;
+      if (skill !== 'ALL' && q.dimension?.skill !== skill) return false;
+      if (dim === 'NONE' && q.dimension != null) return false;
+      if (typeof dim === 'number' && q.dimension?.id !== dim) return false;
+      return true;
+    });
+  });
+
   // ============================================
   // 6. CICLO DE VIDA
   // ============================================
@@ -108,8 +143,8 @@ export class QuestionnaireBuilder implements OnInit {
         .getById(this.questionnaireId())
         .pipe(catchError(() => of({ data: null }))),
 
-      // Banco de preguntas
-      bank: this.svc.getAllQuestions().pipe(catchError(() => of({ data: [] }))),
+      // Banco de preguntas completo (sin paginación)
+      bank: this.svc.getAllQuestions().pipe(catchError(() => of({ data: [] as PreguntaResponse[] }))),
 
       // Preguntas del cuestionario
       qqQuestions: this.svc
@@ -125,7 +160,6 @@ export class QuestionnaireBuilder implements OnInit {
         // Datos del cuestionario
         this.questionnaire.set(questionnaire.data);
 
-        // Banco de preguntas
         this.bankQuestions.set(bank.data ?? []);
 
         // Preguntas del cuestionario
@@ -200,12 +234,12 @@ export class QuestionnaireBuilder implements OnInit {
       .subscribe({
         next: () => {
           this.saving.set(false);
-          this.showSuccess('Pregunta agregada al cuestionario.');
+          this.toast.add({ severity: 'success', summary: 'Pregunta agregada', detail: 'La pregunta se agregó al cuestionario.' });
           this.refreshAll();
         },
         error: (err) => {
           this.saving.set(false);
-          this.errorMsg.set(err?.error?.message ?? 'Error al agregar la pregunta.');
+          this.toast.add({ severity: 'error', summary: 'Error', detail: err?.error?.message ?? 'Error al agregar la pregunta.' });
         },
       });
   }
@@ -220,12 +254,12 @@ export class QuestionnaireBuilder implements OnInit {
     this.svc.removeQuestion(this.questionnaireId(), questionId).subscribe({
       next: () => {
         this.saving.set(false);
-        this.showSuccess('Pregunta removida del cuestionario.');
+        this.toast.add({ severity: 'success', summary: 'Pregunta removida', detail: 'La pregunta se quitó del cuestionario.' });
         this.refreshAll();
       },
       error: (err) => {
         this.saving.set(false);
-        this.errorMsg.set(err?.error?.message ?? 'Error al quitar la pregunta.');
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err?.error?.message ?? 'Error al quitar la pregunta.' });
       },
     });
   }
@@ -286,11 +320,11 @@ export class QuestionnaireBuilder implements OnInit {
       next: (res) => {
         this.saving.set(false);
         this.questionnaire.set(res.data);
-        this.showSuccess('Cuestionario marcado como COMPLETO.');
+        this.toast.add({ severity: 'success', summary: 'Cuestionario completado', detail: 'El cuestionario se marcó como COMPLETO.' });
       },
       error: (err) => {
         this.saving.set(false);
-        this.errorMsg.set(err?.error?.message ?? 'Error al completar.');
+        this.toast.add({ severity: 'error', summary: 'Error', detail: err?.error?.message ?? 'Error al completar el cuestionario.' });
       },
     });
   }
@@ -333,20 +367,8 @@ export class QuestionnaireBuilder implements OnInit {
     return classes[type] ?? '';
   }
 
-  /**
-   * Muestra un mensaje de éxito temporal
-   */
-  private showSuccess(msg: string): void {
-    this.successMsg.set(msg);
-    setTimeout(() => this.successMsg.set(null), 3000);
-  }
-
-  /**
-   * Limpia los mensajes de error y éxito
-   */
   private clearMessages(): void {
     this.errorMsg.set(null);
-    this.successMsg.set(null);
   }
 
   getStatusLabel(status: string): string {

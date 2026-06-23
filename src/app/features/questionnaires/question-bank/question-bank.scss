@@ -21,29 +21,82 @@
 .bank__form {
   margin-bottom: 1.5rem;
 }
-.bank__filter {
+/* ── Bloque de filtros ───────────────────────────────────────── */
+.bank__filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 0;
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px 8px;
   margin-bottom: 1.25rem;
 }
+.filter-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+}
+.filter-divider {
+  height: 1px;
+  background: var(--border);
+  opacity: .6;
+  margin: 2px 0;
+}
+.filter-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding-top: 5px;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
 .filter-chip {
-  font-size: 13px;
-  font-weight: 500;
-  padding: 5px 14px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 11px;
   border-radius: 99px;
   border: 1px solid var(--border);
   background: var(--bg-card);
   color: var(--text-secondary);
   cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
 }
 .filter-chip:hover {
-  background: var(--bg-app);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 .filter-chip.active {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
+}
+.filter-chip.skill-chip-pc:hover,
+.filter-chip.skill-chip-pc.active {
+  background: rgba(37,99,235,.15);
+  border-color: #2563eb;
+  color: #2563eb;
+}
+.filter-chip.skill-chip-ad:hover,
+.filter-chip.skill-chip-ad.active {
+  background: rgba(192,92,0,.15);
+  border-color: #c05c00;
+  color: #c05c00;
+}
+.filter-chip.dim-chip-filter.active {
+  background: rgba(26,92,56,.15);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 .bank__loading {
   display: flex;
@@ -71,13 +124,26 @@
 }
 .q-card__head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.6rem;
 }
-.q-text {
+.q-card__meta {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.q-card__chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.q-text {
   margin: 0;
   font-weight: 500;
+  line-height: 1.4;
 }
 .type-chip {
   font-size: 11px;
@@ -87,11 +153,30 @@
   background: rgba(0, 0, 0, 0.06);
   white-space: nowrap;
 }
-.btn-del {
-  color: var(--danger) !important;
+// Botones de acción: estilo circular suave (editar / eliminar).
+.q-card__head button {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text-secondary) !important;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: rgba(26, 92, 56, 0.1) !important; // tinte del color primario
+    color: var(--primary) !important;
+  }
 }
-.btn-edit {
-  color: var(--primary) !important;
+.q-card__head button.btn-del {
+  color: var(--danger) !important;
+
+  mat-icon {
+    color: var(--danger) !important;
+  }
+
+  &:hover {
+    background: rgba(211, 47, 47, 0.1) !important; // tinte del color de peligro
+    color: var(--danger) !important;
+  }
 }
 .q-edit {
   margin-top: 0.75rem;
@@ -265,4 +350,104 @@
   font-size: 18px;
   width: 18px;
   height: 18px;
+}
+
+/* ── Etiqueta de skill en tarjetas ───────────────────────────── */
+.skill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+.skill-badge--pensamiento_critico {
+  background: rgba(37,99,235,.12);
+  color: #2563eb;
+}
+.skill-badge--adaptabilidad {
+  background: rgba(192,92,0,.12);
+  color: #c05c00;
+}
+
+// Miniatura de la imagen adjunta a la pregunta
+.q-thumb {
+  display: block;
+  margin-top: 0.5rem;
+  max-width: 160px;
+  max-height: 110px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+// ── Imagen en edición inline ──────────────────────────────────
+.edit-image {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+.edit-image-preview {
+  position: relative;
+  max-width: 160px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+
+  img {
+    display: block;
+    max-width: 100%;
+    max-height: 110px;
+    object-fit: contain;
+  }
+}
+.edit-image-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+}
+.edit-image-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.edit-img-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+  &:hover:not(.disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(26, 92, 56, 0.04);
+  }
+  &.danger:hover:not(.disabled) {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(211, 47, 47, 0.06);
+  }
+  &.disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
 }

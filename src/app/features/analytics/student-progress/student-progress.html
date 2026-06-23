@@ -36,10 +36,10 @@
             </mat-select>
           </mat-form-field>
         }
-        <a mat-stroked-button class="btn-eval" routerLink="/app/assessment">
-          <mat-icon>{{ hasPostTest() ? 'replay' : 'play_arrow' }}</mat-icon>
-          {{ hasPostTest() ? 'Nueva evaluación' : 'Iniciar POST_TEST' }}
-        </a>
+        <button mat-flat-button class="btn-pdf" (click)="exportPdf()">
+          <mat-icon>picture_as_pdf</mat-icon>
+          Descargar PDF
+        </button>
       </div>
     </div>
 
@@ -207,8 +207,14 @@
               <div class="history-scores">
                 @for (score of attempt.puntaje; track $index) {
                   <div class="hist-score">
-                    <span class="hist-skill">
+                    <span
+                      class="hist-skill"
+                      [class]="'skill-' + score.skill.toLowerCase()"
+                    >
                       {{ score.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                    </span>
+                    <span class="hist-dim" [matTooltip]="score.dimensionNombre ?? 'General'">
+                      {{ score.dimensionNombre ?? 'General' }}
                     </span>
                     <span class="hist-pct">
                       {{ score.porcentajePuntuacion | number: '1.0-0' }}%
@@ -219,23 +225,26 @@
                   </div>
                 }
               </div>
-              <span
-                class="history-status"
-                [class]="attempt.estado === 'COMPLETADO' ? 'status-done' : 'status-pending'"
-              >
-                {{ attempt.estado === 'COMPLETADO' ? 'Completado' : 'En progreso' }}
-              </span>
 
-              @if (attempt.estado === 'COMPLETADO') {
-                <a
-                  class="btn-view-result"
-                  [routerLink]="['/app/assessment', attempt.idEvaluacion, 'result']"
-                  matTooltip="Ver resultado de este intento"
+              <div class="history-actions">
+                <span
+                  class="history-status"
+                  [class]="attempt.estado === 'COMPLETADO' ? 'status-done' : 'status-pending'"
                 >
-                  <mat-icon class="vr-icon">visibility</mat-icon>
-                  Ver resultado
-                </a>
-              }
+                  {{ attempt.estado === 'COMPLETADO' ? 'Completado' : 'En progreso' }}
+                </span>
+
+                @if (attempt.estado === 'COMPLETADO') {
+                  <a
+                    class="btn-view-result"
+                    [routerLink]="['/app/assessment', attempt.idEvaluacion, 'result']"
+                    matTooltip="Ver resultado de este intento"
+                  >
+                    <mat-icon class="vr-icon">visibility</mat-icon>
+                    Ver resultado
+                  </a>
+                }
+              </div>
             </div>
           }
         </div>

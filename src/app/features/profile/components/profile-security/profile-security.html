@@ -27,21 +27,18 @@
 
     <h3 class="section-title">Cambiar contraseña</h3>
 
-    @if (errorMsg()) {
-      <div class="alert alert-error" role="alert">
-        <mat-icon>error_outline</mat-icon>
-        <span>{{ errorMsg() }}</span>
-      </div>
-    }
-
-    @if (successMsg()) {
-      <div class="alert alert-success" role="status">
-        <mat-icon>check_circle</mat-icon>
-        <span>{{ successMsg() }}</span>
-      </div>
-    }
-
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <!-- Campo de usuario oculto: requerido por accesibilidad y gestores de
+           contraseñas en formularios de contraseña (no se edita ni se envía). -->
+      <input
+        type="text"
+        autocomplete="username"
+        [value]="currentUser()?.email ?? ''"
+        aria-hidden="true"
+        tabindex="-1"
+        readonly
+        class="visually-hidden-username"
+      />
       <!-- Contraseña actual -->
       <mat-form-field appearance="outline">
         <mat-label>Contraseña actual</mat-label>
@@ -49,7 +46,7 @@
         <input
           matInput
           [type]="showCurrent() ? 'text' : 'password'"
-          formControlName="currentPassword"
+          formControlName="contrasenaActual"
           autocomplete="current-password"
         />
         <button mat-icon-button matSuffix type="button" (click)="showCurrent.update((v) => !v)">
@@ -58,7 +55,7 @@
           </mat-icon>
         </button>
         @if (
-          form.get('currentPassword')?.hasError('required') && form.get('currentPassword')?.touched
+          form.get('contrasenaActual')?.hasError('required') && form.get('contrasenaActual')?.touched
         ) {
           <mat-error>La contraseña actual es obligatoria</mat-error>
         }
@@ -71,7 +68,7 @@
         <input
           matInput
           [type]="showNew() ? 'text' : 'password'"
-          formControlName="newPassword"
+          formControlName="contrasenaNueva"
           autocomplete="new-password"
         />
         <button mat-icon-button matSuffix type="button" (click)="showNew.update((v) => !v)">
@@ -140,7 +137,7 @@
         <button
           mat-flat-button
           type="submit"
-          class="btn-save"
+          class="btn-action-primary"
           [disabled]="form.invalid || saving()"
         >
           @if (saving()) {
@@ -153,8 +150,6 @@
       </div>
     </form>
   }
-
-  <mat-divider class="divider-section" />
 
   <!-- Zona de peligro: cerrar todas las sesiones -->
   <div class="danger-zone">

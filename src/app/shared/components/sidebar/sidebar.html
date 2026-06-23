@@ -12,7 +12,7 @@
     <div class="user-card">
       <div class="user-avatar">
         @if (currentUser()?.avatarUrl) {
-          <img [src]="currentUser()!.avatarUrl" [alt]="currentUser()!.firstName" />
+          <img [src]="avatarSrc(currentUser()!.avatarUrl)" [alt]="currentUser()!.firstName" />
         } @else {
           <span class="avatar-initials">{{ getInitials() }}</span>
         }

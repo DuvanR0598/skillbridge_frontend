@@ -1,14 +1,31 @@
 <section class="dims">
+  <p-confirmdialog />
   <header class="dims__header">
-    <h1>Dimensiones por competencia</h1>
-    <p>Define las dimensiones que evalúa cada Power Skill.</p>
+    <div>
+      <h1>Dimensiones por competencia</h1>
+      <p>Define las dimensiones que evalúa cada Power Skill.</p>
+    </div>
+    <button mat-flat-button class="btn-action-primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon>
+      Nueva dimensión
+    </button>
   </header>
 
-  <!-- Formulario crear/editar -->
-  <div class="dims__form">
-    <h3>{{ editingId() ? 'Editar dimensión' : 'Nueva dimensión' }}</h3>
-    <div class="form-grid">
-      <mat-form-field appearance="outline">
+  <!-- Dialog crear / editar -->
+  <p-dialog
+    [header]="editingId() ? 'Editar dimensión' : 'Nueva dimensión'"
+    [visible]="showDialog()"
+    (visibleChange)="showDialog.set($event)"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    [style]="{ width: '520px', maxWidth: '95vw' }"
+    maskStyleClass="bank-dialog-mask"
+    [transitionOptions]="'1ms'"
+  >
+    <div class="dialog-form">
+      <mat-form-field appearance="outline" class="full">
         <mat-label>Competencia (Skill)</mat-label>
         <mat-select [(ngModel)]="fSkill">
           @for (s of skills; track s.value) {
@@ -17,7 +34,7 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="full">
         <mat-label>Nombre de la dimensión</mat-label>
         <input matInput [(ngModel)]="fNombre" placeholder="Ej: Interpretación" />
       </mat-form-field>
@@ -28,14 +45,46 @@
       </mat-form-field>
     </div>
 
-    <div class="form-actions">
-      @if (editingId()) {
-        <button mat-stroked-button (click)="cancelEdit()">Cancelar</button>
-      }
-      <button mat-flat-button class="btn-action-primary" [disabled]="!canSave() || saving()" (click)="save()">
-        <mat-icon>{{ editingId() ? 'save' : 'add' }}</mat-icon>
-        {{ editingId() ? 'Guardar' : 'Agregar dimensión' }}
+    <ng-template pTemplate="footer">
+      <button mat-stroked-button (click)="closeDialog()">Cancelar</button>
+      <button
+        mat-flat-button
+        class="btn-action-primary"
+        [disabled]="!canSave() || saving()"
+        (click)="save()"
+      >
+        @if (saving()) {
+          <mat-spinner diameter="16" class="btn-sp" />
+        } @else {
+          <mat-icon>{{ editingId() ? 'save' : 'add' }}</mat-icon>
+        }
+        {{ editingId() ? 'Guardar cambios' : 'Agregar dimensión' }}
       </button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Filtros -->
+  <div class="dims__filters">
+    <div class="search-wrap">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar por nombre..."
+        [value]="searchText()"
+        (input)="searchText.set($any($event.target).value)"
+      />
+    </div>
+    <div class="skill-filters">
+      @for (f of skillFilters; track f.value) {
+        <button
+          class="filter-btn"
+          [class.active]="filterSkill() === f.value"
+          (click)="filterSkill.set(f.value)"
+        >
+          {{ f.label }}
+        </button>
+      }
     </div>
   </div>
 
@@ -58,7 +107,7 @@
                   }
                 </div>
                 <div class="dim-actions">
-                  <button mat-icon-button (click)="startEdit(d)" matTooltip="Editar">
+                  <button mat-icon-button (click)="openEdit(d)" matTooltip="Editar">
                     <mat-icon>edit</mat-icon>
                   </button>
                   <button mat-icon-button class="del" (click)="remove(d)" matTooltip="Eliminar">

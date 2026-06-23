@@ -6,21 +6,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { RouterLink } from '@angular/router';
 import { QuestionForm } from '../question-form/question-form';
 import { QuestionnairesService } from '../questionnaires.service';
 import { PreguntaResponse } from '../../../core/models/questionnaire-admin.model';
 import { DimensionsService } from '../../dimensions/dimensions.service';
-import { DimensionResponse } from '../../../core/models/dimension.model';
+import { DimensionResponse, SkillTipo } from '../../../core/models/dimension.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
+import { resolveMediaUrl } from '../../../core/utils/media-url';
 
 @Component({
   selector: 'app-question-bank',
   providers: [ConfirmationService],
   imports: [
-    RouterLink,
     FormsModule,
     MatButtonModule,
     MatIconModule,
@@ -53,6 +52,11 @@ export class QuestionBank implements OnInit {
   editWeights = signal<Record<number, number>>({});
   savingEdit = signal(false);
 
+  // Edición de la imagen
+  editImageUrl = signal<string | null>(null);     // URL relativa actual (o nueva)
+  editImagePreview = signal<string | null>(null); // src para mostrar
+  uploadingEditImage = signal(false);
+
   // Paginación
   page = signal(0);
   pageSize = signal(10);
@@ -73,6 +77,10 @@ export class QuestionBank implements OnInit {
     { value: 'DESCRIPCION', label: 'Texto' },
   ];
 
+  // Filtro por skill y dimensión
+  selectedSkill = signal<SkillTipo | null>(null);
+  selectedDimension = signal<number | null>(null);
+
   ngOnInit(): void {
     this.load();
     this.dimSvc.list().subscribe((d) => this.dimensions.set(d));
@@ -86,10 +94,55 @@ export class QuestionBank implements OnInit {
     const w: Record<number, number> = {};
     for (const o of q.opcionPregunta) w[o.idOpcion] = o.peso;
     this.editWeights.set(w);
+    this.editImageUrl.set(q.imagenUrl ?? null);
+    this.editImagePreview.set(resolveMediaUrl(q.imagenUrl));
   }
 
   cancelEdit(): void {
     this.editingId.set(null);
+  }
+
+  // ── Imagen en edición ──────────────────────────────────────
+
+  onEditImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.errorMsg.set('Formato de imagen no permitido. Usa JPEG, PNG o WebP.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMsg.set('La imagen no puede superar 5 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => this.editImagePreview.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+
+    this.uploadingEditImage.set(true);
+    this.errorMsg.set(null);
+    this.svc.uploadQuestionImage(file).subscribe({
+      next: (res) => {
+        this.uploadingEditImage.set(false);
+        this.editImageUrl.set(res.data.imagenUrl);
+        this.editImagePreview.set(resolveMediaUrl(res.data.imagenUrl));
+      },
+      error: (err) => {
+        this.uploadingEditImage.set(false);
+        this.editImagePreview.set(resolveMediaUrl(this.editImageUrl()));
+        this.errorMsg.set(err?.error?.message ?? 'No se pudo subir la imagen.');
+      },
+    });
+    input.value = '';
+  }
+
+  removeEditImage(): void {
+    this.editImageUrl.set(null);
+    this.editImagePreview.set(null);
   }
 
   setWeight(idOpcion: number, value: number): void {
@@ -112,6 +165,12 @@ export class QuestionBank implements OnInit {
     if (pesosCambiaron) {
       calls.push(this.svc.updateOptionWeights(q.idPregunta, w));
     }
+    // ¿cambió la imagen? (incluye quitarla → null)
+    const newImg = this.editImageUrl();
+    const oldImg = q.imagenUrl ?? null;
+    if (newImg !== oldImg) {
+      calls.push(this.svc.updateQuestionImage(q.idPregunta, newImg));
+    }
 
     if (calls.length === 0) {
       this.editingId.set(null);
@@ -123,6 +182,8 @@ export class QuestionBank implements OnInit {
       next: (results) => {
         const updated = results[results.length - 1].data;
         if (updated) {
+          // Asegurar que la imagen refleje el estado final (llamadas en paralelo).
+          updated.imagenUrl = this.editImageUrl() ?? undefined;
           this.questions.update((list) =>
             list.map((x) => (x.idPregunta === q.idPregunta ? updated : x)),
           );
@@ -157,6 +218,26 @@ export class QuestionBank implements OnInit {
     this.load();
   }
 
+  onFilterSkill(skill: SkillTipo | null): void {
+    this.selectedSkill.set(skill);
+    this.selectedDimension.set(null); // resetear dimensión al cambiar skill
+    this.page.set(0);
+    this.load();
+  }
+
+  onFilterDimension(id: number | null): void {
+    this.selectedDimension.set(id);
+    this.page.set(0);
+    this.load();
+  }
+
+  /** Dimensiones filtradas por el skill seleccionado (para el selector de dimensión). */
+  filteredDimensions(): DimensionResponse[] {
+    const skill = this.selectedSkill();
+    if (!skill) return this.dimensions();
+    return this.dimensions().filter((d) => d.skill === skill);
+  }
+
   /** Búsqueda con debounce: recarga desde la primera página tras 350ms sin teclear. */
   onSearch(value: string): void {
     this.searchText.set(value);
@@ -170,7 +251,7 @@ export class QuestionBank implements OnInit {
   private load(): void {
     this.loading.set(true);
     this.svc
-      .getQuestionsPaged(this.page(), this.pageSize(), this.selectedType(), this.searchText())
+      .getQuestionsPaged(this.page(), this.pageSize(), this.selectedType(), this.searchText(), this.selectedSkill(), this.selectedDimension())
       .subscribe({
       next: (res) => {
         const data = res.data;
@@ -242,6 +323,10 @@ export class QuestionBank implements OnInit {
         });
       },
     });
+  }
+
+  imageSrc(url: string | null | undefined): string | null {
+    return resolveMediaUrl(url);
   }
 
   getTypeLabel(type: string): string {

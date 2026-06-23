@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { forkJoin, catchError, of } from 'rxjs';
@@ -12,6 +13,8 @@ import {
   ProfileStatusResponse,
   UsuarioPerfilResponse,
 } from '../../core/models/perfil.model';
+import { resolveMediaUrl } from '../../core/utils/media-url';
+import { AvatarViewer } from '../../shared/components/avatar-viewer/avatar-viewer';
 import { ProfileInfo } from './components/profile-info/profile-info';
 import { ProfileAcademic } from './components/profile-academic/profile-academic';
 import { ProfileSecurity } from './components/profile-security/profile-security';
@@ -23,11 +26,13 @@ import { ProfileSecurity } from './components/profile-security/profile-security'
     CommonModule,
     MatTabsModule,
     MatIconModule,
+    MatTooltipModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
     ProfileInfo,
     ProfileAcademic,
     ProfileSecurity,
+    AvatarViewer,
   ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
@@ -42,6 +47,15 @@ export class ProfileComponent implements OnInit {
   programs = signal<EngineeringProgramResponse[]>([]);
 
   currentUser = this.authSvc.currentUser;
+
+  // URL de la foto en el visor a pantalla completa (null = cerrado)
+  viewerUrl = signal<string | null>(null);
+
+  /** Abre el visor con la foto de perfil actual. */
+  openAvatar(): void {
+    const url = this.avatarSrc(this.profile()?.avatarUrl);
+    if (url) this.viewerUrl.set(url);
+  }
 
   ngOnInit(): void {
     forkJoin({
@@ -68,12 +82,17 @@ export class ProfileComponent implements OnInit {
       next: (res) => this.status.set(res.data),
     });
 
-    // Sincronizar el usuario en AuthService si cambió el avatar
+    // Sincronizar el usuario en AuthService si cambió el avatar, para que el
+    // sidebar y la topbar (que leen currentUser) se actualicen al instante.
     const current = this.currentUser();
     if (current && updated.avatarUrl !== current.avatarUrl) {
-      const updated_user = { ...current, avatarUrl: updated.avatarUrl };
-      localStorage.setItem('currentUser', JSON.stringify(updated_user));
+      this.authSvc.updateCurrentUser({ avatarUrl: updated.avatarUrl });
     }
+  }
+
+  /** Resuelve la URL del avatar a absoluta (prefija el origen del backend si es relativa). */
+  avatarSrc(url: string | null | undefined): string | null {
+    return resolveMediaUrl(url);
   }
 
   getInitials(): string {

@@ -1,5 +1,4 @@
 <div class="profile-shell">
-
   <!-- Encabezado -->
   <div class="profile-header">
     <div class="header-brand">
@@ -8,8 +7,8 @@
     </div>
     <h1 class="header-title">Completa tu perfil</h1>
     <p class="header-sub">
-      Solo toma unos minutos. Esta información nos permite
-      personalizar tu experiencia en la plataforma.
+      Solo toma unos minutos. Esta información nos permite personalizar tu experiencia en la
+      plataforma.
     </p>
 
     <!-- Barra de progreso -->
@@ -18,29 +17,62 @@
         <span>Completitud</span>
         <span class="progress-pct">{{ completionPct }}%</span>
       </div>
-      <mat-progress-bar
-        mode="determinate"
-        [value]="completionPct"
-        class="profile-progress"
-      />
+      <mat-progress-bar mode="determinate" [value]="completionPct" class="profile-progress" />
     </div>
   </div>
 
   <!-- Stepper -->
   <div class="stepper-card">
-
-    <mat-stepper
-      [linear]="true"
-      [selectedIndex]="currentStep()"
-      orientation="horizontal"
-    >
-
+    <mat-stepper [linear]="true" [selectedIndex]="currentStep()" orientation="horizontal">
       <!-- ── Paso 1: Información personal ─────────────────── -->
       <mat-step [stepControl]="personalForm" label="Personal">
         <form [formGroup]="personalForm">
-
           <h3 class="step-title">Información personal</h3>
           <p class="step-desc">Cuéntanos un poco sobre ti</p>
+
+          <!-- Identificación (solo si el usuario no la tiene, ej. Google) -->
+          @if (needsIdentification) {
+            <div class="two-col mt-2">
+              <mat-form-field appearance="outline">
+                <mat-label>Tipo de identificación</mat-label>
+                <mat-icon matPrefix class="field-icon">badge</mat-icon>
+                <mat-select formControlName="tipoIdentificacion">
+                  @for (opt of idTypeOptions; track opt.value) {
+                    <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  }
+                </mat-select>
+                @if (
+                  personalForm.get('tipoIdentificacion')?.hasError('required') &&
+                  personalForm.get('tipoIdentificacion')?.touched
+                ) {
+                  <mat-error>Selecciona el tipo</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Número de identificación</mat-label>
+                <input matInput formControlName="numeroIdentificacion" autocomplete="off" />
+                @if (
+                  personalForm.get('numeroIdentificacion')?.hasError('required') &&
+                  personalForm.get('numeroIdentificacion')?.touched
+                ) {
+                  <mat-error>El número es obligatorio</mat-error>
+                }
+                @if (
+                  personalForm.get('numeroIdentificacion')?.hasError('minlength') &&
+                  personalForm.get('numeroIdentificacion')?.touched
+                ) {
+                  <mat-error>Mínimo 3 caracteres</mat-error>
+                }
+                @if (
+                  personalForm.get('numeroIdentificacion')?.hasError('pattern') &&
+                  personalForm.get('numeroIdentificacion')?.touched
+                ) {
+                  <mat-error>Solo letras y números</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          }
 
           <!-- Fecha de nacimiento -->
           <mat-form-field appearance="outline" class="mt-2">
@@ -55,8 +87,10 @@
             />
             <mat-datepicker-toggle matIconSuffix [for]="picker" />
             <mat-datepicker #picker startView="multi-year" />
-            @if (personalForm.get('dateOfBirth')?.hasError('required')
-                 && personalForm.get('dateOfBirth')?.touched) {
+            @if (
+              personalForm.get('dateOfBirth')?.hasError('required') &&
+              personalForm.get('dateOfBirth')?.touched
+            ) {
               <mat-error>La fecha de nacimiento es obligatoria</mat-error>
             }
           </mat-form-field>
@@ -69,29 +103,32 @@
                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
               }
             </mat-select>
-            @if (personalForm.get('gender')?.hasError('required')
-                 && personalForm.get('gender')?.touched) {
+            @if (
+              personalForm.get('gender')?.hasError('required') &&
+              personalForm.get('gender')?.touched
+            ) {
               <mat-error>El género es obligatorio</mat-error>
             }
           </mat-form-field>
 
           <div class="step-actions">
-            <button mat-flat-button class="btn-next"
-                    matStepperNext
-                    [disabled]="personalForm.invalid"
-                    (click)="nextStep()">
+            <button
+              mat-flat-button
+              class="btn-next"
+              matStepperNext
+              [disabled]="personalForm.invalid"
+              (click)="nextStep()"
+            >
               Siguiente
               <mat-icon>arrow_forward</mat-icon>
             </button>
           </div>
-
         </form>
       </mat-step>
 
       <!-- ── Paso 2: Información académica ─────────────────── -->
       <mat-step [stepControl]="academicForm" label="Académico">
         <form [formGroup]="academicForm">
-
           <h3 class="step-title">Información académica</h3>
           <p class="step-desc">Datos de tu programa de estudios</p>
 
@@ -99,23 +136,59 @@
           <mat-form-field appearance="outline" class="mt-2">
             <mat-label>Programa de ingeniería</mat-label>
             <mat-icon matPrefix class="field-icon">school</mat-icon>
-            <mat-select formControlName="engineeringProgram" [disabled]="loading()">
+            <mat-select
+              formControlName="engineeringProgram"
+              [disabled]="loading()"
+              panelClass="program-search-panel"
+              (openedChange)="onProgramPanelToggle($event)"
+            >
+              <!-- Buscador dentro del panel -->
+              <div class="select-search-box">
+                <mat-icon class="select-search-icon">search</mat-icon>
+                <input
+                  type="text"
+                  class="select-search-input"
+                  placeholder="Buscar programa..."
+                  [value]="programSearch()"
+                  (input)="programSearch.set($any($event.target).value)"
+                  (keydown)="$event.stopPropagation()"
+                  (click)="$event.stopPropagation()"
+                />
+              </div>
+
               @if (programs().length === 0) {
                 <mat-option disabled>Cargando programas...</mat-option>
+              } @else if (filteredPrograms().length === 0) {
+                <mat-option disabled>Sin coincidencias</mat-option>
               } @else {
-                @for (prog of programs(); track prog.value) {
+                @for (prog of filteredPrograms(); track prog.value) {
                   <mat-option [value]="prog.value">{{ prog.displayName }}</mat-option>
                 }
               }
             </mat-select>
-            @if (academicForm.get('engineeringProgram')?.hasError('required')
-                 && academicForm.get('engineeringProgram')?.touched) {
+            @if (
+              academicForm.get('engineeringProgram')?.hasError('required') &&
+              academicForm.get('engineeringProgram')?.touched
+            ) {
               <mat-error>Selecciona tu programa</mat-error>
             }
           </mat-form-field>
 
-          <!-- Semestre y año -->
+          <!-- Semestre y código -->
           <div class="two-col mt-3">
+            <mat-form-field appearance="outline" class="readonly-field">
+              <mat-label>Código del Programa</mat-label>
+              <mat-icon matPrefix class="field-icon">badge</mat-icon>
+              <input
+                matInput
+                type="text"
+                [value]="selectedProgramCodigo"
+                readonly
+                placeholder="Se asigna automáticamente"
+              />
+              <mat-hint>Se asigna según el programa</mat-hint>
+            </mat-form-field>
+
             <mat-form-field appearance="outline">
               <mat-label>Semestre actual</mat-label>
               <mat-select formControlName="academicSemester">
@@ -123,41 +196,37 @@
                   <mat-option [value]="sem">Semestre {{ sem }}</mat-option>
                 }
               </mat-select>
-              @if (academicForm.get('academicSemester')?.hasError('required')
-                   && academicForm.get('academicSemester')?.touched) {
+              @if (
+                academicForm.get('academicSemester')?.hasError('required') &&
+                academicForm.get('academicSemester')?.touched
+              ) {
                 <mat-error>Selecciona tu semestre</mat-error>
               }
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Código Programa</mat-label>
-              <mat-icon matPrefix class="field-icon">badge</mat-icon>
-              <input matInput type="number" />
             </mat-form-field>
           </div>
 
           <div class="step-actions">
-            <button mat-stroked-button class="btn-back"
-                    matStepperPrevious (click)="prevStep()">
+            <button mat-stroked-button class="btn-back" matStepperPrevious (click)="prevStep()">
               <mat-icon>arrow_back</mat-icon>
               Anterior
             </button>
-            <button mat-flat-button class="btn-next"
-                    matStepperNext
-                    [disabled]="academicForm.invalid"
-                    (click)="nextStep()">
+            <button
+              mat-flat-button
+              class="btn-next"
+              matStepperNext
+              [disabled]="academicForm.invalid"
+              (click)="nextStep()"
+            >
               Siguiente
               <mat-icon>arrow_forward</mat-icon>
             </button>
           </div>
-
         </form>
       </mat-step>
 
       <!-- ── Paso 3: Sobre mí ──────────────────────────────── -->
       <mat-step label="Sobre mí">
         <form [formGroup]="bioForm">
-
           <h3 class="step-title">Cuéntanos sobre ti</h3>
           <p class="step-desc">Este paso es opcional</p>
 
@@ -184,37 +253,29 @@
           }
 
           <div class="step-actions">
-            <button mat-stroked-button class="btn-back"
-                    matStepperPrevious (click)="prevStep()">
+            <button mat-stroked-button class="btn-back" matStepperPrevious (click)="prevStep()">
               <mat-icon>arrow_back</mat-icon>
               Anterior
             </button>
-            <button mat-flat-button class="btn-primary"
-                    type="button"
-                    (click)="onSubmit()"
-                    [disabled]="savingStep()">
+            <button
+              mat-flat-button
+              class="btn-primary"
+              type="button"
+              (click)="onSubmit()"
+              [disabled]="savingStep()"
+            >
               @if (savingStep()) {
                 <mat-spinner diameter="20" class="btn-spinner" />
-                <span>Guardando...</span>
+                Guardando...
               } @else {
-                <ng-container>  
-                  <mat-icon>check_circle</mat-icon>
-                  <span>Completar perfil</span>
+                <ng-container>
+                  <mat-icon>check_circle</mat-icon> Completar perfil
                 </ng-container>
               }
             </button>
           </div>
-
-          <div class="skip-wrap mt-1">
-            <button mat-button class="btn-skip" (click)="skipForNow()">
-              Completar más tarde
-            </button>
-          </div>
-
         </form>
       </mat-step>
-
     </mat-stepper>
   </div>
-
 </div>

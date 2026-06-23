@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -7,18 +7,23 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { QuestionnairesService } from '../questionnaires.service';
+import { environment } from '../../../../environments/environment';
+import { ApiResponse } from '../../../core/models/api-response.model';
+import { EngineeringProgramResponse } from '../../../core/models/perfil.model';
 
 @Component({
   selector: 'app-questionnaire-form',
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, RouterLink,
-    MatFormFieldModule, MatInputModule,
+    MatFormFieldModule, MatInputModule, MatSelectModule,
     MatButtonModule, MatIconModule,
     MatSlideToggleModule, MatDatepickerModule,
     MatNativeDateModule, MatProgressSpinnerModule,
@@ -31,14 +36,41 @@ export class QuestionnaireForm implements OnInit {
   private fb      = inject(FormBuilder);
   private svc     = inject(QuestionnairesService);
   private authSvc = inject(AuthService);
+  private http    = inject(HttpClient);
   private router  = inject(Router);
   private route   = inject(ActivatedRoute);
+
+  private readonly API = environment.apiUrl;
 
   saving      = signal(false);
   loading     = signal(false);
   errorMsg    = signal<string | null>(null);
   isEdit      = signal(false);
   qId         = signal<number | null>(null);
+  programs    = signal<EngineeringProgramResponse[]>([]);
+  programSearch = signal('');
+
+  /** Programas filtrados por coincidencia de palabras (sin acentos/mayúsculas). */
+  filteredPrograms = computed(() => {
+    const term = this.normalize(this.programSearch().trim());
+    const list = this.programs();
+    if (!term) return list;
+    const words = term.split(/\s+/);
+    return list.filter((p) => {
+      const name = this.normalize(p.displayName);
+      return words.every((w) => name.includes(w));
+    });
+  });
+
+  /** Quita acentos y pasa a minúsculas para comparar sin distinción. */
+  private normalize(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
+
+  /** Limpia el buscador al cerrar el panel. */
+  onProgramPanelToggle(open: boolean): void {
+    if (!open) this.programSearch.set('');
+  }
 
   form: FormGroup = this.fb.group({
     name: ['', [
@@ -52,7 +84,9 @@ export class QuestionnaireForm implements OnInit {
     appPeriodEnd:   [null],
     endTime:        [''],
     timeLimitMinutes: [null, [Validators.min(1)]],
-    randomOrder: [false]
+    randomOrder: [false],
+    // 'GENERAL' = para todos los estudiantes; o el valor (enum) de un programa.
+    targetProgram: ['GENERAL']
   });
 
   // Fecha mínima seleccionable en los date pickers: hoy (no se programa en el pasado)
@@ -101,12 +135,22 @@ export class QuestionnaireForm implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadPrograms();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit.set(true);
       this.qId.set(Number(id));
       this.loadExisting(Number(id));
     }
+  }
+
+  private loadPrograms(): void {
+    this.http
+      .get<ApiResponse<EngineeringProgramResponse[]>>(`${this.API}/perfil/programas`)
+      .subscribe({
+        next: (res) => this.programs.set(res.data ?? []),
+        error: () => this.programs.set([]),
+      });
   }
 
   private loadExisting(id: number): void {
@@ -128,7 +172,8 @@ export class QuestionnaireForm implements OnInit {
           appPeriodEnd:     end,
           endTime:          hhmm(end),
           timeLimitMinutes: q.tiempoLimiteMinutos ?? null,
-          randomOrder:      q.ordenAleatorio
+          randomOrder:      q.ordenAleatorio,
+          targetProgram:    q.programaObjetivo ?? 'GENERAL'
         });
         if (!q.editable) this.form.disable();
         this.loading.set(false);
@@ -154,6 +199,10 @@ export class QuestionnaireForm implements OnInit {
     const fechaInicio = this.toLocalDateTime(v.appPeriodStart, v.startTime);
     const fechaFin    = this.toLocalDateTime(v.appPeriodEnd, v.endTime);
     const tiempoLimiteMinutos = v.timeLimitMinutes ? Number(v.timeLimitMinutes) : null;
+    // 'GENERAL' → null (todos los estudiantes); de lo contrario, el programa elegido.
+    const programaObjetivo = v.targetProgram && v.targetProgram !== 'GENERAL'
+      ? v.targetProgram
+      : null;
 
     if (this.isEdit()) {
       this.svc.updateSettings(this.qId()!, {
@@ -163,7 +212,8 @@ export class QuestionnaireForm implements OnInit {
         fechaInicio,
         fechaFin,
         ordenAleatorio:    v.randomOrder,
-        tiempoLimiteMinutos
+        tiempoLimiteMinutos,
+        programaObjetivo
       }).subscribe({
         next: () => {
           this.saving.set(false);
@@ -182,7 +232,8 @@ export class QuestionnaireForm implements OnInit {
         fechaInicio,
         fechaFin,
         ordenAleatorio:    v.randomOrder,
-        tiempoLimiteMinutos
+        tiempoLimiteMinutos,
+        programaObjetivo
       }).subscribe({
         next: res => {
           this.saving.set(false);

@@ -22,8 +22,32 @@
       <p class="empty-sub">Tu docente aún no ha publicado cuestionarios. Vuelve más tarde.</p>
     </div>
   } @else {
+    <!-- Buscador -->
+    <div class="search-wrap">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar evaluación..."
+        [value]="searchText()"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+      @if (searchText()) {
+        <button type="button" class="search-clear" (click)="onSearchChange('')" aria-label="Limpiar búsqueda">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </div>
+
+    @if (filteredQuestionnaires().length === 0) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">search_off</mat-icon>
+        <p class="empty-title">Sin coincidencias</p>
+        <p class="empty-sub">No se encontraron evaluaciones para tu búsqueda.</p>
+      </div>
+    } @else {
     <div class="questionnaire-grid">
-      @for (q of questionnaires(); track q.id) {
+      @for (q of pagedQuestionnaires(); track q.id) {
         <div class="q-card">
           <div class="q-card-header">
             <div class="q-icon">
@@ -139,5 +163,17 @@
         </div>
       }
     </div>
+
+    <!-- Paginación -->
+    <mat-paginator
+      class="assessment-paginator"
+      [length]="filteredQuestionnaires().length"
+      [pageSize]="pageSize()"
+      [pageIndex]="pageIndex()"
+      [pageSizeOptions]="[6, 12, 24]"
+      (page)="onPage($event)"
+      aria-label="Seleccionar página de evaluaciones"
+    />
+    }
   }
 </div>

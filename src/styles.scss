@@ -9,7 +9,7 @@ $skillbridge-warn: mat.m2-define-palette(mat.$m2-red-palette, 600);
 
 $skillbridge-theme: mat.m2-define-light-theme(
   (
-    color: ( 
+    color: (
       primary: $skillbridge-primary,
       accent: $skillbridge-accent,
       warn: $skillbridge-warn,
@@ -195,7 +195,7 @@ h4 {
 }
 
 .debug {
-    border: 1px solid red;
+  border: 1px solid red;
 }
 
 // ── Máscara de diálogos PrimeNG con fondo desenfocado ──────────
@@ -236,5 +236,380 @@ h4 {
   }
   &:disabled {
     opacity: 0.65;
+  }
+}
+
+// ── Impresión de vista previa de cuestionario ─────────────────
+// La clase .print-preview se añade al body solo cuando el componente
+// QuestionnairePreview está activo. Así el @media print solo oculta
+// el chrome del layout en esa pantalla y no en el resto de la app.
+@media print {
+  body.print-preview {
+    background: #fff !important;
+
+    // Ocultar sidebar, topbar, overlay y barra de herramientas de la vista previa
+    .sidebar-wrap,
+    app-topbar,
+    .mobile-overlay,
+    .pv-toolbar,
+    .pv-loading,
+    .pv-error {
+      display: none !important;
+    }
+
+    // Eliminar restricciones de altura y overflow que cortan el contenido
+    html,
+    body,
+    .layout-shell,
+    .main-area,
+    .content-area,
+    app-questionnaire-preview {
+      height: auto !important;
+      min-height: unset !important;
+      max-height: unset !important;
+      overflow: visible !important;
+    }
+
+    // El layout pasa a flujo de bloque (sin flex que limite el alto)
+    .layout-shell {
+      display: block !important;
+    }
+
+    .main-area {
+      display: block !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .content-area {
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: visible !important;
+    }
+
+    // La hoja del cuestionario ocupa toda la página impresa
+    .pv-page {
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 15mm 18mm !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      font-size: 11pt !important;
+    }
+
+    // Evitar cortes dentro de una pregunta; permitirlos entre preguntas
+    .pv-question {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    // Forzar impresión de colores de fondo en chips
+    .pv-type-chip,
+    .pv-dim-chip,
+    .pv-req-chip,
+    .pv-cond-chip,
+    .pv-instructions {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+}
+
+// ── Impresión del reporte de grupo ────────────────────────────
+@media print {
+  body.print-group-report {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+
+    // Ocultar chrome del layout
+    .sidebar-wrap,
+    app-topbar,
+    .mobile-overlay {
+      display: none !important;
+    }
+
+    // Eliminar restricciones de altura y overflow
+    html,
+    body,
+    .layout-shell,
+    .main-area,
+    .content-area,
+    app-group-report {
+      height: auto !important;
+      min-height: unset !important;
+      max-height: unset !important;
+      overflow: visible !important;
+    }
+
+    .layout-shell {
+      display: block !important;
+    }
+
+    .main-area {
+      display: block !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .content-area {
+      padding: 8mm 10mm !important;
+      margin: 0 !important;
+      overflow: visible !important;
+    }
+
+    // Ocultar controles interactivos: botones de acción, detalle individual
+    .back-btn,
+    .btn-export,
+    .student-table-panel,   // acordeón individual de estudiantes
+    .sd-plan-btn,
+    .sd-plan,
+    .showAnswers,
+    .phase-filter {
+      display: none !important;
+    }
+
+    // Encabezado compacto para impresión
+    .gr-header {
+      margin-bottom: 6mm;
+      page-break-after: avoid;
+    }
+
+    // Tarjetas de resumen en una sola fila
+    .summary-grid {
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 6px !important;
+      page-break-after: avoid;
+    }
+
+    // Evitar cortes dentro de tarjetas y secciones
+    .sum-card,
+    .highlight-card,
+    .card,
+    .dist-block {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      box-shadow: none !important;
+      border: 1px solid #ccc !important;
+    }
+
+    // Colores de fondo de chips y pills
+    .level-pill,
+    .phase-chip,
+    .sum-icon,
+    .support-count,
+    .hl-header,
+    .critical-card,
+    .improved-card {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    // Shell sin sombras ni espacios innecesarios
+    .gr-shell {
+      max-width: 100% !important;
+      gap: 10px !important;
+    }
+  }
+}
+
+// ── Impresión del reporte de progreso del estudiante ──────────
+@media print {
+  body.print-progress {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+
+    // Ocultar chrome del layout
+    .sidebar-wrap,
+    app-topbar,
+    .mobile-overlay {
+      display: none !important;
+    }
+
+    // Eliminar restricciones de altura y overflow
+    html,
+    body,
+    .layout-shell,
+    .main-area,
+    .content-area,
+    app-student-progress {
+      height: auto !important;
+      min-height: unset !important;
+      max-height: unset !important;
+      overflow: visible !important;
+    }
+
+    .layout-shell {
+      display: block !important;
+    }
+
+    .main-area {
+      display: block !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .content-area {
+      padding: 8mm 10mm !important;
+      margin: 0 !important;
+      overflow: visible !important;
+    }
+
+    // Ocultar controles interactivos: botón PDF, selector y enlaces de acción
+    .btn-pdf,
+    .q-selector,
+    .btn-view-result {
+      display: none !important;
+    }
+
+    // Encabezado compacto
+    .page-header {
+      margin-bottom: 6mm;
+      page-break-after: avoid;
+    }
+
+    // Evitar cortes dentro de tarjetas y secciones
+    .summary-card,
+    .card,
+    .plan-item,
+    .history-row,
+    app-escalation-card {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      box-shadow: none !important;
+    }
+
+    // Forzar impresión de colores de fondo en íconos, badges y pills
+    .summary-icon,
+    .plan-axis-badge,
+    .phase-label,
+    .hist-level,
+    .legend-dot,
+    .history-status {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    // Shell sin restricciones de ancho
+    .progress-shell {
+      max-width: 100% !important;
+    }
+  }
+}
+
+// ── Impresión del resultado de una evaluación ─────────────────
+@media print {
+  body.print-result {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+
+    // Ocultar chrome del layout
+    .sidebar-wrap,
+    app-topbar,
+    .mobile-overlay {
+      display: none !important;
+    }
+
+    // Eliminar restricciones de altura y overflow
+    html,
+    body,
+    .layout-shell,
+    .main-area,
+    .content-area,
+    app-assessment-result {
+      height: auto !important;
+      min-height: unset !important;
+      max-height: unset !important;
+      overflow: visible !important;
+    }
+
+    .layout-shell {
+      display: block !important;
+    }
+
+    .main-area {
+      display: block !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .content-area {
+      padding: 8mm 10mm !important;
+      margin: 0 !important;
+      overflow: visible !important;
+    }
+
+    // Ocultar controles interactivos: botones de acción
+    .result-actions {
+      display: none !important;
+    }
+
+    // Evitar cortes dentro de tarjetas y secciones
+    .result-banner,
+    .card,
+    .result-card,
+    .plan-card {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      box-shadow: none !important;
+    }
+
+    // Forzar impresión de colores de fondo en banner, badges y barras
+    .result-banner,
+    .banner-icon,
+    .level-badge,
+    .plan-axis,
+    .score-bar-fill {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    // Shell sin restricciones de ancho
+    .result-shell {
+      max-width: 100% !important;
+    }
+  }
+}
+
+// ── Buscador dentro del panel de mat-select (programas) ───────
+// El panel de mat-select se renderiza en el overlay global, por eso estos
+// estilos van aquí (fuera del encapsulamiento del componente).
+.program-search-panel {
+  .select-search-box {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--bg-card, #fff);
+    border-bottom: 1px solid var(--border, #e0e0e0);
+  }
+
+  .select-search-icon {
+    color: var(--text-secondary, #757575);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .select-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: var(--text-primary, #1a1a1a);
+
+    &::placeholder {
+      color: var(--text-secondary, #9e9e9e);
+    }
   }
 }

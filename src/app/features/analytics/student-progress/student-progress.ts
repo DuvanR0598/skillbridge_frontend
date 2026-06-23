@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,7 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SkillRadarChartComponent } from '../components/skill-radar-chart/skill-radar-chart';
 import { ProgressComparison } from '../components/progress-comparison/progress-comparison';
 import { EscalationCard } from '../components/escalation-card/escalation-card';
@@ -40,9 +40,22 @@ import { AnalyticsService, EvaluatedQuestionnaire } from '../analytics.service';
   templateUrl: './student-progress.html',
   styleUrl: './student-progress.scss',
 })
-export class StudentProgress implements OnInit {
+export class StudentProgress implements OnInit, OnDestroy {
+
+  // Clave de sessionStorage donde se guarda la posición de scroll para
+  // restaurarla al volver (p. ej. desde "Ver resultado").
+  private static readonly SCROLL_KEY = 'student-progress-scroll';
+
+  // Posición de scroll pendiente de restaurar tras la carga inicial.
+  private pendingScroll: number | null = null;
+  // Última posición de scroll observada (capturada de forma continua para que
+  // sea fiable aunque el navegador resetee el contenedor al desmontar la vista).
+  private lastScrollTop = 0;
+  private scrollHandler?: () => void;
   private authSvc = inject(AuthService);
   private analyticsSvc = inject(AnalyticsService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   loading = signal(true);
   errorMsg = signal<string | null>(null);
@@ -81,6 +94,28 @@ export class StudentProgress implements OnInit {
   });
 
   ngOnInit(): void {
+    // Desactivar la restauración de scroll automática del navegador: en SPAs
+    // con contenedor scrolleable propio (.content-area) el navegador resetea
+    // la posición a 0 al volver con atrás/adelante, pisando nuestra restauración.
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    // Recuperar la posición de scroll guardada al salir (si la hay) para
+    // restaurarla una sola vez tras la carga inicial.
+    const saved = sessionStorage.getItem(StudentProgress.SCROLL_KEY);
+    this.pendingScroll = saved !== null ? Number(saved) : null;
+    sessionStorage.removeItem(StudentProgress.SCROLL_KEY);
+
+    // Observar el scroll del contenedor de forma continua. Así, al salir,
+    // guardamos la última posición real (el navegador puede poner scrollTop=0
+    // al desmontar el contenido antes de que se ejecute ngOnDestroy).
+    const scrollEl = this.scrollContainer();
+    if (scrollEl) {
+      this.scrollHandler = () => { this.lastScrollTop = scrollEl.scrollTop; };
+      scrollEl.addEventListener('scroll', this.scrollHandler, { passive: true });
+    }
+
     const userId = this.usuarioActual()?.id;
     if (!userId) {
       this.loading.set(false);
@@ -96,8 +131,15 @@ export class StudentProgress implements OnInit {
           this.loading.set(false);
           return;
         }
-        this.selectedId.set(list[0].idCuestionario);
-        this.loadProgress(list[0].idCuestionario);
+        // Restaurar el cuestionario que el estudiante estaba viendo (query param),
+        // por ejemplo al volver desde "Ver resultado". Si no es válido, usar el primero.
+        const fromUrl = Number(this.route.snapshot.queryParamMap.get('cuestionario'));
+        const initialId = list.some((q) => q.idCuestionario === fromUrl)
+          ? fromUrl
+          : list[0].idCuestionario;
+        this.selectedId.set(initialId);
+        this.syncUrl(initialId);
+        this.loadProgress(initialId);
       },
       error: () => {
         this.errorMsg.set('No se pudo cargar tu progreso.');
@@ -106,11 +148,77 @@ export class StudentProgress implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    // Guardar la última posición de scroll observada al abandonar la vista
+    // (p. ej. al ir a "Ver resultado") para poder restaurarla al volver.
+    const el = this.scrollContainer();
+    if (this.scrollHandler && el) {
+      el.removeEventListener('scroll', this.scrollHandler);
+    }
+    sessionStorage.setItem(StudentProgress.SCROLL_KEY, String(this.lastScrollTop));
+  }
+
+  /** Contenedor con scroll del layout principal (.content-area tiene overflow-y: auto). */
+  private scrollContainer(): HTMLElement | null {
+    return document.querySelector('.content-area');
+  }
+
+  /**
+   * Restaura una sola vez la posición de scroll guardada.
+   *
+   * El contenido (gráfico radar, tablas, planes) se renderiza de forma
+   * asíncrona, por lo que al terminar la carga la altura todavía no es la
+   * definitiva. Reintentamos durante un breve lapso hasta alcanzar el destino
+   * (o agotar los intentos): mientras el contenido siga creciendo, el scrollTop
+   * queda topado por debajo del objetivo y se vuelve a intentar.
+   */
+  private restorePendingScroll(): void {
+    if (this.pendingScroll === null) return;
+    const target = this.pendingScroll;
+    this.pendingScroll = null;
+    if (target <= 0) return;
+
+    let attempts = 0;
+    const maxAttempts = 15;
+
+    const tryRestore = () => {
+      const el = this.scrollContainer();
+      if (el) {
+        el.scrollTop = target;
+        // Si aún no se alcanzó (contenido todavía creciendo), reintentar.
+        if (Math.abs(el.scrollTop - target) > 2 && attempts < maxAttempts) {
+          attempts++;
+          setTimeout(tryRestore, 90);
+        }
+      } else if (attempts < maxAttempts) {
+        attempts++;
+        setTimeout(tryRestore, 90);
+      }
+    };
+
+    requestAnimationFrame(tryRestore);
+  }
+
   /** Cambia el cuestionario seleccionado y recarga su progreso. */
   onSelectQuestionnaire(idCuestionario: number): void {
     if (idCuestionario === this.selectedId()) return;
     this.selectedId.set(idCuestionario);
+    this.syncUrl(idCuestionario);
     this.loadProgress(idCuestionario);
+  }
+
+  /**
+   * Refleja el cuestionario seleccionado en la URL (query param 'cuestionario')
+   * para que al navegar a "Ver resultado" y volver, se restaure el mismo cuestionario.
+   * replaceUrl evita ensuciar el historial del navegador.
+   */
+  private syncUrl(idCuestionario: number): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { cuestionario: idCuestionario },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   private loadProgress(idCuestionario: number): void {
@@ -136,6 +244,7 @@ export class StudentProgress implements OnInit {
         this.escalation.set(escalation.data);
         this.history.set(history.data ?? []);
         this.loading.set(false);
+        this.restorePendingScroll();
       },
       error: () => {
         this.errorMsg.set('No se pudo cargar el progreso.');
@@ -207,5 +316,12 @@ export class StudentProgress implements OnInit {
 
   formatPhase(phase: string): string {
     return phase === 'PRE_TEST' ? 'PRE-TEST' : 'POST-TEST';
+  }
+
+  /** Genera el PDF del reporte de progreso vía el diálogo de impresión del navegador. */
+  exportPdf(): void {
+    document.body.classList.add('print-progress');
+    window.print();
+    document.body.classList.remove('print-progress');
   }
 }

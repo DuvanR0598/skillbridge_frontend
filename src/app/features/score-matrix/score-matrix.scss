@@ -117,6 +117,35 @@
   border-radius: 99px;
   background: rgba(0, 0, 0, 0.06);
 }
-.entry-actions .del {
+.entry-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// Botones de ícono (editar / eliminar): estilo circular suave.
+// El botón "Planes" (con texto) se excluye.
+.entry-actions button:not(.btn-plans) {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text-secondary) !important;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: rgba(26, 92, 56, 0.1) !important; // tinte del color primario
+    color: var(--primary) !important;
+  }
+}
+.entry-actions button.del {
   color: var(--danger) !important;
+
+  mat-icon {
+    color: var(--danger) !important;
+  }
+
+  &:hover {
+    background: rgba(211, 47, 47, 0.1) !important; // tinte del color de peligro
+    color: var(--danger) !important;
+  }
 }

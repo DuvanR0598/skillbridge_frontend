@@ -14,7 +14,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScoreMatrixService } from './score-matrix.service';
 import { EntryPlans } from './entry-plans';
@@ -32,6 +33,7 @@ import { CuestionarioResponse } from '../../core/models/questionnaire-admin.mode
 
 @Component({
   selector: 'app-score-matrix',
+  providers: [ConfirmationService],
   imports: [
     SlicePipe,
     FormsModule,
@@ -41,8 +43,8 @@ import { CuestionarioResponse } from '../../core/models/questionnaire-admin.mode
     MatInputModule,
     MatSelectModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
     MatTooltipModule,
+    ConfirmDialogModule,
     EntryPlans,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,7 +55,8 @@ export class ScoreMatrix implements OnInit {
   private readonly svc = inject(ScoreMatrixService);
   private readonly dimSvc = inject(DimensionsService);
   private readonly qSvc = inject(QuestionnairesService);
-  private readonly snack = inject(MatSnackBar);
+  private readonly toast = inject(MessageService);
+  private readonly confirm = inject(ConfirmationService);
 
   skills = SKILL_OPTIONS;
   niveles = NIVEL_OPTIONS;
@@ -190,15 +193,17 @@ export class ScoreMatrix implements OnInit {
     op.subscribe({
       next: () => {
         this.saving.set(false);
-        this.snack.open(editId ? 'Entrada actualizada.' : 'Entrada creada.', 'Cerrar', {
-          duration: 2500,
+        this.toast.add({
+          severity: 'success',
+          summary: editId ? 'Entrada actualizada' : 'Entrada creada',
+          detail: editId ? 'Los cambios se guardaron correctamente.' : 'La entrada se agregó a la matriz.',
         });
         this.cancelEdit();
         this.loadEntries();
       },
       error: (err) => {
         this.saving.set(false);
-        this.snack.open(err?.error?.message ?? 'Error al guardar.', 'Cerrar', { duration: 4500 });
+        this.toast.add({ severity: 'error', summary: 'Error al guardar', detail: err?.error?.message ?? 'Ocurrió un error al guardar la entrada.' });
       },
     });
   }
@@ -230,15 +235,24 @@ export class ScoreMatrix implements OnInit {
   remove(e: PuntuacionMatrixResponse): void {
     const qid = this.selectedQId();
     if (!qid) return;
-    this.svc.remove(qid, e.id).subscribe({
-      next: () => {
-        this.snack.open('Entrada eliminada.', 'Cerrar', { duration: 2500 });
-        this.loadEntries();
+
+    this.confirm.confirm({
+      header: 'Eliminar entrada de la matriz',
+      message: `¿Seguro que deseas eliminar la entrada del nivel "${this.nivelLabel(e.nivel)}" (${e.minPuntaje}–${e.maxPuntaje} pts)? Esta acción no se puede deshacer.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Eliminar',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.svc.remove(qid, e.id).subscribe({
+          next: () => {
+            this.toast.add({ severity: 'success', summary: 'Entrada eliminada', detail: 'La entrada se eliminó de la matriz.' });
+            this.loadEntries();
+          },
+          error: (err) =>
+            this.toast.add({ severity: 'error', summary: 'No se pudo eliminar', detail: err?.error?.message ?? 'No se pudo eliminar la entrada.' }),
+        });
       },
-      error: (err) =>
-        this.snack.open(err?.error?.message ?? 'No se pudo eliminar.', 'Cerrar', {
-          duration: 4000,
-        }),
     });
   }
 

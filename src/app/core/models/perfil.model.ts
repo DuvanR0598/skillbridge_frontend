@@ -1,16 +1,7 @@
-export type EngineeringProgram =
-  | 'SYSTEMS_ENGINEERING'
-  | 'INDUSTRIAL_ENGINEERING'
-  | 'CIVIL_ENGINEERING'
-  | 'ELECTRONIC_ENGINEERING'
-  | 'ELECTRICAL_ENGINEERING'
-  | 'MECHANICAL_ENGINEERING'
-  | 'BIOMEDICAL_ENGINEERING'
-  | 'ENVIRONMENTAL_ENGINEERING'
-  | 'CHEMICAL_ENGINEERING'
-  | 'AEROSPACE_ENGINEERING'
-  | 'TELECOMMUNICATIONS_ENGINEERING'
-  | 'OTHER';
+// Nombre (enum) del programa de ingeniería. El backend define el catálogo
+// completo (enum ProgramaIngenieria); el frontend lo consume vía /perfil/programas,
+// por lo que se modela como string para no duplicar los 33 valores aquí.
+export type EngineeringProgram = string;
 
 export type Gender = 'MASCULINO' | 'FEMENINO' | 'NO_BINARIO' | 'PREFIERO_NO_DECIRLO';
 
@@ -20,6 +11,9 @@ export interface CompleteProfileRequest {
   biography?: string;
   engineeringProgram?: EngineeringProgram;
   academicSemester?: number;
+  // Solo para usuarios sin documento (ej. registrados con Google)
+  tipoIdentificacion?: 'CC' | 'TI' | 'CE' | 'PA';
+  numeroIdentificacion?: string;
 }
 
 export interface UsuarioPerfilResponse {
@@ -32,6 +26,7 @@ export interface UsuarioPerfilResponse {
   biografia?: string;
   programaIngenieria?: EngineeringProgram;
   visualizacionProgramaIngenieria?: string;
+  codigoProgramaIngenieria?: string;
   semestreAcademico?: number;
   perfilCompleto: boolean;
   porcentajeCompleto: number;
@@ -48,5 +43,6 @@ export interface ProfileStatusResponse {
 
 export interface EngineeringProgramResponse {
   value: EngineeringProgram;
+  codigo: string;
   displayName: string;
 }

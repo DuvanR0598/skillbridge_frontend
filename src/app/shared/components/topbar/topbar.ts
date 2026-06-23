@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MatDividerModule } from '@angular/material/divider';
+import { resolveMediaUrl } from '../../../core/utils/media-url';
 
 @Component({
   selector: 'app-topbar',
@@ -38,6 +39,10 @@ export class Topbar {
     const u = this.currentUser();
     if (!u) return '?';
     return `${u.firstName[0]}${u.lastName[0]}`.toUpperCase();
+  }
+
+  avatarSrc(url: string | null | undefined): string | null {
+    return resolveMediaUrl(url);
   }
 
   goToProfile(): void {

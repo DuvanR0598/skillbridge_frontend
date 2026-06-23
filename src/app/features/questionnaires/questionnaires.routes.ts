@@ -24,5 +24,11 @@ export const questionnaireRoutes: Routes = [
     loadComponent: () =>
       import('./questionnaire-builder/questionnaire-builder')
         .then(m => m.QuestionnaireBuilder)
+  },
+  {
+    path: ':id/preview',
+    loadComponent: () =>
+      import('./questionnaire-preview/questionnaire-preview')
+        .then(m => m.QuestionnairePreview)
   }
 ];

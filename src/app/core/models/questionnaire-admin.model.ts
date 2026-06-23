@@ -36,6 +36,9 @@ export interface CuestionarioResponse {
   disponible?:        boolean;  // PUBLICADO y dentro de la ventana
   // Tiempo límite para responder, en minutos. null/undefined = sin límite.
   tiempoLimiteMinutos?: number | null;
+  // Programa objetivo. null = general (todos los estudiantes).
+  programaObjetivo?:       string | null;
+  programaObjetivoNombre?: string | null; // displayName, ej. "Ingeniería de Sistemas"
 }
 
 export interface CuestionarioRequest {
@@ -46,6 +49,7 @@ export interface CuestionarioRequest {
   fechaFin?:       string;
   ordenAleatorio:  boolean;
   tiempoLimiteMinutos?: number | null;
+  programaObjetivo?: string | null; // null = general
 }
 
 export interface ActualizarCuestionarioRequest {
@@ -56,6 +60,7 @@ export interface ActualizarCuestionarioRequest {
   fechaFin?:       string;
   ordenAleatorio?: boolean;
   tiempoLimiteMinutos?: number | null;
+  programaObjetivo?: string | null; // null = general
 }
 
 export interface PreguntaResponse {
@@ -107,7 +112,9 @@ export interface PreguntaRequest {
 
 export interface OpcionPreguntaRequest {
   texto:              string;
-  isCorrecta:         boolean;
+  // Las soft skills se miden por peso; no existe respuesta correcta/incorrecta.
+  // Campo opcional por compatibilidad con el backend.
+  isCorrecta?:        boolean;
   peso:               number;
   ordenVisualizacion: number;
 }

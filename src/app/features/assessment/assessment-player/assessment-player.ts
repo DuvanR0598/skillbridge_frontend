@@ -10,6 +10,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AssessmentService } from '../assessment.service';
 import { PreguntaEntregaResponse, CuestionarioEntregaResponse } from '../../../core/models/assessment.model';
+import { resolveMediaUrl } from '../../../core/utils/media-url';
 import { interval, Subscription } from 'rxjs';
 
 interface Answer {
@@ -142,6 +143,11 @@ export class AssessmentPlayer implements OnInit, OnDestroy {
   likertMiddleLabel(opciones: { texto: string }[]): string | null {
     if (!opciones || opciones.length < 3) return null;
     return opciones[Math.floor((opciones.length - 1) / 2)]?.texto ?? null;
+  }
+
+  /** Resuelve la URL de la imagen de la pregunta a absoluta (origen del backend). */
+  imageSrc(url: string | null | undefined): string | null {
+    return resolveMediaUrl(url);
   }
 
   get elapsedFormatted(): string {

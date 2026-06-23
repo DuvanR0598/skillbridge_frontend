@@ -1,4 +1,8 @@
+export type TipoIdentificacion = 'CC' | 'TI' | 'CE' | 'PA';
+
 export interface RegistrarRequest {
+  tipoIdentificacion: TipoIdentificacion;
+  numeroIdentificacion: string;
   nombre: string;
   apellido: string;
   email: string;
@@ -22,6 +26,9 @@ export interface AuthResponse {
 
 export interface UserResponse {
   id: number;
+  tipoIdentificacion?: TipoIdentificacion;
+  visualizacionTipoIdentificacion?: string;
+  numeroIdentificacion?: string;
   firstName: string;
   lastName: string;
   email: string;

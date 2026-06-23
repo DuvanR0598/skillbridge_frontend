@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
@@ -32,6 +32,7 @@ export class Dashboard implements OnInit {
   private teacherSvc = inject(TeacherAnalyticsService);
   private authSvc = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   loading = signal(true);
   questionnaires = signal<any[]>([]);
@@ -61,8 +62,16 @@ export class Dashboard implements OnInit {
           }));
         this.questionnaires.set(published);
         if (published.length > 0) {
-          this.selectedQId.set(published[0].id);
-          this.loadData(published[0].id);
+          // Restaurar el cuestionario que el coordinador estaba revisando
+          // (query param), p. ej. al volver desde "Ver reporte completo del
+          // grupo". Si no es válido, usar el primero.
+          const fromUrl = Number(this.route.snapshot.queryParamMap.get('cuestionario'));
+          const initialId = published.some((q: any) => q.id === fromUrl)
+            ? fromUrl
+            : published[0].id;
+          this.selectedQId.set(initialId);
+          this.syncUrl(initialId);
+          this.loadData(initialId);
         } else {
           this.loading.set(false);
         }
@@ -73,7 +82,22 @@ export class Dashboard implements OnInit {
 
   onQuestionnaireChange(id: number): void {
     this.selectedQId.set(id);
+    this.syncUrl(id);
     this.loadData(id);
+  }
+
+  /**
+   * Refleja el cuestionario seleccionado en la URL (query param 'cuestionario')
+   * para restaurarlo al volver desde el reporte del grupo.
+   * replaceUrl evita ensuciar el historial del navegador.
+   */
+  private syncUrl(id: number): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { cuestionario: id },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   private loadData(qId: number): void {

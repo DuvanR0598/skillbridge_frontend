@@ -131,6 +131,19 @@ export class AuthService {
     return this.hasRole('ROLE_ESTUDIANTE');
   }
 
+  /**
+   * Actualiza parcialmente el usuario actual (signal + localStorage) sin
+   * recargar la sesión. Útil cuando cambia un dato del usuario, p. ej. el
+   * avatar, para que se refleje al instante en sidebar, topbar, etc.
+   */
+  updateCurrentUser(patch: Partial<UserResponse>): void {
+    const current = this._currentUser();
+    if (!current) return;
+    const updated = { ...current, ...patch };
+    localStorage.setItem('currentUser', JSON.stringify(updated));
+    this._currentUser.set(updated);
+  }
+
   // ── Helpers privados ───────────────────────────────────────────
 
   /** Guarda tokens y usuario en localStorage + signals (sin navegar). */

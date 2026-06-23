@@ -11,6 +11,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ProfileService } from '../../profile.service';
 import { Gender, UsuarioPerfilResponse } from '../../../../core/models/perfil.model';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { resolveMediaUrl } from '../../../../core/utils/media-url';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-profile-info',
@@ -29,6 +32,17 @@ export class ProfileInfo implements OnChanges {
 
   private fb         = inject(FormBuilder);
   private profileSvc = inject(ProfileService);
+  private authSvc    = inject(AuthService);
+  private toast      = inject(MessageService);
+
+  /** Documento del usuario (solo lectura; vive en la cuenta, no en el perfil). */
+  get tipoIdentificacionLabel(): string {
+    const u = this.authSvc.currentUser();
+    return u?.visualizacionTipoIdentificacion || u?.tipoIdentificacion || '—';
+  }
+  get numeroIdentificacion(): string {
+    return this.authSvc.currentUser()?.numeroIdentificacion || '—';
+  }
 
   profile        = input<UsuarioPerfilResponse | null>(null);
   profileUpdated = output<UsuarioPerfilResponse>();
@@ -65,7 +79,7 @@ export class ProfileInfo implements OnChanges {
       gender:      p.genero      ?? null,
       biography:   p.biografia   ?? ''
     });
-    if (p.avatarUrl) this.previewUrl.set(p.avatarUrl);
+    if (p.avatarUrl) this.previewUrl.set(resolveMediaUrl(p.avatarUrl));
   }
 
   // ── Subida de avatar ───────────────────────────────────────
@@ -78,11 +92,21 @@ export class ProfileInfo implements OnChanges {
     // Validación en el cliente antes de subir
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
-      this.errorMsg.set('Formato no permitido. Usa JPEG, PNG o WebP.');
+      this.toast.add({
+        severity: 'warn',
+        summary: 'Formato no permitido',
+        detail: 'Usa una imagen JPEG, PNG o WebP.',
+        life: 4000,
+      });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      this.errorMsg.set('La imagen no puede superar 5 MB.');
+      this.toast.add({
+        severity: 'warn',
+        summary: 'Imagen muy grande',
+        detail: 'La imagen no puede superar 5 MB.',
+        life: 4000,
+      });
       return;
     }
 
@@ -99,12 +123,22 @@ export class ProfileInfo implements OnChanges {
       next: res => {
         this.uploading.set(false);
         this.profileUpdated.emit(res.data);
-        this.showSuccess('Foto de perfil actualizada.');
+        this.toast.add({
+          severity: 'success',
+          summary: 'Foto actualizada',
+          detail: 'Tu foto de perfil se actualizó correctamente.',
+          life: 3000,
+        });
       },
       error: err => {
         this.uploading.set(false);
-        this.previewUrl.set(this.profile()?.avatarUrl ?? null);
-        this.errorMsg.set(err?.error?.message ?? 'Error al subir la imagen.');
+        this.previewUrl.set(resolveMediaUrl(this.profile()?.avatarUrl));
+        this.toast.add({
+          severity: 'error',
+          summary: 'No se pudo subir',
+          detail: err?.error?.message ?? 'Error al subir la imagen.',
+          life: 4000,
+        });
       }
     });
   }

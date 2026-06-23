@@ -17,8 +17,8 @@
         <div class="intro-timelimit">
           <mat-icon>timer</mat-icon>
           <span>
-            Tiempo límite: <strong>{{ delivery()!.tiempoLimiteMinutos }} minutos</strong>.
-            El conteo empieza al pulsar «Comenzar» y continúa aunque salgas.
+            Tiempo límite: <strong>{{ delivery()!.tiempoLimiteMinutos }} minutos</strong>. El conteo
+            empieza al pulsar «Comenzar» y continúa aunque salgas.
           </span>
         </div>
       }
@@ -112,7 +112,7 @@
           }
 
           @if (q.imagenUrl) {
-            <img [src]="q.imagenUrl" alt="Imagen de la pregunta" class="question-img" />
+            <img [src]="imageSrc(q.imagenUrl)" alt="Imagen de la pregunta" class="question-img" />
           }
         </div>
 

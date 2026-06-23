@@ -15,7 +15,7 @@ export const routes: Routes = [
       },
       {
         path: 'register',
-        loadComponent: () =>
+        loadComponent: () => 
           import('./features/auth/register/register').then((m) => m.RegisterComponent),
       },
       {
@@ -101,6 +101,13 @@ export const routes: Routes = [
         canActivate: [rolGuard],
         data: { roles: ['ROLE_ADMIN'] },
         loadComponent: () => import('./features/admin/users/admin-users').then((m) => m.AdminUsers),
+      },
+      {
+        path: 'students',
+        canActivate: [rolGuard],
+        data: { roles: ['ROLE_ADMIN', 'ROLE_COORDINADOR'] },
+        loadComponent: () =>
+          import('./features/students/students-list').then((m) => m.StudentsList),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],

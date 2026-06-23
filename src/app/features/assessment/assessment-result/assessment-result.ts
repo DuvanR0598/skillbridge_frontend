@@ -106,11 +106,14 @@ export class AssessmentResult implements OnInit {
     return r.resultados.every(res => res.nivel === 'AVANZADO');
   }
 
-  goToDashboard(): void {
-    this.router.navigate(['/app/dashboard']);
-  }
-
   goToProgress(): void {
     this.router.navigate(['/app/analytics']);
+  }
+
+  /** Genera el PDF del reporte de la evaluación vía el diálogo de impresión del navegador. */
+  exportPdf(): void {
+    document.body.classList.add('print-result');
+    window.print();
+    document.body.classList.remove('print-result');
   }
 }

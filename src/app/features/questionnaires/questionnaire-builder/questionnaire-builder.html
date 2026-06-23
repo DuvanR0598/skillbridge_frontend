@@ -42,7 +42,7 @@
       @if (q.editable && q.totalPreguntas >= 2 && q.estadoCuestionario !== 'COMPLETO') {
         <button 
           mat-flat-button 
-          class="btn-complete" 
+          class="btn-action-primary" 
           [disabled]="saving()" 
           (click)="completeQuestionnaire()"
         >
@@ -63,13 +63,6 @@
       <div class="alert alert-error" role="alert">
         <mat-icon>error_outline</mat-icon>
         <span>{{ errorMsg() }}</span>
-      </div>
-    }
-
-    @if (successMsg()) {
-      <div class="alert alert-success" role="status">
-        <mat-icon>check_circle</mat-icon>
-        <span>{{ successMsg() }}</span>
       </div>
     }
 
@@ -103,13 +96,13 @@
             <div class="panel panel-bank">
               <div class="panel-header">
                 <h3 class="panel-title">
-                  <mat-icon class="pi">library_books</mat-icon>
+                  <mat-icon class="panel-icon">library_books</mat-icon>
                   Banco de preguntas
                 </h3>
                 @if (q.editable) {
                   <button
                     mat-flat-button
-                    class="btn-new-q"
+                    class="btn-action-primary"
                     (click)="showNewQuestionForm.set(!showNewQuestionForm())"
                   >
                     <mat-icon>{{ showNewQuestionForm() ? 'close' : 'add' }}</mat-icon>
@@ -128,9 +121,81 @@
                 </div>
               }
 
+              <!-- Buscador del banco -->
+              <div class="bank-search">
+                <mat-icon>search</mat-icon>
+                <input
+                  class="bank-search-input"
+                  type="text"
+                  placeholder="Buscar pregunta..."
+                  [value]="bankSearch()"
+                  (input)="bankSearch.set($any($event.target).value)"
+                />
+              </div>
+
+              <!-- Filtros por skill, tipo y dimensión -->
+              <div class="bank-filters">
+
+                <!-- Skill -->
+                <div class="bank-filter-group">
+                  <span class="bank-filter-label">Skill</span>
+                  <div class="bank-filter-chips">
+                    <button class="filter-chip" [class.active]="filterSkill() === 'ALL'"
+                            (click)="filterSkill.set('ALL')">Todas</button>
+                    <button class="filter-chip skill-filter skill-pensamiento_critico"
+                            [class.active]="filterSkill() === 'PENSAMIENTO_CRITICO'"
+                            (click)="filterSkill.set(filterSkill() === 'PENSAMIENTO_CRITICO' ? 'ALL' : 'PENSAMIENTO_CRITICO')">PC</button>
+                    <button class="filter-chip skill-filter skill-adaptabilidad"
+                            [class.active]="filterSkill() === 'ADAPTABILIDAD'"
+                            (click)="filterSkill.set(filterSkill() === 'ADAPTABILIDAD' ? 'ALL' : 'ADAPTABILIDAD')">AD</button>
+                  </div>
+                </div>
+
+                <div class="bank-filter-divider"></div>
+
+                <!-- Tipo -->
+                <div class="bank-filter-group">
+                  <span class="bank-filter-label">Tipo</span>
+                  <div class="bank-filter-chips">
+                    <button class="filter-chip" [class.active]="filterType() === 'ALL'"
+                            (click)="filterType.set('ALL')">Todos</button>
+                    @for (t of bankTypes(); track t) {
+                      <button class="filter-chip" [class]="filterType() === t ? 'active ' + getTypeClass(t) : getTypeClass(t)"
+                              (click)="filterType.set(filterType() === t ? 'ALL' : t)">
+                        {{ getTypeLabel(t) }}
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                @if (bankDimensions().length > 0) {
+                  <div class="bank-filter-divider"></div>
+
+                  <!-- Dimensión -->
+                  <div class="bank-filter-group">
+                    <span class="bank-filter-label">Dimensión</span>
+                    <div class="bank-filter-chips">
+                      <button class="filter-chip" [class.active]="filterDimension() === 'ALL'"
+                              (click)="filterDimension.set('ALL')">Todas</button>
+                      @for (d of bankDimensions(); track d.id) {
+                        <button class="filter-chip dim-filter" [class.active]="filterDimension() === d.id"
+                                (click)="filterDimension.set(filterDimension() === d.id ? 'ALL' : d.id)">
+                          {{ d.nombre }}
+                        </button>
+                      }
+                      <button class="filter-chip" [class.active]="filterDimension() === 'NONE'"
+                              (click)="filterDimension.set(filterDimension() === 'NONE' ? 'ALL' : 'NONE')">
+                        Sin dimensión
+                      </button>
+                    </div>
+                  </div>
+                }
+
+              </div>
+
               <!-- Lista del banco -->
               <div class="bank-list">
-                @if (availableBank().length === 0 && !showNewQuestionForm()) {
+                @if (filteredBank().length === 0 && !showNewQuestionForm()) {
                   <div class="bank-empty">
                     <mat-icon>quiz</mat-icon>
                     <p>Sin preguntas disponibles en el banco.</p>
@@ -138,12 +203,20 @@
                   </div>
                 }
 
-                @for (bq of availableBank(); track bq.idPregunta) {
+                @for (bq of filteredBank(); track bq.idPregunta) {
                   <div class="bank-item">
                     <div class="bank-item-info">
-                      <span class="type-chip" [class]="getTypeClass(bq.tipoPregunta)">
-                        {{ getTypeLabel(bq.tipoPregunta) }}
-                      </span>
+                      <div class="bank-item-chips">
+                        <span class="type-chip" [class]="getTypeClass(bq.tipoPregunta)">
+                          {{ getTypeLabel(bq.tipoPregunta) }}
+                        </span>
+                        @if (bq.dimension) {
+                          <span class="skill-chip" [class]="'skill-' + bq.dimension.skill.toLowerCase()">
+                            {{ bq.dimension.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                          </span>
+                          <span class="dim-chip">{{ bq.dimension.nombre }}</span>
+                        }
+                      </div>
                       <p class="bank-item-text">{{ bq.texto }}</p>
                       @if (bq.opcionPregunta && bq.opcionPregunta.length > 0) {
                         <span class="bank-item-opts">
@@ -171,7 +244,7 @@
             <div class="panel panel-added">
               <div class="panel-header">
                 <h3 class="panel-title">
-                  <mat-icon class="pi">playlist_add_check</mat-icon>
+                  <mat-icon class="panel-icon">playlist_add_check</mat-icon>
                   En este cuestionario
                   <span class="count-badge">{{ q.totalPreguntas }}</span>
                 </h3>

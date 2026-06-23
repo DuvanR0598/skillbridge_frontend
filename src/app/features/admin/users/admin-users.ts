@@ -6,10 +6,16 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DialogModule } from 'primeng/dialog';
 import { AdminUsersService } from './admin-users.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { UserResponse } from '../../../core/models/auth.model';
+import { UsuarioPerfilResponse } from '../../../core/models/perfil.model';
 import { MessageService } from 'primeng/api';
+import { resolveMediaUrl } from '../../../core/utils/media-url';
+import { AvatarViewer } from '../../../shared/components/avatar-viewer/avatar-viewer';
 
 @Component({
   selector: 'app-admin-users',
@@ -21,13 +27,32 @@ import { MessageService } from 'primeng/api';
     MatIconModule,
     MatProgressSpinnerModule,
     MatPaginatorModule,
+    MatButtonModule,
+    MatTooltipModule,
+    DialogModule,
+    AvatarViewer,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="admin-users">
       <header class="admin-users__header">
-        <h1>Administración de usuarios</h1>
-        <p>Gestiona los roles y el estado de las cuentas del sistema.</p>
+        <div>
+          <h1>Administración de usuarios</h1>
+          <p>Gestiona los roles y el estado de las cuentas del sistema.</p>
+        </div>
+        <button
+          mat-flat-button
+          class="btn-action-primary btn-export"
+          [disabled]="exporting()"
+          (click)="exportUsers()"
+        >
+          @if (exporting()) {
+            <mat-spinner diameter="18" />
+          } @else {
+            <mat-icon>download</mat-icon>
+          }
+          Exportar XLSX
+        </button>
       </header>
 
       @if (!loading() && users().length > 0) {
@@ -87,7 +112,13 @@ import { MessageService } from 'primeng/api';
                 <div class="user-cell">
                   <div class="user-avatar">
                     @if (u.avatarUrl) {
-                      <img [src]="u.avatarUrl" [alt]="u.firstName" />
+                      <img
+                        [src]="avatarSrc(u.avatarUrl)"
+                        [alt]="u.firstName"
+                        class="clickable-avatar"
+                        matTooltip="Ver foto"
+                        (click)="openAvatar(u.avatarUrl, u.firstName + ' ' + u.lastName)"
+                      />
                     } @else {
                       <span>{{ initials(u) }}</span>
                     }
@@ -131,6 +162,20 @@ import { MessageService } from 'primeng/api';
               </td>
             </ng-container>
 
+            <!-- Acciones -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let u">
+                <button mat-icon-button
+                        class="action-btn"
+                        matTooltip="Ver perfil"
+                        aria-label="Ver perfil"
+                        (click)="openProfile(u)">
+                  <mat-icon>person</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
             <tr mat-row *matRowDef="let row; columns: columns" [class.is-self]="isSelf(row)"></tr>
           </table>
@@ -152,12 +197,138 @@ import { MessageService } from 'primeng/api';
         </p>
       }
     </section>
+
+    <!-- Diálogo: perfil del usuario -->
+    <p-dialog
+      [(visible)]="showProfileDialog"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [style]="{ width: '480px' }"
+      maskStyleClass="bank-dialog-mask"
+    >
+      <ng-template pTemplate="header">
+        <span class="profile-dlg__title">Perfil del usuario</span>
+      </ng-template>
+
+      @if (profileLoading()) {
+        <div class="profile-dlg__loading">
+          <mat-spinner diameter="32" />
+        </div>
+      } @else if (selectedUser() && selectedPerfil()) {
+        <div class="profile-dlg__body">
+          <!-- Avatar + nombre -->
+          <div class="profile-dlg__hero">
+            <div class="profile-dlg__avatar">
+              @if (selectedPerfil()!.avatarUrl) {
+                <img
+                  [src]="avatarSrc(selectedPerfil()!.avatarUrl)"
+                  [alt]="selectedUser()!.firstName"
+                  class="clickable-avatar"
+                  matTooltip="Ver foto"
+                  (click)="openAvatar(selectedPerfil()!.avatarUrl, selectedUser()!.firstName + ' ' + selectedUser()!.lastName)"
+                />
+              } @else {
+                <span>{{ initials(selectedUser()!) }}</span>
+              }
+            </div>
+            <div class="profile-dlg__identity">
+              <p class="profile-dlg__name">{{ selectedUser()!.firstName }} {{ selectedUser()!.lastName }}</p>
+              <p class="profile-dlg__email">{{ selectedUser()!.email }}</p>
+              <span class="profile-dlg__role-badge">{{ roleLabel(selectedUser()!) }}</span>
+            </div>
+          </div>
+
+          <!-- Barra de completitud -->
+          <div class="profile-dlg__completion">
+            <div class="completion-header">
+              <span class="completion-label">Completitud del perfil</span>
+              <span class="completion-pct">{{ selectedPerfil()!.porcentajeCompleto }}%</span>
+            </div>
+            <div class="completion-bar">
+              <div class="completion-fill"
+                   [style.width.%]="selectedPerfil()!.porcentajeCompleto"></div>
+            </div>
+          </div>
+
+          <!-- Datos personales -->
+          <div class="profile-dlg__section">
+            <p class="profile-dlg__section-title">Información personal</p>
+            <div class="profile-dlg__rows">
+              <div class="profile-dlg__row">
+                <mat-icon>badge</mat-icon>
+                <span class="row-label">Tipo de identificación</span>
+                <span class="row-val">{{ selectedUser()!.visualizacionTipoIdentificacion ?? selectedUser()!.tipoIdentificacion ?? '—' }}</span>
+              </div>
+              <div class="profile-dlg__row">
+                <mat-icon>fingerprint</mat-icon>
+                <span class="row-label">N° de identificación</span>
+                <span class="row-val">{{ selectedUser()!.numeroIdentificacion ?? '—' }}</span>
+              </div>
+              <div class="profile-dlg__row">
+                <mat-icon>cake</mat-icon>
+                <span class="row-label">Fecha de nacimiento</span>
+                <span class="row-val">{{ selectedPerfil()!.fechaNacimiento ? formatDate(selectedPerfil()!.fechaNacimiento!) : '—' }}</span>
+              </div>
+              <div class="profile-dlg__row">
+                <mat-icon>wc</mat-icon>
+                <span class="row-label">Género</span>
+                <span class="row-val">{{ selectedPerfil()!.visualizacionGenero ?? '—' }}</span>
+              </div>
+              <div class="profile-dlg__row biography-row">
+                <mat-icon>notes</mat-icon>
+                <span class="row-label">Biografía</span>
+                <span class="row-val biography-val">{{ selectedPerfil()!.biografia || '—' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos académicos -->
+          <div class="profile-dlg__section">
+            <p class="profile-dlg__section-title">Información académica</p>
+            <div class="profile-dlg__rows">
+              <div class="profile-dlg__row">
+                <mat-icon>school</mat-icon>
+                <span class="row-label">Programa</span>
+                <span class="row-val">{{ selectedPerfil()!.visualizacionProgramaIngenieria ?? '—' }}</span>
+              </div>
+              <div class="profile-dlg__row">
+                <mat-icon>badge</mat-icon>
+                <span class="row-label">Código Programa</span>
+                <span class="row-val">{{ selectedPerfil()!.codigoProgramaIngenieria ?? '—' }}</span>
+              </div>
+              <div class="profile-dlg__row">
+                <mat-icon>class</mat-icon>
+                <span class="row-label">Semestre</span>
+                <span class="row-val">{{ selectedPerfil()!.semestreAcademico ? 'Semestre ' + selectedPerfil()!.semestreAcademico : '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </p-dialog>
+
+    <!-- Visor de foto a pantalla completa -->
+    <app-avatar-viewer
+      [imageUrl]="viewerUrl()"
+      [caption]="viewerCaption()"
+      (closed)="viewerUrl.set(null)"
+    />
   `,
   styles: `
     .admin-users { max-width: 960px; margin: 2rem auto; padding: 0 1.5rem; }
-    .admin-users__header { margin-bottom: 1.5rem; }
+    .clickable-avatar { cursor: zoom-in; }
+    .admin-users__header {
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
     .admin-users__header h1 { margin: 0 0 0.25rem; }
     .admin-users__header p { color: var(--text-secondary); margin: 0; }
+    .btn-export { flex-shrink: 0; }
     .admin-users__filters {
       display: flex;
       align-items: center;
@@ -218,6 +389,59 @@ import { MessageService } from 'primeng/api';
       color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.75rem;
     }
     .admin-users__hint mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    .action-btn { color: var(--text-secondary); }
+    .action-btn:hover { color: var(--primary); }
+
+    /* ── Diálogo de perfil ─────────────────────────────────────────── */
+    .profile-dlg__title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .profile-dlg__loading {
+      display: flex; justify-content: center; align-items: center; padding: 2rem 0;
+    }
+    .profile-dlg__body { display: flex; flex-direction: column; gap: 20px; }
+
+    .profile-dlg__hero { display: flex; align-items: center; gap: 16px; }
+    .profile-dlg__avatar {
+      width: 64px; height: 64px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+      background: var(--primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 700;
+    }
+    .profile-dlg__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-dlg__identity { display: flex; flex-direction: column; gap: 4px; }
+    .profile-dlg__name { font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0; }
+    .profile-dlg__email { font-size: 13px; color: var(--text-secondary); margin: 0; }
+    .profile-dlg__role-badge {
+      display: inline-block; padding: 2px 10px; border-radius: 999px;
+      background: rgba(26,92,56,.12); color: var(--primary);
+      font-size: 12px; font-weight: 600;
+    }
+
+    .profile-dlg__completion { display: flex; flex-direction: column; gap: 6px; }
+    .completion-header { display: flex; justify-content: space-between; font-size: 13px; }
+    .completion-label { color: var(--text-secondary); }
+    .completion-pct { font-weight: 600; color: var(--primary); }
+    .completion-bar {
+      height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+    }
+    .completion-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width .3s; }
+
+    .profile-dlg__section { display: flex; flex-direction: column; gap: 8px; }
+    .profile-dlg__section-title {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .05em; color: var(--text-secondary); margin: 0;
+    }
+    .profile-dlg__rows { display: flex; flex-direction: column; gap: 2px; }
+    .profile-dlg__row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 10px; border-radius: var(--radius-sm);
+      font-size: 14px;
+    }
+    .profile-dlg__row:hover { background: var(--bg-app); }
+    .profile-dlg__row mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--text-secondary); flex-shrink: 0; margin-top: 1px; }
+    .row-label { color: var(--text-secondary); min-width: 140px; flex-shrink: 0; }
+    .row-val { color: var(--text-primary); font-weight: 500; }
+    .biography-row { align-items: flex-start; }
+    .biography-val { white-space: pre-wrap; line-height: 1.5; }
   `,
 })
 export class AdminUsers implements OnInit {
@@ -229,7 +453,20 @@ export class AdminUsers implements OnInit {
   saving = signal<number | null>(null);
   users = signal<UserResponse[]>([]);
 
-  columns = ['user', 'role', 'status'];
+  // ── Diálogo de perfil ───────────────────────────────────────────
+  showProfileDialog = false;
+  profileLoading = signal(false);
+  selectedUser = signal<UserResponse | null>(null);
+  selectedPerfil = signal<UsuarioPerfilResponse | null>(null);
+
+  // ── Visor de foto a pantalla completa ───────────────────────────
+  viewerUrl = signal<string | null>(null);
+  viewerCaption = signal<string | null>(null);
+
+  // Exportación a XLSX
+  exporting = signal(false);
+
+  columns = ['user', 'role', 'status', 'actions'];
 
   roleOptions = [
     { value: 'ROLE_ESTUDIANTE', label: 'Estudiante' },
@@ -324,6 +561,50 @@ export class AdminUsers implements OnInit {
     return `${u.firstName?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase() || '?';
   }
 
+  avatarSrc(url: string | null | undefined): string | null {
+    return resolveMediaUrl(url);
+  }
+
+  /** Descarga la información de los usuarios en un archivo XLSX. */
+  exportUsers(): void {
+    if (this.exporting()) return;
+    this.exporting.set(true);
+    this.adminSvc.exportUsers().subscribe({
+      next: (blob) => {
+        this.exporting.set(false);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `usuarios_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.toast.add({
+          severity: 'success',
+          summary: 'Exportación lista',
+          detail: 'El archivo de usuarios se descargó correctamente.',
+          life: 3000,
+        });
+      },
+      error: () => {
+        this.exporting.set(false);
+        this.toast.add({
+          severity: 'error',
+          summary: 'No se pudo exportar',
+          detail: 'Ocurrió un error al generar el archivo.',
+          life: 4000,
+        });
+      },
+    });
+  }
+
+  /** Abre el visor de foto a pantalla completa. */
+  openAvatar(url: string | null | undefined, caption: string): void {
+    const resolved = this.avatarSrc(url);
+    if (!resolved) return;
+    this.viewerCaption.set(caption);
+    this.viewerUrl.set(resolved);
+  }
+
   onChangeRole(u: UserResponse, role: string): void {
     if (role === this.primaryRole(u)) return; // sin cambios
     this.saving.set(u.id);
@@ -382,5 +663,42 @@ export class AdminUsers implements OnInit {
 
   private patchUser(updated: UserResponse): void {
     this.users.update((list) => list.map((u) => (u.id === updated.id ? { ...u, ...updated } : u)));
+  }
+
+  openProfile(u: UserResponse): void {
+    this.selectedUser.set(u);
+    this.selectedPerfil.set(null);
+    this.showProfileDialog = true;
+    this.profileLoading.set(true);
+    this.adminSvc.getUserPerfil(u.id).subscribe({
+      next: (perfil) => {
+        this.selectedPerfil.set(perfil);
+        this.profileLoading.set(false);
+      },
+      error: () => {
+        this.profileLoading.set(false);
+        this.showProfileDialog = false;
+        this.toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo cargar el perfil del usuario.',
+          life: 4000,
+        });
+      },
+    });
+  }
+
+  roleLabel(u: UserResponse): string {
+    const role = this.primaryRole(u);
+    if (role === 'ROLE_ADMIN') return 'Administrador';
+    if (role === 'ROLE_COORDINADOR') return 'Coordinador';
+    return 'Estudiante';
+  }
+
+  formatDate(dateStr: string): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('es-CO', {
+      day: '2-digit', month: 'long', year: 'numeric',
+    });
   }
 }

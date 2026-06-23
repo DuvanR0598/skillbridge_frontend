@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { AssessmentService } from '../assessment.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -30,6 +31,7 @@ interface PhaseState {
     MatProgressSpinnerModule,
     MatDialogModule,
     MatTooltipModule,
+    MatPaginatorModule,
   ],
   templateUrl: './assessment-list.html',
   styleUrl: './assessment-list.scss',
@@ -44,6 +46,45 @@ export class AssessmentList implements OnInit {
   questionnaires = signal<any[]>([]);
   starting       = signal<number | null>(null);
   errorMsg       = signal<string | null>(null);
+
+  // Búsqueda y paginación (cliente)
+  searchText = signal('');
+  pageIndex = signal(0);
+  pageSize  = signal(6);
+
+  /** Cuestionarios filtrados por coincidencia de palabras (nombre + objetivo). */
+  filteredQuestionnaires = computed(() => {
+    const term = this.normalize(this.searchText().trim());
+    const list = this.questionnaires();
+    if (!term) return list;
+    const words = term.split(/\s+/);
+    return list.filter((q) => {
+      const haystack = this.normalize(`${q.name ?? ''} ${q.purpose ?? ''}`);
+      return words.every((w) => haystack.includes(w));
+    });
+  });
+
+  /** Página actual de la lista filtrada. */
+  pagedQuestionnaires = computed(() => {
+    const start = this.pageIndex() * this.pageSize();
+    return this.filteredQuestionnaires().slice(start, start + this.pageSize());
+  });
+
+  /** Quita acentos y pasa a minúsculas para comparar sin distinción. */
+  private normalize(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
+
+  /** Cambia el texto de búsqueda y vuelve a la primera página. */
+  onSearchChange(value: string): void {
+    this.searchText.set(value);
+    this.pageIndex.set(0);
+  }
+
+  onPage(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+  }
 
   // Sesiones EN_PROGRESO del estudiante, indexadas por idCuestionario
   activeSessions = signal<Map<number, ActiveSession>>(new Map());

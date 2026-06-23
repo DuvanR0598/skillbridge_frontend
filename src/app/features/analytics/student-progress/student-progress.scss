@@ -81,6 +81,20 @@
   gap: 6px;
 }
 
+.btn-pdf {
+  height: 42px;
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-radius: var(--radius-sm) !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-dark) !important;
+  }
+}
+
 // ── Resumen ───────────────────────────────────────────────────
 .summary-grid {
   display: grid;
@@ -399,31 +413,65 @@
 }
 
 .history-scores {
+  // Cada puntaje en su propia línea → las columnas (skill, dimensión, %, nivel)
+  // quedan alineadas verticalmente entre todos los puntajes.
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 6px;
   flex: 1;
-  flex-wrap: wrap;
+  min-width: 260px;
 }
 
 .hist-score {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .hist-skill {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   background: var(--bg-app);
   padding: 2px 6px;
   border-radius: 4px;
   color: var(--text-secondary);
+  flex-shrink: 0;
+  width: 30px;
+  text-align: center;
+
+  // Tinte por skill, consistente con el resto de la app.
+  &.skill-pensamiento_critico {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+  &.skill-adaptabilidad {
+    background: #fff3e0;
+    color: #c05c00;
+  }
+}
+
+.hist-dim {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: #eef2f7;
+  padding: 2px 8px;
+  border-radius: 99px;
+  flex: 1;
+  min-width: 0;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hist-pct {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
+  width: 44px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .hist-level {
@@ -431,6 +479,9 @@
   font-weight: 500;
   padding: 2px 7px;
   border-radius: 99px;
+  flex-shrink: 0;
+  min-width: 78px;
+  text-align: center;
 
   &.level-basic {
     background: #fee2e2;
@@ -446,11 +497,22 @@
   }
 }
 
+// Acciones a la derecha: estado (Completado) encima de "Ver resultado".
+.history-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
 .history-status {
   font-size: 11px;
   font-weight: 500;
   padding: 3px 10px;
   border-radius: 99px;
+  text-align: center;
 
   &.status-done {
     background: #d1fae5;

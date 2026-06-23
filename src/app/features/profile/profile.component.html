@@ -13,7 +13,16 @@
       <div class="hero-avatar-wrap">
         <div class="hero-avatar">
           @if (profile()?.avatarUrl) {
-            <img [src]="profile()!.avatarUrl" [alt]="currentUser()?.firstName" />
+            <img
+              [src]="avatarSrc(profile()!.avatarUrl)"
+              [alt]="currentUser()?.firstName"
+              class="hero-avatar-img"
+              role="button"
+              tabindex="0"
+              matTooltip="Ver foto"
+              (click)="openAvatar()"
+              (keyup.enter)="openAvatar()"
+            />
           } @else {
             <span class="hero-initials">{{ getInitials() }}</span>
           }
@@ -109,4 +118,11 @@
       </mat-tab>
     </mat-tab-group>
   </div>
+
+  <!-- Visor de foto a pantalla completa -->
+  <app-avatar-viewer
+    [imageUrl]="viewerUrl()"
+    [caption]="currentUser()?.firstName + ' ' + currentUser()?.lastName"
+    (closed)="viewerUrl.set(null)"
+  />
 }

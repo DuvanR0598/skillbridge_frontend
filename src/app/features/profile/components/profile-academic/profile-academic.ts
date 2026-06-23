@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input, OnChanges, output, signal } from '@angular/core';
+import { Component, computed, inject, input, OnChanges, output, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -37,13 +37,43 @@ export class ProfileAcademic implements OnChanges {
   saving = signal(false);
   errorMsg = signal<string | null>(null);
   successMsg = signal<string | null>(null);
+  programSearch = signal('');
 
   semesterOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+
+  /** Programas filtrados por coincidencia de palabras (sin distinguir acentos/mayúsculas). */
+  filteredPrograms = computed(() => {
+    const term = this.normalize(this.programSearch().trim());
+    const list = this.programs();
+    if (!term) return list;
+    const words = term.split(/\s+/);
+    return list.filter((p) => {
+      const name = this.normalize(p.displayName);
+      return words.every((w) => name.includes(w));
+    });
+  });
 
   form: FormGroup = this.fb.group({
     engineeringProgram: [null, Validators.required],
     academicSemester: [null, [Validators.required, Validators.min(1), Validators.max(10)]],
   });
+
+  /** Quita acentos y pasa a minúsculas para comparar sin distinción. */
+  private normalize(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
+
+  /** Limpia el buscador al cerrar el panel. */
+  onProgramPanelToggle(open: boolean): void {
+    if (!open) this.programSearch.set('');
+  }
+
+  /** Código oficial del programa seleccionado (campo de solo lectura). */
+  get selectedProgramCodigo(): string {
+    const value = this.form.get('engineeringProgram')?.value;
+    if (!value) return '';
+    return this.programs().find((p) => p.value === value)?.codigo ?? '';
+  }
 
   ngOnChanges(): void {
     const p = this.profile();

@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MessageService } from 'primeng/api';
 import { QuestionnairesService } from '../questionnaires.service';
 import { CondicionPreguntaRequest, OptionResponse, PreguntaResponse, QuestionCondition, QuestionnaireQuestion } from '../../../core/models/questionnaire-admin.model';
 
@@ -24,6 +25,7 @@ import { CondicionPreguntaRequest, OptionResponse, PreguntaResponse, QuestionCon
 export class BranchingEditor implements OnChanges {
 
   private svc = inject(QuestionnairesService);
+  private toast = inject(MessageService);
 
   // Inputs
   questionnaireId    = input.required<number>();
@@ -41,8 +43,6 @@ export class BranchingEditor implements OnChanges {
 
   saving     = signal(false);
   deleting   = signal<number | null>(null);
-  errorMsg   = signal<string | null>(null);
-  successMsg = signal<string | null>(null);
 
   // Formulario de nueva condición
   newTriggerQuestionId = signal<number | null>(null);
@@ -161,7 +161,6 @@ export class BranchingEditor implements OnChanges {
 
   // Cargar una condición existente en el formulario para editarla
   startEdit(c: QuestionCondition): void {
-    this.clearMessages();
     this.editingConditionId.set(c.id);
     this.editingTargetId.set(c.targetIdPregunta);
     this.newTriggerQuestionId.set(c.triggerIdPregunta);
@@ -189,7 +188,6 @@ export class BranchingEditor implements OnChanges {
     if (!tqId || !toId || !taId) return;
 
     this.saving.set(true);
-    this.clearMessages();
 
     const req: CondicionPreguntaRequest = {
       triggerIdPregunta: tqId,
@@ -202,11 +200,21 @@ export class BranchingEditor implements OnChanges {
         this.saving.set(false);
         this.conditionCreated.emit(res.data);
         this.resetForm();
-        this.showSuccess('Condición creada correctamente.');
+        this.toast.add({
+          severity: 'success',
+          summary: 'Ramificación creada',
+          detail: 'La ramificación se creó correctamente.',
+          life: 3000,
+        });
       },
       error: err => {
         this.saving.set(false);
-        this.errorMsg.set(err?.error?.message ?? 'Error al crear la condición.');
+        this.toast.add({
+          severity: 'error',
+          summary: 'No se pudo crear',
+          detail: err?.error?.message ?? 'Error al crear la ramificación.',
+          life: 4000,
+        });
       }
     });
   }
@@ -220,7 +228,6 @@ export class BranchingEditor implements OnChanges {
     if (!tqId || !toId || !taId || !condId) return;
 
     this.saving.set(true);
-    this.clearMessages();
 
     const req: CondicionPreguntaRequest = {
       triggerIdPregunta: tqId,
@@ -233,28 +240,47 @@ export class BranchingEditor implements OnChanges {
         this.saving.set(false);
         this.conditionUpdated.emit(res.data);
         this.cancelEdit();
-        this.showSuccess('Condición actualizada correctamente.');
+        this.toast.add({
+          severity: 'success',
+          summary: 'Ramificación actualizada',
+          detail: 'La ramificación se actualizó correctamente.',
+          life: 3000,
+        });
       },
       error: err => {
         this.saving.set(false);
-        this.errorMsg.set(err?.error?.message ?? 'Error al actualizar la condición.');
+        this.toast.add({
+          severity: 'error',
+          summary: 'No se pudo actualizar',
+          detail: err?.error?.message ?? 'Error al actualizar la ramificación.',
+          life: 4000,
+        });
       }
     });
   }
 
   deleteCondition(conditionId: number): void {
     this.deleting.set(conditionId);
-    this.clearMessages();
 
     this.svc.deleteCondition(this.questionnaireId(), conditionId).subscribe({
       next: () => {
         this.deleting.set(null);
         this.conditionDeleted.emit(conditionId);
-        this.showSuccess('Condición eliminada.');
+        this.toast.add({
+          severity: 'success',
+          summary: 'Ramificación eliminada',
+          detail: 'La ramificación se eliminó correctamente.',
+          life: 3000,
+        });
       },
       error: err => {
         this.deleting.set(null);
-        this.errorMsg.set(err?.error?.message ?? 'Error al eliminar.');
+        this.toast.add({
+          severity: 'error',
+          summary: 'No se pudo eliminar',
+          detail: err?.error?.message ?? 'Error al eliminar la ramificación.',
+          life: 4000,
+        });
       }
     });
   }
@@ -287,13 +313,4 @@ export class BranchingEditor implements OnChanges {
            !!this.newTargetQuestionId();
   }
 
-  private showSuccess(msg: string): void {
-    this.successMsg.set(msg);
-    setTimeout(() => this.successMsg.set(null), 3000);
-  }
-
-  private clearMessages(): void {
-    this.errorMsg.set(null);
-    this.successMsg.set(null);
-  }
 }

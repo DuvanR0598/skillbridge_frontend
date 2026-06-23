@@ -14,11 +14,11 @@
       <span class="sel-label">Cuestionario:</span>
       <select
         class="q-select"
-        [value]="selectedQId()"
-        (change)="onQuestionnaireChange(+$any($event.target).value)"
+        [ngModel]="selectedQId()"
+        (ngModelChange)="onQuestionnaireChange($event)"
       >
         @for (q of questionnaires(); track q.id) {
-          <option [value]="q.id">{{ q.name }}</option>
+          <option [ngValue]="q.id">{{ q.name }}</option>
         }
       </select>
     </div>
