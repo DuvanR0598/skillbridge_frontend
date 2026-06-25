@@ -1,0 +1,193 @@
+<div class="td-shell">
+  <!-- Encabezado -->
+  <div class="td-header">
+    <div class="td-greeting">
+      <h2 class="td-title">Hola, {{ currentUser()?.firstName }} 👋</h2>
+      <p class="td-sub">Panel académico · {{ isAdmin() ? 'Administrador' : 'Coordinador' }}</p>
+    </div>
+  </div>
+
+  <!-- Selector de cuestionario -->
+  @if (questionnaires().length > 0) {
+    <div class="selector-row">
+      <mat-icon class="sel-icon">filter_list</mat-icon>
+      <span class="sel-label">Cuestionario:</span>
+      <select
+        class="q-select"
+        [ngModel]="selectedQId()"
+        (ngModelChange)="onQuestionnaireChange($event)"
+      >
+        @for (q of questionnaires(); track q.id) {
+          <option [ngValue]="q.id">{{ q.name }}</option>
+        }
+      </select>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-wrap">
+      <mat-spinner diameter="40" />
+    </div>
+  }
+
+  @if (!loading() && questionnaires().length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">quiz</mat-icon>
+      <p class="empty-title">Sin cuestionarios publicados</p>
+      <p class="empty-sub">Publica un cuestionario para ver reportes.</p>
+      <button mat-flat-button class="btn-create" (click)="goToQuestionnaires()">
+        <mat-icon>add</mat-icon>
+        Gestionar cuestionarios
+      </button>
+    </div>
+  }
+
+  @if (!loading() && summary(); as s) {
+    <!-- KPIs principales -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon icon-blue">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ s.totalEstudiantesConPreTest }}</span>
+          <span class="kpi-label">Realizaron PRE-TEST</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon icon-green">
+          <mat-icon>how_to_reg</mat-icon>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ s.totalEstudiantesConPostTest }}</span>
+          <span class="kpi-label">Realizaron POST-TEST</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon icon-purple">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value" [class]="getDeltaClass(s.avgDelta)">
+            {{ formatDelta(s.avgDelta) }}
+          </span>
+          <span class="kpi-label">Mejora promedio</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon icon-gold">
+          <mat-icon>workspace_premium</mat-icon>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">
+            {{ s.EstudiantesElegiblesParaCertificacion }}
+          </span>
+          <span class="kpi-label">Elegibles para certificar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filas de métricas secundarias -->
+    <div class="metrics-grid">
+      <!-- Participación -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <mat-icon class="ci">bar_chart</mat-icon>
+            Participación
+          </h3>
+        </div>
+        <div class="metrics-body">
+          <div class="metric-row">
+            <span class="metric-label">Tasa de completitud</span>
+            <div class="metric-right">
+              <span class="metric-val">{{ formatPct(s.tasaFinalizacion) }}</span>
+              <div class="metric-bar">
+                <div
+                  class="metric-fill"
+                  [style.width.%]="s.tasaFinalizacion"
+                  [style.background]="
+                    s.tasaFinalizacion >= 70
+                      ? '#10B981'
+                      : s.tasaFinalizacion >= 40
+                        ? '#F59E0B'
+                        : '#EF4444'
+                  "
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">Tasa de abandono</span>
+            <div class="metric-right">
+              <span class="metric-val" [class]="100 - s.tasaFinalizacion > 30 ? 'negative' : ''">
+                {{ formatPct(100 - s.tasaFinalizacion) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">% que mejoró de nivel</span>
+            <div class="metric-right">
+              <span class="metric-val positive">
+                {{ formatPct(s.pctMejorado) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">Reiniciarán ciclo</span>
+            <div class="metric-right">
+              <span class="metric-val">
+                {{ s.estudiantesQueNecesitanSerReadmitidos }}
+                estudiantes
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promedio PRE vs POST -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <mat-icon class="ci">compare_arrows</mat-icon>
+            Puntajes globales
+          </h3>
+        </div>
+        <div class="metrics-body">
+          <div class="score-compare">
+            <div class="score-block pre-block">
+              <span class="score-phase">PRE-TEST</span>
+              <span class="score-num">{{ formatPct(s.avgPrePorcentaje) }}</span>
+              <span class="score-desc">Promedio del grupo</span>
+            </div>
+            <mat-icon class="arrow-compare">arrow_forward</mat-icon>
+            <div class="score-block post-block">
+              <span class="score-phase">POST-TEST</span>
+              <span class="score-num">{{ formatPct(s.avgPostPorcentaje) }}</span>
+              <span class="score-desc">Promedio del grupo</span>
+            </div>
+          </div>
+
+          <div class="delta-row">
+            <span class="delta-label">Diferencia:</span>
+            <span class="delta-value" [class]="getDeltaClass(s.avgDelta)">
+              {{ formatDelta(s.avgDelta) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón al reporte completo -->
+    <button mat-flat-button class="btn-action-primary" (click)="goToGroupReport()">
+      <mat-icon>assessment</mat-icon>
+      Ver reporte completo del grupo
+    </button>
+  }
+</div>

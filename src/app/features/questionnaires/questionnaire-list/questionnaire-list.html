@@ -1,0 +1,269 @@
+<div class="ql-shell">
+  <!-- Encabezado -->
+  <div class="ql-header">
+    <div>
+      <h2 class="ql-title">Cuestionarios</h2>
+      <p class="ql-sub">Gestiona y publica los instrumentos de evaluación.</p>
+    </div>
+    <a mat-flat-button class="btn-action-primary" routerLink="/app/questionnaires/new">
+      <mat-icon>add</mat-icon>
+      Nuevo cuestionario
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filter-row">
+    <div class="search-wrap">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar cuestionario..."
+        [value]="searchText()"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+    </div>
+    <div class="status-filters">
+      @for (opt of statusOptions; track opt.value) {
+        <button
+          class="filter-btn"
+          [class.active]="filterStatus() === opt.value"
+          (click)="onStatusChange(opt.value)"
+        >
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Error global -->
+  @if (errorMsg()) {
+    <div class="alert alert-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMsg() }}</span>
+      <button mat-icon-button (click)="errorMsg.set(null)">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-wrap"><mat-spinner diameter="40" /></div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">quiz</mat-icon>
+      <p class="empty-title">Sin cuestionarios</p>
+      <p class="empty-sub">Crea el primer cuestionario para comenzar.</p>
+    </div>
+  } @else {
+    <div class="q-list">
+      @for (q of paged(); track q.idCuestionario) {
+        <div class="q-item-wrap">
+
+          <!-- Fila principal -->
+          <div class="q-item">
+            <!-- Info -->
+            <div class="q-info">
+              <div class="q-title-row">
+                <span class="q-name">{{ q.nombre }}</span>
+                <span class="status-badge" [class]="getStatusClass(q.estadoCuestionario)">
+                  {{ getStatusLabel(q.estadoCuestionario) }}
+                </span>
+              </div>
+              @if (q.objetivo) {
+                <p class="q-purpose">{{ q.objetivo }}</p>
+              }
+              <div class="q-meta">
+                <span class="meta-item">
+                  <mat-icon class="meta-icon">help_outline</mat-icon>
+                  {{ q.totalPreguntas }} preguntas
+                </span>
+                <span class="meta-item">
+                  <mat-icon class="meta-icon">groups</mat-icon>
+                  {{ q.programaObjetivoNombre ?? 'General' }}
+                </span>
+                <span class="meta-item">
+                  <mat-icon class="meta-icon">calendar_today</mat-icon>
+                  {{ formatDate(q.createdAt) }}
+                </span>
+                @if (q.creadoPor) {
+                  <span class="meta-item">
+                    <mat-icon class="meta-icon">person</mat-icon>
+                    {{ q.creadoPor }}
+                  </span>
+                }
+                @if (q.fechaFin) {
+                  <span class="meta-item">
+                    <mat-icon class="meta-icon">event</mat-icon>
+                    Hasta {{ formatDate(q.fechaFin) }}
+                  </span>
+                }
+                @if (q.ordenAleatorio) {
+                  <span class="meta-item">
+                    <mat-icon class="meta-icon">shuffle</mat-icon>
+                    Orden aleatorio
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="q-actions">
+              <!-- Ver / Imprimir (siempre visible) -->
+              <a
+                mat-icon-button
+                [routerLink]="['/app/questionnaires', q.idCuestionario, 'preview']"
+                matTooltip="Ver e imprimir cuestionario"
+              >
+                <mat-icon>print</mat-icon>
+              </a>
+
+              <!-- Verificar antes de publicar (solo COMPLETO) -->
+              @if (canPublish(q)) {
+                <button
+                  mat-icon-button
+                  (click)="toggleChecklist(q)"
+                  [matTooltip]="checklist(q.idCuestionario) ? 'Cerrar verificación' : 'Verificar antes de publicar'"
+                  [class.active-check]="!!checklist(q.idCuestionario)"
+                >
+                  <mat-icon>fact_check</mat-icon>
+                </button>
+              }
+
+              <!-- Editar (solo DRAFT) -->
+              @if (q.editable) {
+                <a
+                  mat-icon-button
+                  [routerLink]="['/app/questionnaires', q.idCuestionario, 'edit']"
+                  matTooltip="Editar configuración"
+                >
+                  <mat-icon>edit</mat-icon>
+                </a>
+              }
+
+              <!-- Builder (solo DRAFT) -->
+              @if (q.editable) {
+                <button mat-icon-button (click)="openBuilder(q.idCuestionario)" matTooltip="Agregar preguntas">
+                  <mat-icon>playlist_add</mat-icon>
+                </button>
+              }
+
+              <!-- Menú de transiciones de estado -->
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="stateMenu"
+                [disabled]="actionLoading() === q.idCuestionario"
+                matTooltip="Cambiar estado"
+              >
+                @if (actionLoading() === q.idCuestionario) {
+                  <mat-spinner diameter="18" />
+                } @else {
+                  <mat-icon>more_vert</mat-icon>
+                }
+              </button>
+
+              <mat-menu #stateMenu="matMenu">
+                <!-- Duplicar: disponible en cualquier estado -->
+                <button mat-menu-item (click)="duplicate(q)">
+                  <mat-icon>content_copy</mat-icon>
+                  Duplicar cuestionario
+                </button>
+                <mat-divider />
+                @if (canComplete(q)) {
+                  <button mat-menu-item (click)="doAction('completo', q)">
+                    <mat-icon>check_circle</mat-icon>
+                    Marcar como completo
+                  </button>
+                }
+                @if (canPublish(q)) {
+                  <button mat-menu-item (click)="doAction('publicado', q)">
+                    <mat-icon>publish</mat-icon>
+                    Publicar
+                  </button>
+                }
+                @if (canArchive(q)) {
+                  <button mat-menu-item (click)="doAction('archivado', q)">
+                    <mat-icon>archive</mat-icon>
+                    Archivar
+                  </button>
+                }
+                @if (canDelete(q)) {
+                  <mat-divider />
+                  <button mat-menu-item class="danger-item" (click)="doAction('eliminado', q)">
+                    <mat-icon>delete_outline</mat-icon>
+                    Eliminar
+                  </button>
+                }
+              </mat-menu>
+            </div>
+          </div>
+
+          <!-- Panel de checklist de pre-publicación -->
+          @if (checklist(q.idCuestionario); as cl) {
+            <div class="cl-panel">
+              @if (cl.loading) {
+                <div class="cl-loading">
+                  <mat-spinner diameter="20" />
+                  <span>Verificando configuración…</span>
+                </div>
+              } @else {
+                <div class="cl-header">
+                  <mat-icon [class]="cl.readyToPublish ? 'cl-icon-ok' : 'cl-icon-warn'">
+                    {{ cl.readyToPublish ? 'check_circle' : 'warning' }}
+                  </mat-icon>
+                  <span class="cl-title">
+                    {{ cl.readyToPublish
+                        ? 'El cuestionario está listo para publicar'
+                        : 'Faltan requisitos antes de publicar' }}
+                  </span>
+                </div>
+
+                <ul class="cl-list">
+                  @for (item of cl.items; track item.label) {
+                    <li class="cl-item" [class.cl-ok]="item.ok" [class.cl-fail]="!item.ok">
+                      <mat-icon class="cl-item-icon">
+                        {{ item.ok ? 'check_circle' : 'cancel' }}
+                      </mat-icon>
+                      <div class="cl-item-body">
+                        <span class="cl-item-label">{{ item.label }}</span>
+                        <span class="cl-item-detail">{{ item.detail }}</span>
+                      </div>
+                    </li>
+                  }
+                </ul>
+
+                <div class="cl-actions">
+                  @if (cl.readyToPublish) {
+                    <button
+                      mat-flat-button
+                      class="cl-btn-publish"
+                      (click)="doAction('publicado', q); toggleChecklist(q)"
+                    >
+                      <mat-icon>publish</mat-icon>
+                      Publicar ahora
+                    </button>
+                  } @else {
+                    <span class="cl-hint">Completa los requisitos marcados en rojo para poder publicar.</span>
+                  }
+                  <button mat-stroked-button (click)="toggleChecklist(q)">Cerrar</button>
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+
+    <!-- Paginación -->
+    <mat-paginator
+      class="q-paginator"
+      [length]="filtered().length"
+      [pageSize]="pageSize()"
+      [pageIndex]="pageIndex()"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      (page)="onPage($event)"
+      aria-label="Seleccionar página de cuestionarios"
+    />
+  }
+</div>

@@ -1,0 +1,74 @@
+<div class="analysis-table">
+  <div class="table-head">
+    <div class="col-dim">Dimensión</div>
+    <div class="col-avg">PRE avg.</div>
+    <div class="col-avg">POST avg.</div>
+    <div class="col-delta">Delta</div>
+    <div class="col-improve">Mejoraron</div>
+    <div class="col-tags">Tags</div>
+  </div>
+
+  @for (a of analyses(); track $index) {
+    <div class="table-row" [class.critical]="a.masCritico" [class.improved]="a.masMejoro">
+      <div class="col-dim">
+        <span class="skill-chip">{{ getSkillLabel(a.skill) }}</span>
+        <span class="dim-name">{{ a.dimensionNombre ?? 'Global' }}</span>
+      </div>
+
+      <div class="col-avg">
+        <span class="avg-val">{{ a.avgPrePorcentaje | number: '1.0-0' }}%</span>
+        <div class="mini-bar">
+          <div class="fill pre-fill" [style.width.%]="a.avgPrePorcentaje"></div>
+        </div>
+      </div>
+
+      <div class="col-avg">
+        @if (a.avgPostPorcentaje > 0) {
+          <span class="avg-val">{{ a.avgPostPorcentaje | number: '1.0-0' }}%</span>
+          <div class="mini-bar">
+            <div class="fill post-fill" [style.width.%]="a.avgPostPorcentaje"></div>
+          </div>
+        } @else {
+          <span class="no-post">Sin datos</span>
+        }
+      </div>
+
+      <div class="col-delta">
+        @if (a.avgPostPorcentaje > 0) {
+          <span class="delta-val" [class]="getDeltaClass(a.avgDelta)">
+            <mat-icon class="di">
+              {{ a.avgDelta > 0 ? 'arrow_upward' : a.avgDelta < 0 ? 'arrow_downward' : 'remove' }}
+            </mat-icon>
+            {{ a.avgDelta > 0 ? '+' : '' }}{{ a.avgDelta | number: '1.0-1' }}%
+          </span>
+        } @else {
+          <span class="no-post">—</span>
+        }
+      </div>
+
+      <div class="col-improve">
+        @if (a.totalEstudiantes > 0) {
+          <span class="improve-val"> {{ getImprovePct(a) }}% </span>
+          <span class="improve-sub"> {{ a.masMejoro }}/{{ a.totalEstudiantes }} </span>
+        } @else {
+          <span class="no-post">—</span>
+        }
+      </div>
+
+      <div class="col-tags">
+        @if (a.masCritico) {
+          <span class="tag tag-critical">
+            <mat-icon class="ti">warning</mat-icon>
+            Crítica
+          </span>
+        }
+        @if (a.masMejoro) {
+          <span class="tag tag-improved">
+            <mat-icon class="ti">trending_up</mat-icon>
+            Mayor mejora
+          </span>
+        }
+      </div>
+    </div>
+  }
+</div>

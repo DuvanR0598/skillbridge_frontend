@@ -1,0 +1,257 @@
+<section class="students">
+  <header class="students__header">
+    <div>
+      <h1>Estudiantes</h1>
+      <p>Consulta los estudiantes registrados. Vista de solo lectura.</p>
+    </div>
+    <button
+      mat-flat-button
+      class="btn-action-primary btn-export"
+      [disabled]="exporting() || loading()"
+      (click)="exportXlsx()"
+    >
+      @if (exporting()) {
+        <mat-spinner diameter="18" />
+      } @else {
+        <mat-icon>download</mat-icon>
+      }
+      Exportar XLSX
+    </button>
+  </header>
+
+  <!-- Filtros -->
+  <div class="students__filters">
+    <div class="search-wrap">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar por nombre..."
+        [value]="searchText()"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+      @if (searchText()) {
+        <button type="button" class="search-clear" (click)="onSearchChange('')" aria-label="Limpiar">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </div>
+
+    <mat-form-field appearance="outline" class="program-field">
+      <mat-label>Programa</mat-label>
+      <mat-select
+        [ngModel]="filterProgram()"
+        (ngModelChange)="onProgramChange($event)"
+        panelClass="program-search-panel"
+        (openedChange)="onProgramPanelToggle($event)"
+      >
+        <!-- Buscador dentro del panel -->
+        <div class="select-search-box">
+          <mat-icon class="select-search-icon">search</mat-icon>
+          <input
+            type="text"
+            class="select-search-input"
+            placeholder="Buscar programa..."
+            [value]="programSearch()"
+            (input)="programSearch.set($any($event.target).value)"
+            (keydown)="$event.stopPropagation()"
+            (click)="$event.stopPropagation()"
+          />
+        </div>
+
+        <mat-option value="ALL">Todos los programas</mat-option>
+        @if (filteredProgramOptions().length === 0) {
+          <mat-option disabled>Sin coincidencias</mat-option>
+        } @else {
+          @for (p of filteredProgramOptions(); track p.value) {
+            <mat-option [value]="p.value">{{ p.displayName }}</mat-option>
+          }
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  @if (loading()) {
+    <div class="students__loading"><mat-spinner diameter="36" /></div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">group_off</mat-icon>
+      <p class="empty-title">Sin estudiantes</p>
+      <p class="empty-sub">No hay estudiantes que coincidan con los filtros.</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="students-table">
+        <thead>
+          <tr>
+            <th>Identificación</th>
+            <th>Nombre</th>
+            <th>Programa</th>
+            <th>Sem.</th>
+            <th>Correo</th>
+            <th>Estado</th>
+            <th class="th-actions">Perfil</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of paged(); track s.idUsuario) {
+            <tr>
+              <td class="mono">{{ idLabel(s) }}</td>
+              <td class="name-cell">{{ s.nombre }} {{ s.apellido }}</td>
+              <td>
+                @if (s.programaNombre) {
+                  {{ s.programaNombre }}
+                  @if (s.codigoPrograma) {
+                    <span class="codigo">· {{ s.codigoPrograma }}</span>
+                  }
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td>{{ s.semestreAcademico ?? '—' }}</td>
+              <td class="email-cell">{{ s.email }}</td>
+              <td>
+                <span class="status-pill" [class.is-active]="s.activado" [class.is-inactive]="!s.activado">
+                  {{ s.activado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="td-actions">
+                <button
+                  mat-icon-button
+                  class="btn-view"
+                  matTooltip="Ver perfil"
+                  (click)="openProfile(s)"
+                >
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-foot">
+      <p class="result-count">{{ filtered().length }} estudiante(s)</p>
+      <mat-paginator
+        class="students-paginator"
+        [length]="filtered().length"
+        [pageSize]="pageSize()"
+        [pageIndex]="pageIndex()"
+        [pageSizeOptions]="[10, 25, 50]"
+        (page)="onPage($event)"
+        aria-label="Seleccionar página de estudiantes"
+      />
+    </div>
+  }
+
+  <!-- Diálogo de perfil (solo lectura) -->
+  <p-dialog
+    header="Perfil del estudiante"
+    [visible]="showProfileDialog"
+    (visibleChange)="showProfileDialog = $event"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    [style]="{ width: '540px', maxWidth: '95vw' }"
+    maskStyleClass="bank-dialog-mask"
+    [transitionOptions]="'1ms'"
+  >
+    @if (profileLoading()) {
+      <div class="dlg-loading"><mat-spinner diameter="32" /></div>
+    } @else if (selectedStudent(); as st) {
+      <div class="profile-dlg">
+        <!-- Encabezado -->
+        <div class="profile-dlg__hero">
+          <div class="profile-dlg__avatar" [class.clickable]="selectedPerfil()?.avatarUrl">
+            @if (selectedPerfil()?.avatarUrl) {
+              <img
+                [src]="avatarSrc(selectedPerfil()!.avatarUrl)"
+                [alt]="st.nombre"
+                matTooltip="Ver foto"
+                (click)="openAvatar()"
+              />
+            } @else {
+              <span>{{ initials(st) }}</span>
+            }
+          </div>
+          <div class="profile-dlg__id">
+            <p class="profile-dlg__name">{{ st.nombre }} {{ st.apellido }}</p>
+            <p class="profile-dlg__email">{{ st.email }}</p>
+            <span class="role-badge">Estudiante</span>
+          </div>
+        </div>
+
+        <!-- Completitud -->
+        @if (selectedPerfil(); as p) {
+          <div class="completion">
+            <div class="completion-head">
+              <span>Completitud del perfil</span>
+              <span class="completion-pct">{{ p.porcentajeCompleto }}%</span>
+            </div>
+            <div class="completion-bar">
+              <div class="completion-fill" [style.width.%]="p.porcentajeCompleto"></div>
+            </div>
+          </div>
+        }
+
+        <!-- Datos personales -->
+        <div class="profile-dlg__section">
+          <p class="profile-dlg__section-title">Información personal</p>
+          <div class="profile-dlg__rows">
+            <div class="profile-dlg__row">
+              <mat-icon>badge</mat-icon>
+              <span class="row-label">Identificación</span>
+              <span class="row-val">{{ idLabel(st) }}</span>
+            </div>
+            <div class="profile-dlg__row">
+              <mat-icon>cake</mat-icon>
+              <span class="row-label">Fecha de nacimiento</span>
+              <span class="row-val">{{ formatDate(selectedPerfil()?.fechaNacimiento) }}</span>
+            </div>
+            <div class="profile-dlg__row">
+              <mat-icon>wc</mat-icon>
+              <span class="row-label">Género</span>
+              <span class="row-val">{{ selectedPerfil()?.visualizacionGenero ?? '—' }}</span>
+            </div>
+            <div class="profile-dlg__row biography-row">
+              <mat-icon>notes</mat-icon>
+              <span class="row-label">Biografía</span>
+              <span class="row-val biography-val">{{ selectedPerfil()?.biografia || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos académicos -->
+        <div class="profile-dlg__section">
+          <p class="profile-dlg__section-title">Información académica</p>
+          <div class="profile-dlg__rows">
+            <div class="profile-dlg__row">
+              <mat-icon>school</mat-icon>
+              <span class="row-label">Programa</span>
+              <span class="row-val">{{ selectedPerfil()?.visualizacionProgramaIngenieria ?? st.programaNombre ?? '—' }}</span>
+            </div>
+            <div class="profile-dlg__row">
+              <mat-icon>badge</mat-icon>
+              <span class="row-label">Código Programa</span>
+              <span class="row-val">{{ selectedPerfil()?.codigoProgramaIngenieria ?? st.codigoPrograma ?? '—' }}</span>
+            </div>
+            <div class="profile-dlg__row">
+              <mat-icon>class</mat-icon>
+              <span class="row-label">Semestre</span>
+              <span class="row-val">{{ (selectedPerfil()?.semestreAcademico ?? st.semestreAcademico) ? 'Semestre ' + (selectedPerfil()?.semestreAcademico ?? st.semestreAcademico) : '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </p-dialog>
+
+  <!-- Visor de foto a pantalla completa -->
+  <app-avatar-viewer
+    [imageUrl]="viewerUrl()"
+    [caption]="viewerCaption()"
+    (closed)="viewerUrl.set(null)"
+  />
+</section>

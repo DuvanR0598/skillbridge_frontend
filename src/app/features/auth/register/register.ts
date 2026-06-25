@@ -10,6 +10,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -34,6 +35,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     RouterLink,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -44,16 +46,33 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   styleUrl: './register.scss',
 })
 export class RegisterComponent {
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
 
   loading = signal(false);
   errorMessage = signal<string | null>(null);
   showPassword = signal(false);
   showConfirm = signal(false);
 
+  idTypeOptions: { value: 'CC' | 'TI' | 'CE' | 'PA'; label: string }[] = [
+    { value: 'CC', label: 'CC - Cédula de Ciudadanía' },
+    { value: 'TI', label: 'TI - Tarjeta de Identidad' },
+    { value: 'CE', label: 'CE - Cédula de Extranjería' },
+    { value: 'PA', label: 'PA - Pasaporte' },
+  ];
+
   form: FormGroup = this.fb.group(
     {
+      tipoIdentificacion: ['CC', Validators.required],
+      numeroIdentificacion: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(30),
+          Validators.pattern(/^[a-zA-Z0-9]+$/),
+        ],
+      ],
       nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       apellido: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
@@ -72,6 +91,12 @@ export class RegisterComponent {
     { validators: passwordsMatch },
   );
 
+  get tipoIdentificacion() {
+    return this.form.get('tipoIdentificacion')!;
+  }
+  get numeroIdentificacion() {
+    return this.form.get('numeroIdentificacion')!;
+  }
   get nombre() {
     return this.form.get('nombre')!;
   }
@@ -114,6 +139,8 @@ export class RegisterComponent {
 
     this.authService
       .register({
+        tipoIdentificacion: this.tipoIdentificacion.value,
+        numeroIdentificacion: this.numeroIdentificacion.value.trim(),
         nombre: this.nombre.value.trim(),
         apellido: this.apellido.value.trim(),
         email: this.email.value.trim().toLowerCase(),

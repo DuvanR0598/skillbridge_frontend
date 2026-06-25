@@ -1,0 +1,60 @@
+<header class="topbar" role="banner">
+  <!-- Lado izquierdo: toggle + título -->
+  <div class="topbar-left">
+    <button
+      mat-icon-button
+      class="toggle-btn"
+      (click)="toggleSidebar.emit()"
+      [matTooltip]="sidebarOpen() ? 'Colapsar menú' : 'Expandir menú'"
+      aria-label="Toggle sidebar"
+    >
+      <mat-icon>{{ sidebarOpen() ? 'menu_open' : 'menu' }}</mat-icon>
+    </button>
+
+    <h1 class="page-title">{{ pageTitle() }}</h1>
+  </div>
+
+  <!-- Lado derecho: notificaciones + perfil -->
+  <div class="topbar-right">
+    <!-- Notificaciones (placeholder) -->
+    <button
+      mat-icon-button
+      class="icon-btn"
+      matTooltip="Notificaciones"
+      aria-label="Notificaciones"
+    >
+      <mat-icon>notifications_none</mat-icon>
+    </button>
+
+    <!-- Avatar + menú de usuario -->
+    <button class="user-menu-btn" [matMenuTriggerFor]="userMenu" aria-label="Menú de usuario">
+      <div class="topbar-avatar">
+        @if (currentUser()?.avatarUrl) {
+          <img [src]="avatarSrc(currentUser()!.avatarUrl)" [alt]="currentUser()!.firstName" />
+        } @else {
+          <span class="avatar-initials">{{ getInitials() }}</span>
+        }
+      </div>
+      <div class="user-names">
+        <span class="user-fullname">
+          {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
+        </span>
+        <span class="user-email">{{ currentUser()?.email }}</span>
+      </div>
+      <mat-icon class="chevron">expand_more</mat-icon>
+    </button>
+
+    <!-- Dropdown del usuario -->
+    <mat-menu #userMenu="matMenu" class="user-dropdown">
+      <button mat-menu-item (click)="goToProfile()">
+        <mat-icon>person_outline</mat-icon>
+        <span>Mi perfil</span>
+      </button>
+      <mat-divider />
+      <button mat-menu-item (click)="logout()" class="logout-item">
+        <mat-icon>logout</mat-icon>
+        <span>Cerrar sesión</span>
+      </button>
+    </mat-menu>
+  </div>
+</header>

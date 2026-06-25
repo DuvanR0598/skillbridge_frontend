@@ -1,0 +1,106 @@
+<!-- profile-academic.component.html -->
+<div class="pa-shell">
+  @if (errorMsg()) {
+    <div class="alert alert-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMsg() }}</span>
+    </div>
+  }
+
+  @if (successMsg()) {
+    <div class="alert alert-success" role="status">
+      <mat-icon>check_circle</mat-icon>
+      <span>{{ successMsg() }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <h3 class="section-title">Programa académico</h3>
+
+    <!-- Programa de ingeniería -->
+    <mat-form-field appearance="outline">
+      <mat-label>Programa de ingeniería *</mat-label>
+      <mat-icon matPrefix class="fi">school</mat-icon>
+      <mat-select
+        formControlName="engineeringProgram"
+        panelClass="program-search-panel"
+        (openedChange)="onProgramPanelToggle($event)"
+      >
+        <!-- Buscador dentro del panel -->
+        <div class="select-search-box">
+          <mat-icon class="select-search-icon">search</mat-icon>
+          <input
+            type="text"
+            class="select-search-input"
+            placeholder="Buscar programa..."
+            [value]="programSearch()"
+            (input)="programSearch.set($any($event.target).value)"
+            (keydown)="$event.stopPropagation()"
+            (click)="$event.stopPropagation()"
+          />
+        </div>
+
+        @if (filteredPrograms().length === 0) {
+          <mat-option disabled>Sin coincidencias</mat-option>
+        } @else {
+          @for (p of filteredPrograms(); track p.value) {
+            <mat-option [value]="p.value">{{ p.displayName }}</mat-option>
+          }
+        }
+      </mat-select>
+      @if (
+        form.get('engineeringProgram')?.hasError('required') &&
+        form.get('engineeringProgram')?.touched
+      ) {
+        <mat-error>El programa es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Semestre y código de programa -->
+    <div class="two-col mt-3">
+      <mat-form-field appearance="outline" class="readonly-field">
+        <mat-label>Código del Programa</mat-label>
+        <mat-icon matPrefix class="fi">badge</mat-icon>
+        <input
+          matInput
+          type="text"
+          [value]="selectedProgramCodigo"
+          readonly
+          placeholder="Se asigna automáticamente"
+        />
+        <mat-hint>Se asigna según el programa</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Semestre actual *</mat-label>
+        <mat-select formControlName="academicSemester">
+          @for (s of semesterOptions; track s) {
+            <mat-option [value]="s">Semestre {{ s }}</mat-option>
+          }
+        </mat-select>
+        @if (
+          form.get('academicSemester')?.hasError('required') &&
+          form.get('academicSemester')?.touched
+        ) {
+          <mat-error>El semestre es obligatorio</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions mt-6">
+      <button
+        mat-flat-button
+        type="submit"
+        class="btn-action-primary"
+        [disabled]="form.invalid || saving()"
+      >
+        @if (saving()) {
+          <mat-spinner diameter="18" class="btn-sp" />
+        } @else {
+          <mat-icon>save</mat-icon>
+        }
+        Guardar cambios
+      </button>
+    </div>
+  </form>
+</div>

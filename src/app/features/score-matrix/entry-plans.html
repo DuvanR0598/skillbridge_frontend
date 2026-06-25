@@ -1,0 +1,93 @@
+<div class="plans">
+  <p-confirmdialog />
+  @if (loading()) {
+    <div class="loading"><mat-spinner diameter="22" /></div>
+  } @else {
+    @if (plans().length === 0) {
+      <p class="empty">Sin planes de fortalecimiento configurados (máx. 3, uno por eje).</p>
+    } @else {
+      <div class="plan-cards">
+        @for (p of plans(); track p.id) {
+          <div class="plan-card axis-{{ p.planAxis.toLowerCase() }}">
+            <div class="plan-head">
+              <span class="axis-chip">{{ axisLabel(p.planAxis) }}</span>
+              <span class="accion-chip">{{ accionLabel(p.tipoAccion) }}</span>
+              <div class="plan-actions">
+                <button mat-icon-button (click)="startEdit(p)" matTooltip="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button class="del" (click)="remove(p)" matTooltip="Eliminar">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            </div>
+            <p class="plan-title">{{ p.titulo }}</p>
+            <p class="plan-desc">{{ p.descripcion }}</p>
+            @if (p.recursos.length) {
+              <ul class="recursos">
+                @for (r of p.recursos; track r) {
+                  <li>{{ r }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Formulario crear/editar plan -->
+    @if (availableAxes().length > 0 || editingId()) {
+      <div class="plan-form">
+        <h4>{{ editingId() ? 'Editar plan' : 'Agregar plan' }}</h4>
+        <div class="pf-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Eje</mat-label>
+            <mat-select [(ngModel)]="fAxis" [disabled]="!!editingId()">
+              @for (a of editingId() ? axes : availableAxes(); track a.value) {
+                <mat-option [value]="a.value">{{ a.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de acción</mat-label>
+            <mat-select [(ngModel)]="fTipo">
+              @for (t of tipos; track t.value) {
+                <mat-option [value]="t.value">{{ t.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Título</mat-label>
+            <input matInput [(ngModel)]="fTitulo" maxlength="200" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Descripción</mat-label>
+            <textarea matInput [(ngModel)]="fDescripcion" rows="2" maxlength="2000"></textarea>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Recursos (uno por línea, máx. 10)</mat-label>
+            <textarea
+              matInput
+              [(ngModel)]="fRecursos"
+              rows="2"
+              placeholder="https://... otro recurso"
+            ></textarea>
+          </mat-form-field>
+        </div>
+        <div class="pf-actions">
+          @if (editingId()) {
+            <button mat-stroked-button (click)="cancelEdit()">Cancelar</button>
+          }
+          <button
+            mat-flat-button
+            class="btn-action-primary"
+            [disabled]="!canSave() || saving()"
+            (click)="save()"
+          >
+            {{ editingId() ? 'Guardar plan' : 'Agregar plan' }}
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

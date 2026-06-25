@@ -6,6 +6,9 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
+import { MessageService } from 'primeng/api';
 
 
 
@@ -25,5 +28,9 @@ export const appConfig: ApplicationConfig = {
 
     // Animaciones async (mejor rendimiento)
     provideAnimationsAsync(),
+
+    // PrimeNG (toasts/notificaciones) con tema Aura
+    providePrimeNG({ theme: { preset: Aura } }),
+    MessageService,
   ]
 };

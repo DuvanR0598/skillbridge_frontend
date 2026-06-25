@@ -1,0 +1,75 @@
+<nav class="sidebar" [class.collapsed]="collapsed()" aria-label="Navegación principal">
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="logo-icon-wrap">⚡</div>
+    @if (!collapsed()) {
+      <span class="logo-text">Skill Bridge</span>
+    }
+  </div>
+
+  <!-- Tarjeta del usuario -->
+  @if (!collapsed()) {
+    <div class="user-card">
+      <div class="user-avatar">
+        @if (currentUser()?.avatarUrl) {
+          <img [src]="avatarSrc(currentUser()!.avatarUrl)" [alt]="currentUser()!.firstName" />
+        } @else {
+          <span class="avatar-initials">{{ getInitials() }}</span>
+        }
+      </div>
+      <div class="user-info">
+        <span class="user-name">
+          {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
+        </span>
+        <span class="user-role" [class]="getRoleColor()">
+          {{ getRoleBadge() }}
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Navegación -->
+  <div class="nav-scroll">
+    @for (group of navGroups(); track group.title) {
+      <div class="nav-group">
+        @if (group.title && !collapsed()) {
+          <span class="nav-group-title">{{ group.title }}</span>
+        }
+        @for (item of group.items; track item.label) {
+          <a
+            class="nav-item"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [matTooltip]="collapsed() ? item.label : ''"
+            matTooltipPosition="right"
+            (click)="onNavClick()"
+          >
+            <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+            @if (!collapsed()) {
+              <span class="nav-label">{{ item.label }}</span>
+              @if (item.badge) {
+                <span class="nav-badge">{{ item.badge }}</span>
+              }
+            }
+          </a>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Cerrar sesión -->
+  <div class="sidebar-footer">
+    <button
+      class="nav-item logout-btn"
+      (click)="logout()"
+      [matTooltip]="collapsed() ? 'Cerrar sesión' : ''"
+      matTooltipPosition="right"
+      type="button"
+    >
+      <mat-icon class="nav-icon">logout</mat-icon>
+      @if (!collapsed()) {
+        <span class="nav-label">Cerrar sesión</span>
+      }
+    </button>
+  </div>
+</nav>

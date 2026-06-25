@@ -50,6 +50,8 @@ Thumbs.db
 .claude/
 .claude.json
 .claudeignore
+CLAUDE.md
+CONTEXT.md
 
 # Archivos de paquetes
 *.tgz

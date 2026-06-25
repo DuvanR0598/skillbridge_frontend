@@ -1,0 +1,59 @@
+<div class="escalation-card" [class]="'card-' + decision()">
+  <div class="esc-header">
+    <div class="esc-icon">
+      <mat-icon>{{ getIcon() }}</mat-icon>
+    </div>
+    <div class="esc-info">
+      <h3 class="esc-title">{{ getTitle() }}</h3>
+      <p class="esc-reason">{{ reason() }}</p>
+    </div>
+  </div>
+
+  @if (decision() !== 'PENDIENTE') {
+    <div class="esc-body">
+      @if (achievedDimensions().length > 0) {
+        <div class="dim-group">
+          <span class="dim-group-label achieved">
+            <mat-icon>check_circle</mat-icon>
+            Dimensiones alcanzadas
+          </span>
+          <div class="dim-tags">
+            @for (d of achievedDimensions(); track $index) {
+              <span class="dim-tag tag-achieved">{{ getDimLabel(d) }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      @if (pendingDimensions().length > 0) {
+        <div class="dim-group">
+          <span class="dim-group-label pending">
+            <mat-icon>pending</mat-icon>
+            Dimensiones pendientes
+          </span>
+          <div class="dim-tags">
+            @for (d of pendingDimensions(); track $index) {
+              <span class="dim-tag tag-pending">{{ getDimLabel(d) }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (decision() === 'CERTIFICAR') {
+      <div class="esc-action">
+        <button mat-flat-button class="btn-cert">
+          <mat-icon>download</mat-icon>
+          Descargar certificación
+        </button>
+      </div>
+    } @else {
+      <div class="esc-action">
+        <a mat-stroked-button class="btn-plan" routerLink="/app/assessment">
+          <mat-icon>play_arrow</mat-icon>
+          Continuar con el POST_TEST
+        </a>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,509 @@
+// ── Loading ───────────────────────────────────────────────────
+.loading-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+// ── Saludo ────────────────────────────────────────────────────
+.greeting-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.greeting-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.greeting-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+// ── Grid de estadísticas ──────────────────────────────────────
+.stats-grid {
+  display: grid;
+  // auto-fit para adaptarse a 4 (coordinador/admin) o 5 (estudiante) tarjetas
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 24px;
+  }
+
+  &.icon-blue {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+  }
+  &.icon-green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+  }
+  &.icon-purple {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+  }
+  &.icon-amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+  }
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.level-value {
+  font-size: 15px;
+  &.level-basic {
+    color: #dc2626;
+  }
+  &.level-intermediate {
+    color: #d97706;
+  }
+  &.level-advanced {
+    color: #059669;
+  }
+}
+
+.profile-bar {
+  margin-top: 6px;
+  --mdc-linear-progress-active-indicator-color: var(--primary);
+  --mdc-linear-progress-track-color: var(--border);
+}
+
+// ── Body grid ─────────────────────────────────────────────────
+.body-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Cards ─────────────────────────────────────────────────────
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.card-icon {
+  font-size: 18px;
+  color: var(--primary);
+}
+
+// ── Skills ────────────────────────────────────────────────────
+.skills-list {
+  padding: 8px 0;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.skill-meta {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.skill-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.skill-dim {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.skill-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  width: 30px;
+  flex-shrink: 0;
+}
+
+.bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.bar-pct {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.skill-level {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.level-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 99px;
+
+  &.level-basic {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  &.level-intermediate {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  &.level-advanced {
+    background: #d1fae5;
+    color: #065f46;
+  }
+}
+
+.delta {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+
+  &.positive {
+    color: var(--success);
+  }
+}
+
+// ── Acciones pendientes ───────────────────────────────────────
+.actions-list {
+  padding: 8px 0;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  text-decoration: none;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: var(--bg-app);
+  }
+}
+
+.action-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .action-primary & {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+  }
+  .action-warning & {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+  }
+  .action-success & {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+  .action-info & {
+    background: rgba(139, 92, 246, 0.12);
+    color: #7c3aed;
+  }
+}
+
+.action-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.action-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.action-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.action-arrow {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+// ── Quick links (docente/admin) ───────────────────────────────
+.status-breakdown {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 20px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-app);
+}
+.status-num {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+.status-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.status-draft .status-num { color: #6b7280; }
+.status-complete .status-num { color: #2563eb; }
+.status-published .status-num { color: #0f7a52; }
+.status-archived .status-num { color: #b45309; }
+
+.quick-links {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+.quick-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+
+  mat-icon {
+    font-size: 24px;
+    color: var(--primary);
+  }
+
+  &:hover {
+    background: var(--bg-app);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+// ── Actividad reciente ────────────────────────────────────────
+.activity-list {
+  list-style: none;
+  padding: 8px 0;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.activity-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 121, 107, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+  }
+}
+
+.activity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-desc {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.activity-date {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.mt-4 {
+  margin-top: 16px;
+}
+
+// Etiqueta del cuestionario fuente del "Progreso por dimensión"
+.progress-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 2px 10px;
+  border-radius: 99px;
+  background: rgba(26, 92, 56, 0.08);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 500;
+  max-width: 100%;
+}
+.ps-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  line-height: 14px !important;
+  flex-shrink: 0;
+}

@@ -1,0 +1,35 @@
+<div class="layout-shell">
+  <!-- Overlay móvil -->
+  @if (isMobile() && mobileMenuOpen()) {
+    <div
+      class="mobile-overlay"
+      (click)="closeMobileMenu()"
+      role="presentation"
+      aria-hidden="true"
+    ></div>
+  }
+
+  <!-- Sidebar -->
+  <div
+    class="sidebar-wrap"
+    [class.open]="!isMobile() || mobileMenuOpen()"
+    [class.mobile]="isMobile()"
+  >
+    <app-sidebar [collapsed]="!sidebarOpen() && !isMobile()" (closeSidebar)="closeMobileMenu()" />
+  </div>
+
+  <!-- Área principal -->
+  <div class="main-area" [class.sidebar-open]="sidebarOpen() && !isMobile()">
+    <!-- Header -->
+    <app-topbar
+      [pageTitle]="pageTitle()"
+      [sidebarOpen]="sidebarOpen()"
+      (toggleSidebar)="toggleSidebar()"
+    />
+
+    <!-- Contenido -->
+    <main class="content-area" role="main">
+      <router-outlet />
+    </main>
+  </div>
+</div>

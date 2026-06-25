@@ -1,0 +1,150 @@
+.comparison-table {
+  width: 100%;
+  font-size: 13px;
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr 100px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 20px;
+}
+
+.table-header {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--border);
+  min-height: 60px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: var(--bg-app);
+  }
+}
+
+.col-skill {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dim-skill {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.dim-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.col-phase {
+  display: flex;
+  align-items: center;
+}
+
+.phase-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.phase-pct {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mini-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+  width: 100%;
+}
+
+.mini-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+.pre-fill {
+  background: #3b82f6;
+}
+.post-fill {
+  background: #10b981;
+}
+
+.phase-level {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 99px;
+  width: fit-content;
+
+  &.level-basic {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  &.level-intermediate {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  &.level-advanced {
+    background: #d1fae5;
+    color: #065f46;
+  }
+}
+
+.no-data {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.col-delta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delta-badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 99px;
+
+  &.delta-positive {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  &.delta-negative {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  &.delta-neutral {
+    background: var(--bg-app);
+    color: var(--text-secondary);
+  }
+}
+
+.delta-icon {
+  font-size: 14px !important;
+}

@@ -1,16 +1,7 @@
-export type EngineeringProgram =
-  | 'SYSTEMS_ENGINEERING'
-  | 'INDUSTRIAL_ENGINEERING'
-  | 'CIVIL_ENGINEERING'
-  | 'ELECTRONIC_ENGINEERING'
-  | 'ELECTRICAL_ENGINEERING'
-  | 'MECHANICAL_ENGINEERING'
-  | 'BIOMEDICAL_ENGINEERING'
-  | 'ENVIRONMENTAL_ENGINEERING'
-  | 'CHEMICAL_ENGINEERING'
-  | 'AEROSPACE_ENGINEERING'
-  | 'TELECOMMUNICATIONS_ENGINEERING'
-  | 'OTHER';
+// Nombre (enum) del programa de ingeniería. El backend define el catálogo
+// completo (enum ProgramaIngenieria); el frontend lo consume vía /perfil/programas,
+// por lo que se modela como string para no duplicar los 33 valores aquí.
+export type EngineeringProgram = string;
 
 export type Gender = 'MASCULINO' | 'FEMENINO' | 'NO_BINARIO' | 'PREFIERO_NO_DECIRLO';
 
@@ -20,37 +11,38 @@ export interface CompleteProfileRequest {
   biography?: string;
   engineeringProgram?: EngineeringProgram;
   academicSemester?: number;
-  studentCode?: string;
-  academicYear?: number;
+  // Solo para usuarios sin documento (ej. registrados con Google)
+  tipoIdentificacion?: 'CC' | 'TI' | 'CE' | 'PA';
+  numeroIdentificacion?: string;
 }
 
-export interface UserProfileResponse {
+export interface UsuarioPerfilResponse {
   id: number;
-  userId: number;
+  idUsuario: number;
   avatarUrl?: string;
-  dateOfBirth?: string;
-  gender?: Gender;
-  genderDisplay?: string;
-  biography?: string;
-  engineeringProgram?: EngineeringProgram;
-  engineeringProgramDisplay?: string;
-  academicSemester?: number;
-  studentCode?: string;
-  academicYear?: number;
-  profileComplete: boolean;
-  completionPercentage: number;
+  fechaNacimiento?: string;
+  genero?: Gender;
+  visualizacionGenero?: string;
+  biografia?: string;
+  programaIngenieria?: EngineeringProgram;
+  visualizacionProgramaIngenieria?: string;
+  codigoProgramaIngenieria?: string;
+  semestreAcademico?: number;
+  perfilCompleto: boolean;
+  porcentajeCompleto: number;
   updatedAt: string;
 }
 
 export interface ProfileStatusResponse {
-  profileComplete: boolean;
-  completionPercentage: number;
-  missingRequiredFields: string[];
-  missingOptionalFields: string[];
-  message: string;
+  perfilCompleto: boolean;
+  porcentajeCompleto: number;
+  camposObligatoriosFaltantes: string[];
+  camposOpcionalesFaltantes: string[];
+  mensaje: string;
 }
 
 export interface EngineeringProgramResponse {
   value: EngineeringProgram;
+  codigo: string;
   displayName: string;
 }

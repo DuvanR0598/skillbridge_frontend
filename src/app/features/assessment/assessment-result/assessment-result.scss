@@ -1,0 +1,402 @@
+.result-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+.result-shell {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── Banner ────────────────────────────────────────────────────
+.result-banner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: var(--shadow-sm);
+
+  &.banner-advanced {
+    background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+    border-color: transparent;
+
+    .banner-title,
+    .banner-sub {
+      color: white;
+    }
+    .banner-icon {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+  }
+}
+
+.banner-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(0, 121, 107, 0.1);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  mat-icon {
+    font-size: 28px;
+  }
+}
+
+.banner-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.banner-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+// ── Card base ─────────────────────────────────────────────────
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.card-icon {
+  font-size: 18px;
+  color: var(--primary);
+}
+
+.summary-text {
+  padding: 16px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+// ── Resultado por skill ───────────────────────────────────────
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.result-skill-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.result-skill {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.result-dimension {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.result-dimension--general {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--primary, #2e7d52);
+  background: var(--primary-soft, #e8f4ee);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.level-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 99px;
+
+  &.level-basic {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  &.level-intermediate {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  &.level-advanced {
+    background: #d1fae5;
+    color: #065f46;
+  }
+}
+
+// ── Puntaje ───────────────────────────────────────────────────
+.score-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.score-numbers {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.score-main {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.score-pct {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.score-bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+
+  &.fill-basic {
+    background: #ef4444;
+  }
+  &.fill-intermediate {
+    background: #f59e0b;
+  }
+  &.fill-advanced {
+    background: #10b981;
+  }
+}
+
+.level-desc {
+  padding: 12px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  border-bottom: 1px solid var(--border);
+}
+
+.observable {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 20px;
+  background: var(--bg-app);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.obs-icon {
+  font-size: 16px;
+  color: var(--primary);
+  margin-top: 1px;
+}
+
+// ── Planes de fortalecimiento ─────────────────────────────────
+.plans-section {
+  padding: 16px 20px;
+}
+
+.plans-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.plan-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.plan-axis {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 99px;
+
+  &.axis-academic {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+  &.axis-experiential {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  &.axis-personal {
+    background: #fef3c7;
+    color: #92400e;
+  }
+}
+
+.plan-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.action-icon {
+  font-size: 14px !important;
+}
+
+.plan-title-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.plan-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.plan-resources {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--primary);
+  text-decoration: none;
+  word-break: break-all;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.link-icon {
+  font-size: 12px !important;
+}
+
+// ── Acciones finales ──────────────────────────────────────────
+.result-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.btn-progress {
+  height: 44px;
+  border-radius: var(--radius-sm) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-dashboard {
+  height: 44px;
+  background: var(--primary) !important;
+  color: white !important;
+  border-radius: var(--radius-sm) !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// ── Error state ───────────────────────────────────────────────
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  gap: 16px;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 48px;
+  color: var(--border);
+}

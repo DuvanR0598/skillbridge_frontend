@@ -32,6 +32,13 @@ export class Oauth2Callback implements OnInit {
       const token        = params['token'];
       const refreshToken = params['refresh'];
       const profileDone  = params['profileCompleted'] === 'true';
+      const errorCode    = params['error'];
+
+      // El backend rechaza cuentas deshabilitadas (cualquier proveedor).
+      if (errorCode === 'account_disabled') {
+        this.error.set('Tu cuenta está deshabilitada. Contacta al administrador para reactivarla.');
+        return;
+      }
 
       if (!token) {
         this.error.set('No se recibió el token de autenticación.');

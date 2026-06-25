@@ -48,7 +48,8 @@ export class AuthService {
     return this.http
       .post<ApiResponse<AuthResponse>>(`${this.API}/auth/refresh`, { refreshToken })
       .pipe(
-        tap((response) => this.handleAuthSuccess(response.data)),
+        // Refresh silencioso: actualiza tokens sin navegar
+        tap((response) => this.persistSession(response.data)),
         catchError((error) => {
           // Si el refresh falla, desloguear
           this.logout();
@@ -130,15 +131,35 @@ export class AuthService {
     return this.hasRole('ROLE_ESTUDIANTE');
   }
 
+  /**
+   * Actualiza parcialmente el usuario actual (signal + localStorage) sin
+   * recargar la sesión. Útil cuando cambia un dato del usuario, p. ej. el
+   * avatar, para que se refleje al instante en sidebar, topbar, etc.
+   */
+  updateCurrentUser(patch: Partial<UserResponse>): void {
+    const current = this._currentUser();
+    if (!current) return;
+    const updated = { ...current, ...patch };
+    localStorage.setItem('currentUser', JSON.stringify(updated));
+    this._currentUser.set(updated);
+  }
+
   // ── Helpers privados ───────────────────────────────────────────
 
-  private handleAuthSuccess(data: AuthResponse): void {
+  /** Guarda tokens y usuario en localStorage + signals (sin navegar). */
+  private persistSession(data: AuthResponse): void {
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('currentUser', JSON.stringify(data.user));
+    localStorage.setItem('profileCompleted', String(data.profileCompleted));
 
     this._accessToken.set(data.accessToken);
     this._currentUser.set(data.user);
+  }
+
+  /** Login/registro exitoso: persiste la sesión y navega según el perfil. */
+  private handleAuthSuccess(data: AuthResponse): void {
+    this.persistSession(data);
 
     // Redirigir según si el perfil está completo
     if (!data.profileCompleted) {
@@ -152,6 +173,7 @@ export class AuthService {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('profileCompleted');
     this._accessToken.set(null);
     this._currentUser.set(null);
   }

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import {
   FormBuilder, FormGroup, Validators, ReactiveFormsModule
 } from '@angular/forms';
@@ -21,6 +21,7 @@ import {
   CompleteProfileRequest
 } from '../../../core/models/perfil.model';
 import { ApiResponse } from '../../../core/models/api-response.model';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-completar-perfil',
@@ -46,14 +47,38 @@ import { ApiResponse } from '../../../core/models/api-response.model';
 })
 export class CompletarPerfil implements OnInit{
 
-  private fb     = inject(FormBuilder);
-  private http   = inject(HttpClient);
-  private router = inject(Router);
+  private readonly fb      = inject(FormBuilder);
+  private readonly http    = inject(HttpClient);
+  private readonly router  = inject(Router);
+  private readonly authSvc = inject(AuthService);
 
   private readonly API = environment.apiUrl;
 
+  // ¿El usuario aún no tiene documento? (caso típico: registro con Google)
+  needsIdentification = !this.authSvc.currentUser()?.numeroIdentificacion;
+
+  idTypeOptions: { value: 'CC' | 'TI' | 'CE' | 'PA'; label: string }[] = [
+    { value: 'CC', label: 'CC - Cédula de Ciudadanía' },
+    { value: 'TI', label: 'TI - Tarjeta de Identidad' },
+    { value: 'CE', label: 'CE - Cédula de Extranjería' },
+    { value: 'PA', label: 'PA - Pasaporte' },
+  ];
+
   programs     = signal<EngineeringProgramResponse[]>([]);
+  programSearch = signal('');
   loading      = signal(false);
+
+  /** Programas filtrados por coincidencia de palabras (sin distinguir acentos/mayúsculas). */
+  filteredPrograms = computed(() => {
+    const term = this.normalize(this.programSearch().trim());
+    const list = this.programs();
+    if (!term) return list;
+    const words = term.split(/\s+/);
+    return list.filter(p => {
+      const name = this.normalize(p.displayName);
+      return words.every(w => name.includes(w));
+    });
+  });
   savingStep   = signal(false);
   errorMessage = signal<string | null>(null);
   currentStep  = signal(0);
@@ -80,8 +105,7 @@ export class CompletarPerfil implements OnInit{
   // ── Paso 2: datos académicos ──────────────────────────────
   academicForm: FormGroup = this.fb.group({
     engineeringProgram: [null, Validators.required],
-    academicSemester:   [null, Validators.required],
-    studentCode:        [''],
+    academicSemester:   [null, Validators.required]
   });
 
   // ── Paso 3: sobre mí (opcional) ───────────────────────────
@@ -90,6 +114,19 @@ export class CompletarPerfil implements OnInit{
   });
 
   ngOnInit(): void {
+    // Si el usuario no tiene documento (Google), pedirlo en el paso 1.
+    if (this.needsIdentification) {
+      this.personalForm.addControl('tipoIdentificacion', this.fb.control('CC', Validators.required));
+      this.personalForm.addControl(
+        'numeroIdentificacion',
+        this.fb.control('', [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(30),
+          Validators.pattern(/^[a-zA-Z0-9]+$/),
+        ]),
+      );
+    }
     this.loadPrograms();
   }
 
@@ -110,6 +147,23 @@ export class CompletarPerfil implements OnInit{
     });
   }
 
+  /** Quita acentos y pasa a minúsculas para comparar sin distinción. */
+  private normalize(s: string): string {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
+
+  /** Limpia el buscador al cerrar el panel para que la próxima apertura sea limpia. */
+  onProgramPanelToggle(open: boolean): void {
+    if (!open) this.programSearch.set('');
+  }
+
+  /** Código oficial del programa seleccionado (para el campo de solo lectura). */
+  get selectedProgramCodigo(): string {
+    const value = this.academicForm.get('engineeringProgram')?.value;
+    if (!value) return '';
+    return this.programs().find(p => p.value === value)?.codigo ?? '';
+  }
+
   nextStep(): void {
     this.currentStep.update(s => s + 1);
   }
@@ -121,7 +175,7 @@ export class CompletarPerfil implements OnInit{
   // Calcular porcentaje de completitud en tiempo real
   get completionPct(): number {
     let filled = 0;
-    const total = 7;
+    const total = 5;
     const pv = this.personalForm.value;
     const av = this.academicForm.value;
     const bv = this.bioForm.value;
@@ -153,10 +207,14 @@ export class CompletarPerfil implements OnInit{
       gender:             pv.gender        || undefined,
       engineeringProgram: av.engineeringProgram,
       academicSemester:   av.academicSemester,
-      studentCode:        av.studentCode   || undefined,
-      academicYear:       av.academicYear  || undefined,
       biography:          bv.biography     || undefined,
     };
+
+    // Adjuntar el documento solo si se le pidió al usuario (caso Google).
+    if (this.needsIdentification) {
+      payload.tipoIdentificacion   = pv.tipoIdentificacion;
+      payload.numeroIdentificacion = (pv.numeroIdentificacion ?? '').trim();
+    }
 
     this.http.patch<ApiResponse<unknown>>(
       `${this.API}/usuarios/me/perfil`, payload

@@ -1,0 +1,686 @@
+// questionnaire-builder/questionnaire-builder.scss
+
+// ============================================
+// ESTADO DE CARGA
+// ============================================
+.builder-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 16px;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+// ============================================
+// CONTENEDOR PRINCIPAL
+// ============================================
+.builder-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ============================================
+// ENCABEZADO
+// ============================================
+.builder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.builder-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.back-btn {
+  color: var(--text-secondary) !important;
+  flex-shrink: 0;
+}
+
+.builder-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.builder-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+// ============================================
+// BADGES DE ESTADO
+// ============================================
+.status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+
+  &.st-draft {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+  &.st-complete,
+  &.st-completo {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+  &.st-published {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  &.st-archived {
+    background: #fef3c7;
+    color: #92400e;
+  }
+}
+
+.meta-sep {
+  color: var(--border);
+}
+
+.meta-txt {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.locked-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.lock-icon {
+  font-size: 14px !important;
+}
+
+.btn-sp {
+  --mdc-circular-progress-active-indicator-color: white;
+}
+
+// ============================================
+// ALERTAS Y BANNERS
+// ============================================
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.alert-success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-size: 14px;
+
+  mat-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+}
+
+// ============================================
+// TABS PRINCIPALES
+// ============================================
+.builder-tabs {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+
+  // Estilo para los tabs de Material
+  .mat-mdc-tab-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+
+  .mat-mdc-tab-label-container {
+    padding: 0 8px;
+  }
+
+  .mat-mdc-tab {
+    min-width: 120px;
+    font-weight: 500;
+  }
+
+  .mat-mdc-tab.mdc-tab--active {
+    .mdc-tab__text-label {
+      color: var(--primary) !important;
+    }
+  }
+}
+
+.tab-icon {
+  font-size: 18px !important;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.tab-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: #7c3aed;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 99px;
+  margin-left: 6px;
+}
+
+.tab-body {
+  padding: 0;
+}
+
+// ============================================
+// HINT CUANDO ESTÁ BLOQUEADO
+// ============================================
+.locked-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  font-size: 14px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-top: 1px solid #bfdbfe;
+
+  &.info {
+    background: #f0f9ff;
+    color: #0369a1;
+    border-color: #bae6fd;
+  }
+
+  mat-icon {
+    flex-shrink: 0;
+  }
+}
+
+// ============================================
+// GRID DE DOS COLUMNAS
+// ============================================
+.builder-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
+}
+
+// ============================================
+// PANELES (Banco de preguntas y preguntas añadidas)
+// ============================================
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.panel-icon {
+  font-size: 18px !important;
+  color: var(--primary);
+}
+
+// ── Buscador del banco ────────────────────────────────────────
+.bank-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-app);
+
+  mat-icon {
+    font-size: 18px;
+    color: var(--text-secondary); 
+    flex-shrink: 0;
+  }
+}
+
+.bank-search-input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+}
+
+.count-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--primary);
+  color: white;
+  padding: 1px 7px;
+  border-radius: 99px;
+  margin-left: 4px;
+}
+
+.new-q-wrap {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+// ============================================
+// BANCO DE PREGUNTAS
+// ============================================
+.bank-list {
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.bank-empty,
+.added-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+
+  mat-icon {
+    font-size: 36px;
+    color: var(--border);
+  }
+}
+
+.bank-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--bg-app);
+  }
+}
+
+.bank-item-info {
+  flex: 1;
+  min-width: 0;
+
+.bank-item-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+}
+
+// ============================================
+// CHIPS DE TIPO DE PREGUNTA
+// ============================================
+.type-chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+
+  &.type-tf {
+    background: #ede9fe;
+    color: #5b21b6;
+  }
+  &.type-lk {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+  &.type-sc {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  &.type-mc {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  &.type-desc {
+    background: #f1f5f9;
+    color: #475569;
+  }
+}
+
+.bank-item-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bank-item-opts {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+// ============================================
+// FILTROS DEL BANCO
+// ============================================
+.bank-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-app);
+}
+
+.bank-filter-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.bank-filter-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+  opacity: .6;
+}
+
+.bank-filter-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding-top: 5px;
+  min-width: 62px;
+  flex-shrink: 0;
+}
+
+.bank-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-app);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+
+  &:hover { border-color: var(--primary); color: var(--primary); }
+
+  &.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+
+  &.dim-filter.active {
+    background: rgba(26,92,56,.15);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+// ── Chip de skill (PC / AD) ───────────────────────────────────
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+
+  &.skill-pensamiento_critico {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+  }
+  &.skill-adaptabilidad {
+    background: rgba(245, 124, 0, 0.12);
+    color: #c05c00;
+  }
+}
+
+// ── Chips de filtro skill ─────────────────────────────────────
+.skill-filter {
+  &.skill-pensamiento_critico {
+    &:hover, &.active {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+  }
+  &.skill-adaptabilidad {
+    &:hover, &.active {
+      background: rgba(245, 124, 0, 0.15);
+      border-color: #c05c00;
+      color: #c05c00;
+    }
+  }
+}
+
+.btn-add-bank {
+  color: var(--primary) !important;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+// ============================================
+// PREGUNTAS AÑADIDAS AL CUESTIONARIO
+// ============================================
+.added-list {
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.added-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.added-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.added-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.added-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-top: 4px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.added-check {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+// ============================================
+// CHIPS DE PREGUNTAS AÑADIDAS
+// ============================================
+.added-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.req-chip,
+.cond-chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 99px;
+}
+
+.req-chip {
+  background: rgba(26, 92, 56, 0.12);
+  color: var(--primary);
+}
+
+.cond-chip {
+  background: rgba(200, 168, 75, 0.18);
+  color: #8a6d1f;
+}
+
+// ============================================
+// LISTA DE OPCIONES DE PREGUNTA
+// ============================================
+.opt-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.opt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  padding: 3px 6px;
+  border-radius: 6px;
+
+  &.opt-correct {
+    background: rgba(16, 185, 129, 0.1);
+    color: #0f7a52;
+    font-weight: 500;
+  }
+}
+
+.opt-ic {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #10b981;
+
+  &.muted {
+    color: var(--border);
+  }
+}
+
+.opt-text {
+  flex: 1;
+}
+
+.opt-peso {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.btn-remove {
+  color: var(--danger) !important;
+  flex-shrink: 0;
+}
+
+.dim-chip {
+  font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 99px;
+  background: rgba(26,92,56,0.12); color: var(--primary);
+}

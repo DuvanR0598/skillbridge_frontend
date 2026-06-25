@@ -1,0 +1,280 @@
+<section class="bank">
+  <p-confirmdialog />
+  <header class="bank__header">
+    <div>
+      <h1>Banco de preguntas</h1>
+      <p>Preguntas reutilizables y sus opciones (con la respuesta correcta y el peso).</p>
+    </div>
+    <button mat-flat-button class="btn-action-primary" (click)="showForm.set(true)">
+      <mat-icon>add</mat-icon>
+      Nueva pregunta
+    </button>
+  </header>
+
+  <p-dialog
+    header="Nueva pregunta"
+    [visible]="showForm()"
+    (visibleChange)="showForm.set($event)"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [dismissableMask]="true"
+    [style]="{ width: '840px', maxWidth: '95vw' }"
+    maskStyleClass="bank-dialog-mask"
+    [transitionOptions]="'1ms'"
+  >
+    <app-question-form (questionCreated)="onCreated()" (cancelled)="showForm.set(false)" />
+  </p-dialog>
+
+  @if (errorMsg()) {
+    <div class="alert-error" role="alert">{{ errorMsg() }}</div>
+  }
+
+  <!-- Buscador -->
+  <div class="bank__search">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar pregunta por enunciado..."
+      [value]="searchText()"
+      (input)="onSearch($any($event.target).value)"
+    />
+    @if (searchText()) {
+      <button type="button" class="search-clear" (click)="onSearch('')" aria-label="Limpiar búsqueda">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Filtros -->
+  <div class="bank__filters">
+
+    <!-- Tipo -->
+    <div class="filter-group">
+      <span class="filter-label">Tipo</span>
+      <div class="filter-chips">
+        @for (opt of typeOptions; track opt.value) {
+          <button type="button" class="filter-chip"
+                  [class.active]="selectedType() === opt.value"
+                  (click)="onFilter(opt.value)">
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- Skill -->
+    <div class="filter-group">
+      <span class="filter-label">Skill</span>
+      <div class="filter-chips">
+        <button type="button" class="filter-chip" [class.active]="selectedSkill() === null"
+                (click)="onFilterSkill(null)">Todas</button>
+        <button type="button" class="filter-chip skill-chip-pc" [class.active]="selectedSkill() === 'PENSAMIENTO_CRITICO'"
+                (click)="onFilterSkill(selectedSkill() === 'PENSAMIENTO_CRITICO' ? null : 'PENSAMIENTO_CRITICO')">PC</button>
+        <button type="button" class="filter-chip skill-chip-ad" [class.active]="selectedSkill() === 'ADAPTABILIDAD'"
+                (click)="onFilterSkill(selectedSkill() === 'ADAPTABILIDAD' ? null : 'ADAPTABILIDAD')">AD</button>
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- Dimensión -->
+    <div class="filter-group">
+      <span class="filter-label">Dimensión</span>
+      <div class="filter-chips">
+        <button type="button" class="filter-chip" [class.active]="selectedDimension() === null"
+                (click)="onFilterDimension(null)">Todas</button>
+        @for (d of filteredDimensions(); track d.id) {
+          <button type="button" class="filter-chip dim-chip-filter" [class.active]="selectedDimension() === d.id"
+                  (click)="onFilterDimension(selectedDimension() === d.id ? null : d.id)">
+            {{ d.nombre }}
+          </button>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  @if (loading()) {
+    <div class="bank__loading"><mat-spinner diameter="36" /></div>
+  } @else if (questions().length === 0) {
+    <p class="bank__empty">
+      @if (selectedType()) {
+        No hay preguntas de este tipo.
+      } @else {
+        No hay preguntas en el banco todavía.
+      }
+    </p>
+  } @else {
+    <div class="bank__list">
+      @for (q of questions(); track q.idPregunta) {
+        <article class="q-card">
+          <div class="q-card__head">
+            <div class="q-card__meta">
+              <div class="q-card__chips">
+                <span class="type-chip" [class]="getTypeClass(q.tipoPregunta)">
+                  {{ getTypeLabel(q.tipoPregunta) }}
+                </span>
+                @if (q.dimension) {
+                  <span class="skill-badge" [class]="'skill-badge--' + q.dimension.skill.toLowerCase()">
+                    {{ q.dimension.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                  </span>
+                  <span class="dim-chip" matTooltip="Dimensión">{{ q.dimension.nombre }}</span>
+                }
+              </div>
+              <p class="q-text">{{ q.texto }}</p>
+              @if (q.imagenUrl) {
+                <img
+                  class="q-thumb"
+                  [src]="imageSrc(q.imagenUrl)"
+                  alt="Imagen de la pregunta"
+                />
+              }
+            </div>
+            <button
+              mat-icon-button
+              class="btn-edit"
+              (click)="startEdit(q)"
+              matTooltip="Editar dimensión y pesos"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="btn-del"
+              (click)="remove(q)"
+              matTooltip="Eliminar (solo si no está en uso)"
+            >
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+
+          @if (editingId() === q.idPregunta) {
+            <!-- Panel de edición -->
+            <div class="q-edit">
+              <label class="edit-label">Dimensión</label>
+              <select
+                class="edit-select"
+                [ngModel]="editDimId()"
+                (ngModelChange)="editDimId.set($event)"
+              >
+                <option [ngValue]="null">(Sin dimensión)</option>
+                @for (d of dimensions(); track d.id) {
+                  <option [ngValue]="d.id">
+                    {{ d.nombre }} · {{ d.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                  </option>
+                }
+              </select>
+
+              <!-- Imagen de la pregunta -->
+              <label class="edit-label">Imagen</label>
+              <div class="edit-image">
+                @if (editImagePreview()) {
+                  <div class="edit-image-preview">
+                    <img [src]="editImagePreview()!" alt="Imagen de la pregunta" />
+                    @if (uploadingEditImage()) {
+                      <div class="edit-image-overlay"><mat-spinner diameter="24" /></div>
+                    }
+                  </div>
+                  <div class="edit-image-actions">
+                    <label class="edit-img-btn" [class.disabled]="uploadingEditImage()">
+                      <mat-icon>swap_horiz</mat-icon>
+                      Reemplazar
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        (change)="onEditImageSelected($event)"
+                        [disabled]="uploadingEditImage()"
+                        hidden
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      class="edit-img-btn danger"
+                      (click)="removeEditImage()"
+                      [disabled]="uploadingEditImage()"
+                    >
+                      <mat-icon>delete_outline</mat-icon>
+                      Quitar
+                    </button>
+                  </div>
+                } @else {
+                  <label class="edit-img-btn" [class.disabled]="uploadingEditImage()">
+                    <mat-icon>add_photo_alternate</mat-icon>
+                    {{ uploadingEditImage() ? 'Subiendo...' : 'Adjuntar imagen' }}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      (change)="onEditImageSelected($event)"
+                      [disabled]="uploadingEditImage()"
+                      hidden
+                    />
+                  </label>
+                }
+              </div>
+
+              @if (q.opcionPregunta.length > 0) {
+                <label class="edit-label">Pesos de las opciones</label>
+                <ul class="edit-opts">
+                  @for (opt of q.opcionPregunta; track opt.idOpcion) {
+                    <li class="edit-opt">
+                      <span class="edit-opt-text">{{ opt.texto }}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        class="edit-weight"
+                        [ngModel]="editWeights()[opt.idOpcion]"
+                        (ngModelChange)="setWeight(opt.idOpcion, $event)"
+                      />
+                    </li>
+                  }
+                </ul>
+              }
+
+              <div class="edit-actions">
+                <button type="button" class="btn-cancel-edit" (click)="cancelEdit()">
+                  Cancelar
+                </button>
+                <button
+                  mat-flat-button
+                  class="btn-action-primary"
+                  [disabled]="savingEdit()"
+                  (click)="saveEdit(q)"
+                >
+                  {{ savingEdit() ? 'Guardando…' : 'Guardar' }}
+                </button>
+              </div>
+            </div>
+          } @else if (q.opcionPregunta.length > 0) {
+            <ul class="opt-list">
+              @for (opt of q.opcionPregunta; track opt.idOpcion) {
+                <li class="opt-row" [class.opt-correct]="opt.isCorrecta">
+                  <mat-icon class="opt-ic" [class.muted]="!opt.isCorrecta">
+                    {{ opt.isCorrecta ? 'check_circle' : 'radio_button_unchecked' }}
+                  </mat-icon>
+                  <span class="opt-text">{{ opt.texto }}</span>
+                  <span class="opt-peso">peso {{ opt.peso }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="no-opts">Pregunta abierta (sin opciones).</p>
+          }
+        </article>
+      }
+    </div>
+
+    <mat-paginator
+      class="bank__paginator"
+      [length]="totalElements()"
+      [pageSize]="pageSize()"
+      [pageIndex]="page()"
+      [pageSizeOptions]="[5, 10, 20, 50]"
+      (page)="onPage($event)"
+      aria-label="Paginación del banco de preguntas"
+    />
+  }
+</section>

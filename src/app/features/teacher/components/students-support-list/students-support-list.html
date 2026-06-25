@@ -1,0 +1,44 @@
+@if (students().length === 0) {
+  <div class="no-support">
+    <mat-icon>check_circle</mat-icon>
+    <p>Ningún estudiante en nivel Básico. ¡Excelente grupo!</p>
+  </div>
+} @else {
+  <div class="support-list">
+    @for (s of students(); track s.idEstudiante) {
+      <div class="support-row">
+        <div class="student-id">
+          <div class="student-avatar">
+            {{ s.idEstudiante }}
+          </div>
+          <div class="student-info">
+            <span class="student-label">
+              {{ s.nombreCompleto || ('Estudiante #' + s.idEstudiante) }}
+            </span>
+            <span class="student-meta">
+              ID {{ s.idEstudiante }}@if (s.email) { · {{ s.email }} }
+            </span>
+          </div>
+        </div>
+
+        <div class="dim-chips">
+          @for (dim of s.dimensionBaja; track $index) {
+            <span
+              class="dim-chip"
+              [class]="getUrgencyClass(dim.porcentaje)"
+              [title]="getSkillLabel(dim.skill) + ' · ' + (dim.dimensionNombre ?? 'Global')"
+            >
+              {{ getSkillLabel(dim.skill) }} · {{ dim.dimensionNombre ?? 'Global' }}
+              <span class="dim-pct">{{ dim.porcentaje | number: '1.0-0' }}%</span>
+            </span>
+          }
+        </div>
+
+        <div class="support-action">
+          <mat-icon class="alert-ico">priority_high</mat-icon>
+          <span>Requiere atención</span>
+        </div>
+      </div>
+    }
+  </div>
+}

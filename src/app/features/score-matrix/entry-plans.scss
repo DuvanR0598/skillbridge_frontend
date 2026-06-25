@@ -1,0 +1,118 @@
+.plans {
+  padding: 0.5rem 0.25rem;
+}
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+}
+.empty {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+.plan-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.plan-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-card);
+}
+.plan-card.axis-academico {
+  border-left-color: #2563eb;
+}
+.plan-card.axis-experimental {
+  border-left-color: #c8a84b;
+}
+.plan-card.axis-personal {
+  border-left-color: #0f7a52;
+}
+.plan-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.axis-chip,
+.accion-chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.06);
+}
+.plan-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+// Botones de ícono (editar / eliminar): estilo circular suave, consistente
+// con Dimensiones, Cuestionarios, Banco de Preguntas y la Matriz.
+.plan-actions button {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: var(--text-secondary) !important;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: rgba(26, 92, 56, 0.1) !important; // tinte del color primario
+    color: var(--primary) !important;
+  }
+}
+.plan-actions button.del {
+  color: var(--danger) !important;
+
+  mat-icon {
+    color: var(--danger) !important;
+  }
+
+  &:hover {
+    background: rgba(211, 47, 47, 0.1) !important; // tinte del color de peligro
+    color: var(--danger) !important;
+  }
+}
+.plan-title {
+  font-weight: 600;
+  margin: 0.4rem 0 0.1rem;
+  font-size: 0.9rem;
+}
+.plan-desc {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  margin: 0;
+}
+.recursos {
+  margin: 0.4rem 0 0;
+  padding-left: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.plan-form {
+  border-top: 1px dashed var(--border);
+  padding-top: 0.6rem;
+}
+.plan-form h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+.pf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.6rem;
+}
+.pf-grid .full {
+  grid-column: 1 / -1;
+}
+.pf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
