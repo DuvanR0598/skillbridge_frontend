@@ -119,15 +119,27 @@ export class QuestionnaireList implements OnInit {
     this.loading.set(true);
     this.svc.getAll().subscribe({
       next: res => {
-        // Excluir los eliminados lógicamente
-        this.questionnaires.set(
-          (res.data ?? []).filter(q => q.estadoCuestionario !== 'ELIMINADO')
-        );
+        // Excluir los eliminados lógicamente y ordenar por fecha de creación
+        // descendente (el último creado aparece primero).
+        const lista = (res.data ?? [])
+          .filter(q => q.estadoCuestionario !== 'ELIMINADO')
+          .sort((a, b) => this.creationTime(b) - this.creationTime(a));
+        this.questionnaires.set(lista);
         this.pageIndex.set(0);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  /**
+   * Marca de tiempo de creación para ordenar. Usa createdAt (o fechaCreacion);
+   * si no hay fecha, cae al id del cuestionario (los ids mayores son más nuevos).
+   */
+  private creationTime(q: CuestionarioResponse): number {
+    const fecha = q.createdAt ?? q.fechaCreacion;
+    const t = fecha ? new Date(fecha).getTime() : NaN;
+    return Number.isNaN(t) ? (q.idCuestionario ?? 0) : t;
   }
 
   openBuilder(id: number): void {

@@ -1,0 +1,19 @@
+# Configuración de despliegue en Netlify para el frontend Angular (SPA).
+[build]
+  # Netlify instala dependencias automáticamente y luego ejecuta este comando.
+  # `npm run build` = `ng build` (configuración production por defecto → usa
+  # environment.prod.ts gracias a fileReplacements en angular.json).
+  command = "npm run build"
+  # Carpeta que Netlify publica (salida del builder de Angular 21).
+  publish = "dist/skillbridge_frontend/browser"
+
+[build.environment]
+  # Angular 21 requiere Node 20.19+ (o 22+). Fijamos una versión LTS.
+  NODE_VERSION = "20"
+
+# Fallback SPA: cualquier ruta del router de Angular debe servir index.html
+# (evita 404 al recargar en rutas como /app/dashboard).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
