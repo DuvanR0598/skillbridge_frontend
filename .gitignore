@@ -44,7 +44,11 @@ __screenshots__/
 Thumbs.db
 
 # Environment files
-/src/environments/*.ts
+# Se versionan a propósito: solo contienen configuración PÚBLICA
+# (apiUrl + googleClientId, que ya viaja en el bundle del navegador).
+# Los secretos reales (JWT, Google client secret, credenciales de BD) viven
+# en variables de entorno del backend, NO en estos archivos.
+# Si en el futuro agregas un environment con secretos, ignóralo puntualmente.
 
 # Directorios de herramientas
 .claude/
