@@ -164,12 +164,21 @@
     <div class="terms-row">
       <input type="checkbox" formControlName="acceptTerms" id="terms" />
       <label for="terms" class="terms-label">
-        Acepto los <a href="#" class="link">términos y condiciones</a> y la
-        <a href="#" class="link">política de privacidad</a>
+        Acepto la política de
+        <a
+          href="https://www.udea.edu.co/wps/portal/udea/web/inicio/institucional/politica-tratamiento-datos-personales"
+          class="link"
+          target="_blank"
+          rel="noopener noreferrer"
+          (click)="$event.stopPropagation()"
+          >tratamiento de datos personales</a
+        >
       </label>
     </div>
     @if (acceptTerms.hasError('required') && acceptTerms.touched) {
-      <p class="terms-error">Debes aceptar los términos para continuar</p>
+      <p class="terms-error">
+        Debes aceptar la política de tratamiento de datos personales para continuar
+      </p>
     }
 
     <!-- Submit -->

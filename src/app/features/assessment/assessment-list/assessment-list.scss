@@ -16,6 +16,32 @@
   color: var(--text-secondary);
 }
 
+// ── Política de tratamiento de datos ──────────────────────────
+.policy-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 28px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.policy-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.policy-link {
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .loading-wrap {
   display: flex;
   justify-content: center;
