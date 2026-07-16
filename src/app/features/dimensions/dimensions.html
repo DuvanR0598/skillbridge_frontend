@@ -37,11 +37,13 @@
       <mat-form-field appearance="outline" class="full">
         <mat-label>Nombre de la dimensión</mat-label>
         <input matInput [(ngModel)]="fNombre" placeholder="Ej: Interpretación" />
+        <mat-hint align="end">{{ (fNombre?.length ?? 0) }}/120</mat-hint>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full">
         <mat-label>Descripción (opcional)</mat-label>
         <input matInput [(ngModel)]="fDescripcion" placeholder="Qué evalúa esta dimensión" />
+        <mat-hint align="end">{{ (fDescripcion?.length ?? 0) }}/500</mat-hint>
       </mat-form-field>
     </div>
 

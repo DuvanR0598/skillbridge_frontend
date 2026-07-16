@@ -35,11 +35,13 @@
     <!-- Ayuda -->
     <mat-form-field appearance="outline" class="mt-3">
       <mat-label>Texto de ayuda (opcional)</mat-label>
-      <input
+      <textarea
         matInput
         formControlName="help"
+        rows="1"
         placeholder="Ej: Selecciona la opción que mejor te describe"
-      />
+      ></textarea>
+      <mat-hint align="end"> {{ form.get('help')?.value?.length ?? 0 }}/300 </mat-hint>
     </mat-form-field>
 
     <!-- Imagen de la pregunta (opcional) -->
@@ -141,7 +143,8 @@
               <span class="opt-num">{{ i + 1 }}</span>
 
               <mat-form-field appearance="outline" class="opt-text-field">
-                <input matInput formControlName="text" placeholder="Texto de la opción" />
+                <textarea matInput formControlName="text" placeholder="Texto de la opción" rows="2"></textarea>
+                <mat-hint align="end">{{ (opt.get('text')?.value?.length ?? 0) }}/1000</mat-hint>
               </mat-form-field>
 
               <!-- Peso -->
