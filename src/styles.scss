@@ -205,6 +205,15 @@ h4 {
   background: rgba(0, 0, 0, 0.25);
 }
 
+// Mensaje del diálogo de confirmación (PrimeNG): partir palabras largas
+// (p. ej. enunciados sin espacios) y respetar los saltos de línea del texto.
+.p-confirmdialog-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-line;
+}
+
 // ── Botón de acción primario reutilizable ──────────────────────
 // Mismo efecto que el botón "Iniciar sesión" del login.
 // Úsalo en cualquier <button mat-flat-button class="btn-action-primary">.

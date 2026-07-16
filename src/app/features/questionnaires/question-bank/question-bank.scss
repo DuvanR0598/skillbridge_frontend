@@ -144,6 +144,8 @@
   margin: 0;
   font-weight: 500;
   line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .type-chip {
   font-size: 11px;

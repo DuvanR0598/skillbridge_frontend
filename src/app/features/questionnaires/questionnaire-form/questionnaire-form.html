@@ -29,12 +29,13 @@
       <!-- Nombre -->
       <mat-form-field appearance="outline">
         <mat-label>Nombre del cuestionario *</mat-label>
-        <input
+        <textarea
           matInput
           formControlName="name"
-          placeholder="Evaluación de Pensamiento Crítico"
-        />
-        <mat-hint align="end"> {{ form.get('name')?.value?.length ?? 0 }}/200 </mat-hint>
+          rows="2"
+          placeholder="Ej: Evaluación de Pensamiento Crítico" 
+        ></textarea>
+        <mat-hint align="end"> {{ form.get('name')?.value?.length ?? 0 }}/255 </mat-hint>
         @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
           <mat-error>El nombre es obligatorio</mat-error>
         }
@@ -102,14 +103,19 @@
 
       <!-- Período de disponibilidad -->
       <p class="section-hint mt-4">
-        Define desde y hasta cuándo el cuestionario estará disponible para responder.
-        Después de la fecha y hora de fin se inhabilita automáticamente.
+        Define desde y hasta cuándo el cuestionario estará disponible para responder. Después de la
+        fecha y hora de fin se inhabilita automáticamente.
       </p>
 
       <div class="date-row mt-2">
         <mat-form-field appearance="outline">
           <mat-label>Fecha de inicio</mat-label>
-          <input matInput [min]="isEdit() ? null : minDate" [matDatepicker]="startPicker" formControlName="appPeriodStart" />
+          <input
+            matInput
+            [min]="isEdit() ? null : minDate"
+            [matDatepicker]="startPicker"
+            formControlName="appPeriodStart"
+          />
           <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
           <mat-datepicker #startPicker />
         </mat-form-field>
@@ -123,7 +129,12 @@
       <div class="date-row mt-2">
         <mat-form-field appearance="outline">
           <mat-label>Fecha de fin</mat-label>
-          <input matInput [min]="isEdit() ? null : minDate" [matDatepicker]="endPicker" formControlName="appPeriodEnd" />
+          <input
+            matInput
+            [min]="isEdit() ? null : minDate"
+            [matDatepicker]="endPicker"
+            formControlName="appPeriodEnd"
+          />
           <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
           <mat-datepicker #endPicker />
         </mat-form-field>

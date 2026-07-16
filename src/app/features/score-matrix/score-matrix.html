@@ -106,14 +106,16 @@
 
         <mat-form-field appearance="outline" class="full">
           <mat-label>Descripción del nivel *</mat-label>
-          <input
+          <textarea
             matInput
             [(ngModel)]="fDescripcion"
             name="fDescripcion"
+            rows="2"
             #descRef="ngModel"
             placeholder="Qué puede hacer el estudiante en este nivel"
             required
-          />
+          ></textarea>
+          <mat-hint align="end">{{ (fDescripcion?.length ?? 0) }}/1000</mat-hint>
           @if (descRef.invalid && descRef.touched) {
             <mat-error>La descripción del nivel es obligatoria.</mat-error>
           }
@@ -121,14 +123,15 @@
 
         <mat-form-field appearance="outline" class="full">
           <mat-label>Características observables *</mat-label>
-          <input
+          <textarea
             matInput
             [(ngModel)]="fCaracteristicas"
             name="fCaracteristicas"
             #carRef="ngModel"
             placeholder="Comportamientos observables"
             required
-          />
+          ></textarea>
+          <mat-hint align="end">{{ (fCaracteristicas?.length ?? 0) }}/1000</mat-hint>
           @if (carRef.invalid && carRef.touched) {
             <mat-error>Las características observables son obligatorias.</mat-error>
           }
