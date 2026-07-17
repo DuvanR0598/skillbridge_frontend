@@ -99,12 +99,7 @@
       @if (password.hasError('required') && password.touched) {
         <mat-error>La contraseña es obligatoria</mat-error>
       }
-      @if (password.hasError('minlength') && password.touched) {
-        <mat-error>Mínimo 8 caracteres</mat-error>
-      }
-      @if (password.hasError('pattern') && password.touched) {
-        <mat-error>Debe tener mayúscula, minúscula y número</mat-error>
-      }
+      <!-- Los requisitos de longitud/complejidad se muestran en el checklist inferior -->
     </mat-form-field>
 
     <!-- Indicador de fuerza -->
@@ -142,6 +137,28 @@
       </div>
     }
 
+    <!-- Requisitos de la contraseña -->
+    @if (password.value || password.touched) { 
+      <ul class="password-reqs mt-1">
+        <li [class.met]="passwordChecks.length">
+          <mat-icon>{{ passwordChecks.length ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+          Mínimo 8 caracteres
+        </li>
+        <li [class.met]="passwordChecks.lower">
+          <mat-icon>{{ passwordChecks.lower ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+          Una letra minúscula
+        </li>
+        <li [class.met]="passwordChecks.upper">
+          <mat-icon>{{ passwordChecks.upper ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+          Una letra mayúscula
+        </li>
+        <li [class.met]="passwordChecks.number">
+          <mat-icon>{{ passwordChecks.number ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+          Un número
+        </li>
+      </ul>
+    }
+
     <!-- Confirmar contraseña -->
     <mat-form-field appearance="outline" class="mt-3">
       <mat-label>Confirmar contraseña</mat-label>
@@ -150,12 +167,13 @@
         matInput
         [type]="showConfirm() ? 'text' : 'password'"
         formControlName="confirmPassword"
+        [errorStateMatcher]="confirmMatcher"
         autocomplete="new-password"
       />
       <button mat-icon-button matSuffix type="button" (click)="togglePassword('confirm')">
         <mat-icon>{{ showConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
       </button>
-      @if (form.hasError('passwordsMismatch') && confirmPassword.touched) {
+      @if (form.hasError('passwordsMismatch')) {
         <mat-error>Las contraseñas no coinciden</mat-error>
       }
     </mat-form-field>
