@@ -6,7 +6,11 @@ import {
   AbstractControl,
   ValidationErrors,
   ReactiveFormsModule,
+  FormControl,
+  FormGroupDirective,
+  NgForm,
 } from '@angular/forms';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -24,6 +28,18 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
   const confirmPassword = group.get('confirmPassword')?.value;
   return password === confirmPassword ? null : { passwordsMismatch: true };
+}
+
+// Marca el campo "confirmar contraseña" en estado de error también cuando el
+// grupo tiene el error de contraseñas no coincidentes (no solo cuando el
+// control es inválido por sí mismo). Así el <mat-error> se hace visible.
+class ConfirmPasswordErrorStateMatcher implements ErrorStateMatcher {
+  isErrorState(control: FormControl | null, _form: FormGroupDirective | NgForm | null): boolean {
+    const interacted = !!(control && (control.dirty || control.touched));
+    const controlInvalid = !!(control && control.invalid);
+    const groupMismatch = !!control?.parent?.hasError('passwordsMismatch');
+    return interacted && (controlInvalid || groupMismatch);
+  }
 }
 
 @Component({
@@ -50,6 +66,7 @@ export class RegisterComponent {
   private readonly authService = inject(AuthService);
 
   loading = signal(false);
+  readonly confirmMatcher = new ConfirmPasswordErrorStateMatcher();
   errorMessage = signal<string | null>(null);
   showPassword = signal(false);
   showConfirm = signal(false);
@@ -114,6 +131,18 @@ export class RegisterComponent {
   }
   get acceptTerms() {
     return this.form.get('acceptTerms')!;
+  }
+
+  // Requisitos de la contraseña (para el checklist en vivo bajo el campo).
+  // Reflejan los validadores: minLength(8) + patrón (minúscula, mayúscula, dígito).
+  get passwordChecks(): { length: boolean; lower: boolean; upper: boolean; number: boolean } {
+    const val = this.password.value ?? '';
+    return {
+      length: val.length >= 8,
+      lower: /[a-z]/.test(val),
+      upper: /[A-Z]/.test(val),
+      number: /\d/.test(val),
+    };
   }
 
   // Indicadores de fuerza de contraseña
