@@ -111,6 +111,7 @@
             [(ngModel)]="fDescripcion"
             name="fDescripcion"
             rows="2"
+            maxlength="1000"
             #descRef="ngModel"
             placeholder="Qué puede hacer el estudiante en este nivel"
             required
@@ -127,6 +128,7 @@
             matInput
             [(ngModel)]="fCaracteristicas"
             name="fCaracteristicas"
+            maxlength="1000"
             #carRef="ngModel"
             placeholder="Comportamientos observables"
             required
