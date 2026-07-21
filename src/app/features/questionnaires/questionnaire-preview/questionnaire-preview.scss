@@ -182,8 +182,6 @@ $accent: #00695c;
 
 .pv-skill-chip {
   @extend %chip-base;
-  &--pensamiento_critico { background: #dbeafe; color: #1d4ed8; }
-  &--adaptabilidad       { background: #fff3e0; color: #c05c00; }
 }
 
 .pv-dim-chip {

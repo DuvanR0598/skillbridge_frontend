@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { skillMeta } from '../../../core/models/dimension.model';
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,6 +42,7 @@ import { AnalyticsService, EvaluatedQuestionnaire } from '../analytics.service';
   styleUrl: './student-progress.scss',
 })
 export class StudentProgress implements OnInit, OnDestroy {
+  protected readonly skillMeta = skillMeta;
 
   // Clave de sessionStorage donde se guarda la posición de scroll para
   // restaurarla al volver (p. ej. desde "Ver resultado").
@@ -254,7 +256,7 @@ export class StudentProgress implements OnInit, OnDestroy {
   }
 
   getSkillLabel(skill: string): string {
-    return skill === 'PENSAMIENTO_CRITICO' ? 'Pensamiento Crítico' : 'Adaptabilidad';
+    return skillMeta(skill).label;
   }
 
   getLevelLabel(level: string | null): string {

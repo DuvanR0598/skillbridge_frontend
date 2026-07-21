@@ -80,8 +80,8 @@
             <div class="pv-q-meta">
               <span class="pv-type-chip">{{ typeLabel(p.tipoPregunta) }}</span>
               @if (p.dimension) {
-                <span class="pv-skill-chip" [class]="'pv-skill-chip--' + p.dimension.skill.toLowerCase()">
-                  {{ p.dimension.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                <span class="pv-skill-chip" [style.background-color]="skillMeta(p.dimension.skill).color" [style.color]="'#fff'">
+                  {{ skillMeta(p.dimension.skill).shortCode }}
                 </span>
                 <span class="pv-dim-chip">{{ p.dimension.nombre }}</span>
               }

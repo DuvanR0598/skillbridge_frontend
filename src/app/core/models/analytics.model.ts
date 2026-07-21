@@ -1,4 +1,7 @@
-export type SkillTipo = 'PENSAMIENTO_CRITICO' | 'ADAPTABILIDAD';
+// SkillTipo se centraliza en dimension.model.ts (fuente única). Se importa para
+// uso local y se reexporta para no romper los imports existentes desde este módulo.
+import type { SkillTipo } from './dimension.model';
+export type { SkillTipo };
 export type SkillNivel = 'BAJO' | 'INTERMEDIO' | 'AVANZADO';
 export type DecisionEscala = 'CERTIFICAR' | 'REINICIAR' | 'PENDIENTE';
 

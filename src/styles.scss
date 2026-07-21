@@ -205,6 +205,39 @@ h4 {
   background: rgba(0, 0, 0, 0.25);
 }
 
+// Selector de dimensión agrupado por skill (banco de preguntas).
+// Las opciones se renderizan en un overlay global, por eso los estilos van aquí.
+.dim-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+}
+.dim-skill {
+  color: var(--text-secondary, #667);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+.dim-placeholder {
+  color: var(--text-secondary, #889);
+}
+// Encabezados de grupo (skill) más notorios, solo en este selector.
+.dim-select-panel .mat-mdc-optgroup-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: var(--primary, #1a5c38) !important;
+  opacity: 1 !important;
+}
+
 // Mensaje del diálogo de confirmación (PrimeNG): partir palabras largas
 // (p. ej. enunciados sin espacios) y respetar los saltos de línea del texto.
 .p-confirmdialog-message {

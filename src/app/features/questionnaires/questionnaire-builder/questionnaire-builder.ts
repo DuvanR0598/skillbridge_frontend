@@ -1,6 +1,7 @@
 // questionnaire-builder/questionnaire-builder.component.ts
 
 import { CommonModule } from '@angular/common';
+import { skillMeta, SKILL_OPTIONS } from '../../../core/models/dimension.model';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -41,6 +42,8 @@ import {
   styleUrl: './questionnaire-builder.scss',
 })
 export class QuestionnaireBuilder implements OnInit {
+  protected readonly skillMeta = skillMeta;
+  protected readonly skillOptions = SKILL_OPTIONS;
   // ============================================
   // 1. INYECCIONES
   // ============================================

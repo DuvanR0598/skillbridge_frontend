@@ -209,9 +209,10 @@
                   <div class="hist-score">
                     <span
                       class="hist-skill"
-                      [class]="'skill-' + score.skill.toLowerCase()"
+                      [style.background-color]="skillMeta(score.skill).color"
+                      [style.color]="'#fff'"
                     >
-                      {{ score.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                      {{ skillMeta(score.skill).shortCode }}
                     </span>
                     <span class="hist-dim" [matTooltip]="score.dimensionNombre ?? 'General'">
                       {{ score.dimensionNombre ?? 'General' }}
