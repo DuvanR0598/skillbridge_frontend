@@ -85,13 +85,30 @@
     <!-- Dimensión (opcional) — solo la ve el coordinador -->
     <mat-form-field appearance="outline" class="mt-3">
       <mat-label>Dimensión (opcional)</mat-label>
-      <mat-select formControlName="dimensionId">
+      <mat-select formControlName="dimensionId" panelClass="dim-select-panel">
+        <mat-select-trigger>
+          @if (selectedDim(); as sd) {
+            <span class="dim-opt">
+              <span class="dot" [style.background-color]="skillMeta(sd.skill).color"></span>
+              {{ sd.nombre }}
+              <span class="dim-skill">· {{ skillMeta(sd.skill).shortCode }}</span>
+            </span>
+          } @else {
+            <span class="dim-placeholder">Sin clasificar</span>
+          }
+        </mat-select-trigger>
+
         <mat-option [value]="null">Sin clasificar</mat-option>
         @for (sk of skillGroups; track sk.value) {
           @if (dimsBySkill(sk.value).length > 0) {
             <mat-optgroup [label]="sk.label">
               @for (d of dimsBySkill(sk.value); track d.id) {
-                <mat-option [value]="d.id">{{ d.nombre }}</mat-option>
+                <mat-option [value]="d.id">
+                  <span class="dim-opt">
+                    <span class="dot" [style.background-color]="skillMeta(sk.value).color"></span>
+                    {{ d.nombre }}
+                  </span>
+                </mat-option>
               }
             </mat-optgroup>
           }

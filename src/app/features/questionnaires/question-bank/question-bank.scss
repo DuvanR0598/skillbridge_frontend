@@ -81,23 +81,6 @@
   border-color: var(--primary);
   color: #fff;
 }
-.filter-chip.skill-chip-pc:hover,
-.filter-chip.skill-chip-pc.active {
-  background: rgba(37,99,235,.15);
-  border-color: #2563eb;
-  color: #2563eb;
-}
-.filter-chip.skill-chip-ad:hover,
-.filter-chip.skill-chip-ad.active {
-  background: rgba(192,92,0,.15);
-  border-color: #c05c00;
-  color: #c05c00;
-}
-.filter-chip.dim-chip-filter.active {
-  background: rgba(26,92,56,.15);
-  border-color: var(--primary);
-  color: var(--primary);
-}
 .bank__loading {
   display: flex;
   justify-content: center;
@@ -354,6 +337,18 @@
   height: 18px;
 }
 
+/* ── Desplegable de filtro por skill ─────────────────────────── */
+.skill-select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card, #fff);
+  font-size: 13px;
+  color: var(--text-primary, #24312a);
+  cursor: pointer;
+  max-width: 260px;
+}
+
 /* ── Etiqueta de skill en tarjetas ───────────────────────────── */
 .skill-badge {
   display: inline-flex;
@@ -364,14 +359,6 @@
   font-weight: 700;
   letter-spacing: .03em;
   white-space: nowrap;
-}
-.skill-badge--pensamiento_critico {
-  background: rgba(37,99,235,.12);
-  color: #2563eb;
-}
-.skill-badge--adaptabilidad {
-  background: rgba(192,92,0,.12);
-  color: #c05c00;
 }
 
 // Miniatura de la imagen adjunta a la pregunta

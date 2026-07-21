@@ -78,27 +78,46 @@
       />
     </div>
     <div class="skill-filters">
-      @for (f of skillFilters; track f.value) {
-        <button
-          class="filter-btn"
-          [class.active]="filterSkill() === f.value"
-          (click)="filterSkill.set(f.value)"
-        >
-          {{ f.label }}
-        </button>
-      }
+      <select
+        class="skill-select"
+        [value]="filterSkill()"
+        (change)="filterSkill.set($any($event.target).value)"
+      >
+        @for (f of skillFilters; track f.value) {
+          <option [value]="f.value">{{ f.label }}</option>
+        }
+      </select>
     </div>
   </div>
 
   @if (loading()) {
     <div class="dims__loading"><mat-spinner diameter="32" /></div>
+  } @else if (grouped().length === 0) {
+    <div class="dims__empty">
+      <mat-icon>search_off</mat-icon>
+      <p>No hay dimensiones que coincidan con la búsqueda o el filtro.</p>
+    </div>
   } @else {
+    @if (!isFiltering()) {
+      <div class="dims__toolbar">
+        <span class="dims__count">{{ grouped().length }} competencia(s) con dimensiones</span>
+        <div class="dims__toolbar-actions">
+          <button type="button" class="link-btn" (click)="expandAll()">Expandir todo</button>
+          <button type="button" class="link-btn" (click)="collapseAll()">Colapsar todo</button>
+        </div>
+      </div>
+    }
+
     @for (group of grouped(); track group.skill) {
-      <div class="skill-group">
-        <h2 class="skill-title">{{ skillLabel(group.skill) }}</h2>
-        @if (group.items.length === 0) {
-          <p class="empty">Sin dimensiones para esta competencia.</p>
-        } @else {
+      <div class="skill-group" [class.open]="isExpanded(group.skill)">
+        <button type="button" class="skill-group-header" (click)="toggleGroup(group.skill)">
+          <span class="skill-dot" [style.background-color]="skillMeta(group.skill).color"></span>
+          <span class="skill-title">{{ skillLabel(group.skill) }}</span>
+          <span class="skill-count">{{ group.items.length }}</span>
+          <mat-icon class="chevron">{{ isExpanded(group.skill) ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+
+        @if (isExpanded(group.skill)) {
           <ul class="dim-list">
             @for (d of group.items; track d.id) {
               <li class="dim-item">

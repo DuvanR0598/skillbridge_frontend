@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { QuestionnairesService } from '../questionnaires.service';
 import { CuestionarioResponse, PreguntaDeCuestionarioResponse } from '../../../core/models/questionnaire-admin.model';
+import { skillMeta } from '../../../core/models/dimension.model';
 
 @Component({
   selector: 'app-questionnaire-preview',
@@ -22,6 +23,7 @@ import { CuestionarioResponse, PreguntaDeCuestionarioResponse } from '../../../c
   styleUrl: './questionnaire-preview.scss',
 })
 export class QuestionnairePreview implements OnInit, OnDestroy {
+  protected readonly skillMeta = skillMeta;
   private route = inject(ActivatedRoute);
   private svc   = inject(QuestionnairesService);
 

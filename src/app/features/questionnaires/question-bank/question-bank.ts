@@ -10,7 +10,7 @@ import { QuestionForm } from '../question-form/question-form';
 import { QuestionnairesService } from '../questionnaires.service';
 import { PreguntaResponse } from '../../../core/models/questionnaire-admin.model';
 import { DimensionsService } from '../../dimensions/dimensions.service';
-import { DimensionResponse, SkillTipo } from '../../../core/models/dimension.model';
+import { DimensionResponse, SkillTipo, skillMeta, SKILL_OPTIONS } from '../../../core/models/dimension.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
@@ -35,6 +35,8 @@ import { resolveMediaUrl } from '../../../core/utils/media-url';
   styleUrl: './question-bank.scss',
 })
 export class QuestionBank implements OnInit {
+  protected readonly skillMeta = skillMeta;
+  protected readonly skillOptions = SKILL_OPTIONS;
   private readonly svc = inject(QuestionnairesService);
   private readonly dimSvc = inject(DimensionsService);
   private readonly toast = inject(MessageService);

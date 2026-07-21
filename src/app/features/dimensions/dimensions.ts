@@ -11,7 +11,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { DimensionsService } from './dimensions.service';
-import { DimensionResponse, SKILL_OPTIONS, SkillTipo } from '../../core/models/dimension.model';
+import { DimensionResponse, SKILL_OPTIONS, SkillTipo, skillMeta } from '../../core/models/dimension.model';
 
 @Component({
   selector: 'app-dimensions',
@@ -38,6 +38,7 @@ export class Dimensions implements OnInit {
   private confirm = inject(ConfirmationService);
 
   skills = SKILL_OPTIONS;
+  protected readonly skillMeta = skillMeta;
 
   loading    = signal(true);
   saving     = signal(false);
@@ -47,6 +48,12 @@ export class Dimensions implements OnInit {
   // Filtros
   searchText   = signal('');
   filterSkill  = signal<SkillTipo | 'ALL'>('ALL');
+
+  // Acordeón: grupos de skill expandidos. Al buscar o filtrar se expanden todos.
+  expandedSkills = signal<ReadonlySet<string>>(new Set());
+  isFiltering = computed(
+    () => !!this.searchText().trim() || this.filterSkill() !== 'ALL',
+  );
 
   fSkill: SkillTipo = 'PENSAMIENTO_CRITICO';
   fNombre = '';
@@ -66,14 +73,32 @@ export class Dimensions implements OnInit {
         skill: s.value,
         items: filtered.filter((d) => d.skill === s.value),
       }))
-      .filter((g) => skill !== 'ALL' || g.items.length > 0 || !term);
+      .filter((g) => g.items.length > 0);
   });
 
   skillFilters: { value: SkillTipo | 'ALL'; label: string }[] = [
-    { value: 'ALL',                 label: 'Todas' },
-    { value: 'PENSAMIENTO_CRITICO', label: 'Pensamiento crítico' },
-    { value: 'ADAPTABILIDAD',       label: 'Adaptabilidad' },
+    { value: 'ALL', label: 'Todas' },
+    ...SKILL_OPTIONS.map((s) => ({ value: s.value, label: s.label })),
   ];
+
+  isExpanded(skill: string): boolean {
+    return this.isFiltering() || this.expandedSkills().has(skill);
+  }
+
+  toggleGroup(skill: string): void {
+    const next = new Set(this.expandedSkills());
+    if (next.has(skill)) next.delete(skill);
+    else next.add(skill);
+    this.expandedSkills.set(next);
+  }
+
+  expandAll(): void {
+    this.expandedSkills.set(new Set(this.grouped().map((g) => g.skill)));
+  }
+
+  collapseAll(): void {
+    this.expandedSkills.set(new Set());
+  }
 
   ngOnInit(): void {
     this.load();

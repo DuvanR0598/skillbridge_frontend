@@ -1,6 +1,7 @@
 // components/skill-radar-chart/skill-radar-chart.component.ts
 import { Component, input, OnChanges, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { SkillProgresoResponse } from '../../../../core/models/analytics.model';
+import { skillMeta } from '../../../../core/models/dimension.model';
 
 @Component({
   selector: 'app-skill-radar-chart',
@@ -137,6 +138,6 @@ export class SkillRadarChartComponent implements OnChanges, AfterViewInit {
   }
 
   private shortSkill(skill: string): string {
-    return skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD';
+    return skillMeta(skill).shortCode;
   }
 }

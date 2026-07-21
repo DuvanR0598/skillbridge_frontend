@@ -69,14 +69,14 @@
     <!-- Skill -->
     <div class="filter-group">
       <span class="filter-label">Skill</span>
-      <div class="filter-chips">
-        <button type="button" class="filter-chip" [class.active]="selectedSkill() === null"
-                (click)="onFilterSkill(null)">Todas</button>
-        <button type="button" class="filter-chip skill-chip-pc" [class.active]="selectedSkill() === 'PENSAMIENTO_CRITICO'"
-                (click)="onFilterSkill(selectedSkill() === 'PENSAMIENTO_CRITICO' ? null : 'PENSAMIENTO_CRITICO')">PC</button>
-        <button type="button" class="filter-chip skill-chip-ad" [class.active]="selectedSkill() === 'ADAPTABILIDAD'"
-                (click)="onFilterSkill(selectedSkill() === 'ADAPTABILIDAD' ? null : 'ADAPTABILIDAD')">AD</button>
-      </div>
+      <select class="skill-select"
+              [value]="selectedSkill() ?? ''"
+              (change)="onFilterSkill($any($event.target).value || null)">
+        <option value="">Todas</option>
+        @for (s of skillOptions; track s.value) {
+          <option [value]="s.value">{{ s.shortCode }} · {{ s.label }}</option>
+        }
+      </select>
     </div>
 
     <div class="filter-divider"></div>
@@ -84,16 +84,14 @@
     <!-- Dimensión -->
     <div class="filter-group">
       <span class="filter-label">Dimensión</span>
-      <div class="filter-chips">
-        <button type="button" class="filter-chip" [class.active]="selectedDimension() === null"
-                (click)="onFilterDimension(null)">Todas</button>
+      <select class="skill-select"
+              [value]="selectedDimension() ?? ''"
+              (change)="onFilterDimension($any($event.target).value ? +$any($event.target).value : null)">
+        <option value="">Todas</option>
         @for (d of filteredDimensions(); track d.id) {
-          <button type="button" class="filter-chip dim-chip-filter" [class.active]="selectedDimension() === d.id"
-                  (click)="onFilterDimension(selectedDimension() === d.id ? null : d.id)">
-            {{ d.nombre }}
-          </button>
+          <option [value]="d.id">{{ d.nombre }}</option>
         }
-      </div>
+      </select>
     </div>
 
   </div>
@@ -119,8 +117,8 @@
                   {{ getTypeLabel(q.tipoPregunta) }}
                 </span>
                 @if (q.dimension) {
-                  <span class="skill-badge" [class]="'skill-badge--' + q.dimension.skill.toLowerCase()">
-                    {{ q.dimension.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                  <span class="skill-badge" [style.background-color]="skillMeta(q.dimension.skill).color" [style.color]="'#fff'">
+                    {{ skillMeta(q.dimension.skill).shortCode }}
                   </span>
                   <span class="dim-chip" matTooltip="Dimensión">{{ q.dimension.nombre }}</span>
                 }
@@ -164,7 +162,7 @@
                 <option [ngValue]="null">(Sin dimensión)</option>
                 @for (d of dimensions(); track d.id) {
                   <option [ngValue]="d.id">
-                    {{ d.nombre }} · {{ d.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                    {{ d.nombre }} · {{ skillMeta(d.skill).shortCode }}
                   </option>
                 }
               </select>

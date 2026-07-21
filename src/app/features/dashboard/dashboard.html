@@ -152,8 +152,7 @@
               <div class="skill-row">
                 <div class="skill-meta">
                   <span class="skill-name">
-                    {{ skill.skill === 'PENSAMIENTO_CRITICO'
-                       ? 'Pensamiento Crítico' : 'Adaptabilidad' }}
+                    {{ skillMeta(skill.skill).label }}
                   </span>
                   <span class="skill-dim">{{ skill.dimension }}</span>
                 </div>

@@ -1,5 +1,6 @@
 // src/app/features/dashboard/dashboard.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { skillMeta } from '../../core/models/dimension.model';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { RouterLink } from '@angular/router';
@@ -34,6 +35,7 @@ import {
   styleUrl: './dashboard.scss',
 })
 export class DashboardComponent implements OnInit {
+  protected readonly skillMeta = skillMeta;
   private authSvc = inject(AuthService);
   private dashSvc = inject(DashboardService);
 

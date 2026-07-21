@@ -3,6 +3,7 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { EstudianteQueNecesitaApoyoResponse } from '../../../../core/models/teacher-analytics.model';
+import { skillMeta } from '../../../../core/models/dimension.model';
 
 @Component({
   selector: 'app-students-support-list',
@@ -15,7 +16,7 @@ export class StudentsSupportList{
   students = input<EstudianteQueNecesitaApoyoResponse[]>([]);
 
   getSkillLabel(skill: string): string {
-    return skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD';
+    return skillMeta(skill).shortCode;
   }
 
   getUrgencyClass(percentage: number): string {

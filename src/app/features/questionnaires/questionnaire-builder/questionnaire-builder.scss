@@ -499,6 +499,18 @@
   }
 }
 
+// ── Desplegable de filtro por skill ───────────────────────────
+.skill-select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card, #fff);
+  font-size: 13px;
+  color: var(--text-primary, #24312a);
+  cursor: pointer;
+  max-width: 240px;
+}
+
 // ── Chip de skill (PC / AD) ───────────────────────────────────
 .skill-chip {
   display: inline-flex;
@@ -508,33 +520,6 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .03em;
-
-  &.skill-pensamiento_critico {
-    background: rgba(59, 130, 246, 0.12);
-    color: #2563eb;
-  }
-  &.skill-adaptabilidad {
-    background: rgba(245, 124, 0, 0.12);
-    color: #c05c00;
-  }
-}
-
-// ── Chips de filtro skill ─────────────────────────────────────
-.skill-filter {
-  &.skill-pensamiento_critico {
-    &:hover, &.active {
-      background: rgba(59, 130, 246, 0.15);
-      border-color: #2563eb;
-      color: #2563eb;
-    }
-  }
-  &.skill-adaptabilidad {
-    &:hover, &.active {
-      background: rgba(245, 124, 0, 0.15);
-      border-color: #c05c00;
-      color: #c05c00;
-    }
-  }
 }
 
 .btn-add-bank {

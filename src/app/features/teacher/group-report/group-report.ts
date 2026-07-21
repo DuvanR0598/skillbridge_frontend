@@ -1,5 +1,6 @@
 // group-report/group-report.component.ts
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { skillMeta } from '../../../core/models/dimension.model';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -44,6 +45,7 @@ import { StudentsSupportList} from '../components/students-support-list/students
   styleUrl: './group-report.scss',
 })
 export class GroupReportComponent implements OnInit {
+  protected readonly skillMeta = skillMeta;
   private route = inject(ActivatedRoute);
   private teacherSvc = inject(TeacherAnalyticsService);
 

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { SkillProgresoResponse } from '../../../../core/models/analytics.model';
+import { skillMeta } from '../../../../core/models/dimension.model';
 
 @Component({
   selector: 'app-progress-comparison',
@@ -32,7 +33,7 @@ export class ProgressComparison {
   }
 
   getSkillLabel(skill: string): string {
-    return skill === 'PENSAMIENTO_CRITICO' ? 'Pensamiento Crítico' : 'Adaptabilidad';
+    return skillMeta(skill).label;
   }
 
   getDeltaClass(delta: number | null): string {

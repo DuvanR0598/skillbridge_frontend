@@ -11,7 +11,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { OpcionPreguntaRequest, PreguntaRequest, PreguntaResponse, QuestionType } from '../../../core/models/questionnaire-admin.model';
 import { QuestionnairesService } from '../questionnaires.service';
 import { DimensionsService } from '../../dimensions/dimensions.service';
-import { DimensionResponse, SKILL_OPTIONS, SkillTipo } from '../../../core/models/dimension.model';
+import { DimensionResponse, SKILL_OPTIONS, SkillTipo, skillMeta } from '../../../core/models/dimension.model';
 import { resolveMediaUrl } from '../../../core/utils/media-url';
 
 @Component({
@@ -47,6 +47,7 @@ export class QuestionForm {
   // Dimensiones disponibles (para clasificar la pregunta), agrupadas por skill
   dimensions = signal<DimensionResponse[]>([]);
   skillGroups = SKILL_OPTIONS;
+  protected readonly skillMeta = skillMeta;
 
   constructor() {
     this.dimSvc.list().subscribe((dims) => this.dimensions.set(dims));
@@ -54,6 +55,12 @@ export class QuestionForm {
 
   dimsBySkill(skill: SkillTipo): DimensionResponse[] {
     return this.dimensions().filter((d) => d.skill === skill);
+  }
+
+  /** Dimensión actualmente seleccionada (para el trigger del selector). */
+  selectedDim(): DimensionResponse | null {
+    const id = this.form.get('dimensionId')?.value;
+    return id != null ? this.dimensions().find((d) => d.id === id) ?? null : null;
   }
 
   questionTypes: { value: QuestionType; label: string }[] = [

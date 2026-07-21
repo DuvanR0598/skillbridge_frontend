@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { DecisionEscala, SkillProgresoResponse } from '../../../../core/models/analytics.model';
+import { skillMeta } from '../../../../core/models/dimension.model';
 
 @Component({
   selector: 'app-escalation-card',
@@ -37,11 +38,7 @@ export class EscalationCard {
   }
 
   getDimLabel(s: SkillProgresoResponse): string {
-    const skillMap: Record<string, string> = {
-      PENSAMIENTO_CRITICO: 'PC',
-      ADAPTABILIDAD: 'AD',
-    };
-    const skill = skillMap[s.skill] ?? s.skill;
+    const skill = skillMeta(s.skill).shortCode;
     const dim = s.dimensionNombre ?? '';
     return dim ? `${skill} · ${dim}` : skill;
   }

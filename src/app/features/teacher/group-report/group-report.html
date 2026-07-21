@@ -86,8 +86,7 @@
               <span>Dimensión más crítica</span>
             </div>
             <p class="hl-dim">
-              {{ mc.skill === 'PENSAMIENTO_CRITICO'
-                 ? 'Pensamiento Crítico' : 'Adaptabilidad' }}
+              {{ skillMeta(mc.skill).label }}
               @if (mc.dimensionNombre) { · {{ mc.dimensionNombre }} }
             </p>
             <p class="hl-val">Promedio PRE: {{ formatPct(mc.avgPrePorcentaje) }}</p>
@@ -100,8 +99,7 @@
               <span>Mayor mejora</span>
             </div>
             <p class="hl-dim">
-              {{ mi.skill === 'PENSAMIENTO_CRITICO'
-                 ? 'Pensamiento Crítico' : 'Adaptabilidad' }}
+              {{ skillMeta(mi.skill).label }}
               @if (mi.dimensionNombre) { · {{ mi.dimensionNombre }} }
             </p>
             <p class="hl-val">Delta: +{{ formatPct(mi.avgDelta) }}</p>
@@ -122,7 +120,7 @@
         @for (a of r.analisiDimensional; track $index) {
           <div class="dist-block">
             <p class="dist-label">
-              {{ a.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+              {{ skillMeta(a.skill).shortCode }}
               @if (a.dimensionNombre) { · {{ a.dimensionNombre }} }
             </p>
             <app-level-distribution-chart
@@ -319,7 +317,7 @@
             @for (row of selectedRows(); track ($index)) {
               <div class="st-row st-row--detail">
                 <div class="st-skill">
-                  {{ row.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                  {{ skillMeta(row.skill).shortCode }}
                 </div>
                 <div class="st-dim">{{ row.dimensionNombre ?? 'General' }}</div>
                 <div>{{ row.totalPuntaje }}/{{ row.maxPosiblePuntaje }}</div>

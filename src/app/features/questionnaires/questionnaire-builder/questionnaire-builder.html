@@ -139,16 +139,14 @@
                 <!-- Skill -->
                 <div class="bank-filter-group">
                   <span class="bank-filter-label">Skill</span>
-                  <div class="bank-filter-chips">
-                    <button class="filter-chip" [class.active]="filterSkill() === 'ALL'"
-                            (click)="filterSkill.set('ALL')">Todas</button>
-                    <button class="filter-chip skill-filter skill-pensamiento_critico"
-                            [class.active]="filterSkill() === 'PENSAMIENTO_CRITICO'"
-                            (click)="filterSkill.set(filterSkill() === 'PENSAMIENTO_CRITICO' ? 'ALL' : 'PENSAMIENTO_CRITICO')">PC</button>
-                    <button class="filter-chip skill-filter skill-adaptabilidad"
-                            [class.active]="filterSkill() === 'ADAPTABILIDAD'"
-                            (click)="filterSkill.set(filterSkill() === 'ADAPTABILIDAD' ? 'ALL' : 'ADAPTABILIDAD')">AD</button>
-                  </div>
+                  <select class="skill-select"
+                          [value]="filterSkill()"
+                          (change)="filterSkill.set($any($event.target).value)">
+                    <option value="ALL">Todas</option>
+                    @for (s of skillOptions; track s.value) {
+                      <option [value]="s.value">{{ s.shortCode }} · {{ s.label }}</option>
+                    }
+                  </select>
                 </div>
 
                 <div class="bank-filter-divider"></div>
@@ -211,8 +209,8 @@
                           {{ getTypeLabel(bq.tipoPregunta) }}
                         </span>
                         @if (bq.dimension) {
-                          <span class="skill-chip" [class]="'skill-' + bq.dimension.skill.toLowerCase()">
-                            {{ bq.dimension.skill === 'PENSAMIENTO_CRITICO' ? 'PC' : 'AD' }}
+                          <span class="skill-chip" [style.background-color]="skillMeta(bq.dimension.skill).color" [style.color]="'#fff'">
+                            {{ skillMeta(bq.dimension.skill).shortCode }}
                           </span>
                           <span class="dim-chip">{{ bq.dimension.nombre }}</span>
                         }

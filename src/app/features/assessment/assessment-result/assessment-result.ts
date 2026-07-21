@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { skillMeta } from '../../../core/models/dimension.model';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -68,9 +69,7 @@ export class AssessmentResult implements OnInit {
   }
 
   getSkillLabel(skill: string): string {
-    return skill === 'PENSAMIENTO_CRITICO'
-      ? 'Pensamiento Crítico'
-      : 'Adaptabilidad';
+    return skillMeta(skill).label;
   }
 
   getPlanAxisLabel(axis: string): string {
