@@ -18,6 +18,7 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import {
   EngineeringProgramResponse,
+  CampusResponse,
   CompleteProfileRequest
 } from '../../../core/models/perfil.model';
 import { ApiResponse } from '../../../core/models/api-response.model';
@@ -65,8 +66,12 @@ export class CompletarPerfil implements OnInit{
   ];
 
   programs     = signal<EngineeringProgramResponse[]>([]);
+  campuses     = signal<CampusResponse[]>([]);
   programSearch = signal('');
   loading      = signal(false);
+
+  // La sede es obligatoria solo para estudiantes.
+  readonly isStudent = this.authSvc.hasRole('ROLE_ESTUDIANTE');
 
   /** Programas filtrados por coincidencia de palabras (sin distinguir acentos/mayúsculas). */
   filteredPrograms = computed(() => {
@@ -105,7 +110,8 @@ export class CompletarPerfil implements OnInit{
   // ── Paso 2: datos académicos ──────────────────────────────
   academicForm: FormGroup = this.fb.group({
     engineeringProgram: [null, Validators.required],
-    academicSemester:   [null, Validators.required]
+    academicSemester:   [null, Validators.required],
+    campus:             [null]
   });
 
   // ── Paso 3: sobre mí (opcional) ───────────────────────────
@@ -127,7 +133,22 @@ export class CompletarPerfil implements OnInit{
         ]),
       );
     }
+    // La sede es obligatoria para estudiantes.
+    if (this.isStudent) {
+      this.academicForm.get('campus')?.addValidators(Validators.required);
+      this.academicForm.get('campus')?.updateValueAndValidity();
+    }
     this.loadPrograms();
+    this.loadCampuses();
+  }
+
+  loadCampuses(): void {
+    this.http.get<ApiResponse<CampusResponse[]>>(
+      `${this.API}/perfil/sedes`
+    ).subscribe({
+      next: res => this.campuses.set(res.data || []),
+      error: () => this.campuses.set([]),
+    });
   }
 
   loadPrograms(): void {
@@ -175,16 +196,17 @@ export class CompletarPerfil implements OnInit{
   // Calcular porcentaje de completitud en tiempo real
   get completionPct(): number {
     let filled = 0;
-    const total = 5;
+    const total = this.isStudent ? 6 : 5; // los estudiantes suman la sede
     const pv = this.personalForm.value;
     const av = this.academicForm.value;
     const bv = this.bioForm.value;
 
-    if (pv.dateOfBirth)        filled++;
-    if (pv.gender)             filled++;
-    if (av.engineeringProgram) filled++;
-    if (av.academicSemester)   filled++;
-    if (bv.biography)          filled++;
+    if (pv.dateOfBirth)          filled++;
+    if (pv.gender)               filled++;
+    if (av.engineeringProgram)   filled++;
+    if (av.academicSemester)     filled++;
+    if (bv.biography)            filled++;
+    if (this.isStudent && av.campus) filled++;
 
     return Math.round((filled / total) * 100);
   }
@@ -207,6 +229,7 @@ export class CompletarPerfil implements OnInit{
       gender:             pv.gender        || undefined,
       engineeringProgram: av.engineeringProgram,
       academicSemester:   av.academicSemester,
+      campus:             av.campus        || undefined,
       biography:          bv.biography     || undefined,
     };
 

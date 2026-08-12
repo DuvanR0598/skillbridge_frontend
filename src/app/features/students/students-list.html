@@ -69,6 +69,19 @@
         }
       </mat-select>
     </mat-form-field>
+
+    <mat-form-field appearance="outline" class="program-field">
+      <mat-label>Sede</mat-label>
+      <mat-select
+        [ngModel]="filterSede()"
+        (ngModelChange)="onSedeChange($event)"
+      >
+        <mat-option value="ALL">Todas las sedes</mat-option>
+        @for (c of campuses(); track c.value) {
+          <mat-option [value]="c.value">{{ c.displayName }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
   </div>
 
   @if (loading()) {
@@ -88,6 +101,7 @@
             <th>Nombre</th>
             <th>Programa</th>
             <th>Sem.</th>
+            <th>Sede</th>
             <th>Correo</th>
             <th>Estado</th>
             <th class="th-actions">Perfil</th>
@@ -109,6 +123,7 @@
                 }
               </td>
               <td>{{ s.semestreAcademico ?? '—' }}</td>
+              <td>{{ s.sedeNombre ?? '—' }}</td>
               <td class="email-cell">{{ s.email }}</td>
               <td>
                 <span class="status-pill" [class.is-active]="s.activado" [class.is-inactive]="!s.activado">
@@ -241,6 +256,11 @@
               <mat-icon>class</mat-icon>
               <span class="row-label">Semestre</span>
               <span class="row-val">{{ (selectedPerfil()?.semestreAcademico ?? st.semestreAcademico) ? 'Semestre ' + (selectedPerfil()?.semestreAcademico ?? st.semestreAcademico) : '—' }}</span>
+            </div>
+            <div class="profile-dlg__row">
+              <mat-icon>location_on</mat-icon>
+              <span class="row-label">Sede</span>
+              <span class="row-val">{{ selectedPerfil()?.visualizacionSede ?? st.sedeNombre ?? '—' }}</span>
             </div>
           </div>
         </div>

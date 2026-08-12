@@ -116,7 +116,7 @@
             placeholder="Qué puede hacer el estudiante en este nivel"
             required
           ></textarea>
-          <mat-hint align="end">{{ (fDescripcion?.length ?? 0) }}/1000</mat-hint>
+          <mat-hint align="end">{{ (fDescripcion.length) }}/1000</mat-hint>
           @if (descRef.invalid && descRef.touched) {
             <mat-error>La descripción del nivel es obligatoria.</mat-error>
           }
@@ -133,7 +133,7 @@
             placeholder="Comportamientos observables"
             required
           ></textarea>
-          <mat-hint align="end">{{ (fCaracteristicas?.length ?? 0) }}/1000</mat-hint>
+          <mat-hint align="end">{{ (fCaracteristicas.length) }}/1000</mat-hint>
           @if (carRef.invalid && carRef.touched) {
             <mat-error>Las características observables son obligatorias.</mat-error>
           }

@@ -8,7 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { ProfileService } from '../../profile.service';
-import { EngineeringProgramResponse, UsuarioPerfilResponse } from '../../../../core/models/perfil.model';
+import { CampusResponse, EngineeringProgramResponse, UsuarioPerfilResponse } from '../../../../core/models/perfil.model';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-profile-academic',
@@ -29,14 +31,29 @@ import { EngineeringProgramResponse, UsuarioPerfilResponse } from '../../../../c
 export class ProfileAcademic implements OnChanges {
   private fb = inject(FormBuilder);
   private profileSvc = inject(ProfileService);
+  private authSvc = inject(AuthService);
+  private toast = inject(MessageService);
+
+  campuses = signal<CampusResponse[]>([]);
+  readonly isStudent = this.authSvc.hasRole('ROLE_ESTUDIANTE');
+
+  constructor() {
+    // La sede es obligatoria para estudiantes.
+    if (this.isStudent) {
+      this.form.get('campus')?.addValidators(Validators.required);
+      this.form.get('campus')?.updateValueAndValidity();
+    }
+    this.profileSvc.getCampuses().subscribe({
+      next: (res) => this.campuses.set(res.data ?? []),
+      error: () => this.campuses.set([]),
+    });
+  }
 
   profile = input<UsuarioPerfilResponse | null>(null);
   programs = input<EngineeringProgramResponse[]>([]);
   profileUpdated = output<UsuarioPerfilResponse>();
 
   saving = signal(false);
-  errorMsg = signal<string | null>(null);
-  successMsg = signal<string | null>(null);
   programSearch = signal('');
 
   semesterOptions = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -56,6 +73,7 @@ export class ProfileAcademic implements OnChanges {
   form: FormGroup = this.fb.group({
     engineeringProgram: [null, Validators.required],
     academicSemester: [null, [Validators.required, Validators.min(1), Validators.max(10)]],
+    campus: [null],
   });
 
   /** Quita acentos y pasa a minúsculas para comparar sin distinción. */
@@ -81,6 +99,7 @@ export class ProfileAcademic implements OnChanges {
     this.form.patchValue({
       engineeringProgram: p.programaIngenieria ?? null,
       academicSemester: p.semestreAcademico ?? null,
+      campus: p.sede ?? null,
     });
   }
 
@@ -88,7 +107,6 @@ export class ProfileAcademic implements OnChanges {
     if (this.form.invalid || this.saving()) return;
 
     this.saving.set(true);
-    this.clearMessages();
 
     const v = this.form.value;
 
@@ -96,27 +114,28 @@ export class ProfileAcademic implements OnChanges {
       .updateProfile({
         engineeringProgram: v.engineeringProgram,
         academicSemester: v.academicSemester,
+        campus: v.campus ?? undefined,
       })
       .subscribe({
         next: (res) => {
           this.saving.set(false);
           this.profileUpdated.emit(res.data);
-          this.showSuccess('Información académica guardada.');
+          this.toast.add({
+            severity: 'success',
+            summary: 'Perfil actualizado',
+            detail: 'La información académica se guardó correctamente.',
+            life: 3000,
+          });
         },
         error: (err) => {
           this.saving.set(false);
-          this.errorMsg.set(err?.error?.message ?? 'Error al guardar.');
+          this.toast.add({
+            severity: 'error',
+            summary: 'Error al guardar',
+            detail: err?.error?.message ?? 'No se pudo guardar la información.',
+            life: 4000,
+          });
         },
       });
-  }
-
-  private showSuccess(msg: string): void {
-    this.successMsg.set(msg);
-    setTimeout(() => this.successMsg.set(null), 3500);
-  }
-
-  private clearMessages(): void {
-    this.errorMsg.set(null);
-    this.successMsg.set(null);
   }
 }

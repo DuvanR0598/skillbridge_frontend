@@ -3,6 +3,10 @@
 // por lo que se modela como string para no duplicar los 33 valores aquí.
 export type EngineeringProgram = string;
 
+// Sede/seccional regional. El backend define el catálogo (enum Sede); el
+// frontend lo consume vía /perfil/sedes, por lo que se modela como string.
+export type Campus = string;
+
 export type Gender = 'MASCULINO' | 'FEMENINO' | 'NO_BINARIO' | 'PREFIERO_NO_DECIRLO';
 
 export interface CompleteProfileRequest {
@@ -11,6 +15,7 @@ export interface CompleteProfileRequest {
   biography?: string;
   engineeringProgram?: EngineeringProgram;
   academicSemester?: number;
+  campus?: Campus; // sede/seccional (obligatoria para estudiantes)
   // Solo para usuarios sin documento (ej. registrados con Google)
   tipoIdentificacion?: 'CC' | 'TI' | 'CE' | 'PA';
   numeroIdentificacion?: string;
@@ -28,6 +33,8 @@ export interface UsuarioPerfilResponse {
   visualizacionProgramaIngenieria?: string;
   codigoProgramaIngenieria?: string;
   semestreAcademico?: number;
+  sede?: Campus;
+  visualizacionSede?: string;
   perfilCompleto: boolean;
   porcentajeCompleto: number;
   updatedAt: string;
@@ -44,5 +51,10 @@ export interface ProfileStatusResponse {
 export interface EngineeringProgramResponse {
   value: EngineeringProgram;
   codigo: string;
+  displayName: string;
+}
+
+export interface CampusResponse {
+  value: Campus;
   displayName: string;
 }

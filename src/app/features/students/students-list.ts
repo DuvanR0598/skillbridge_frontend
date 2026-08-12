@@ -13,7 +13,7 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
-import { EngineeringProgramResponse, UsuarioPerfilResponse } from '../../core/models/perfil.model';
+import { CampusResponse, EngineeringProgramResponse, UsuarioPerfilResponse } from '../../core/models/perfil.model';
 import { resolveMediaUrl } from '../../core/utils/media-url';
 import { AvatarViewer } from '../../shared/components/avatar-viewer/avatar-viewer';
 import { StudentsService, StudentSummary } from './students.service';
@@ -48,9 +48,11 @@ export class StudentsList implements OnInit {
   loading = signal(true);
   students = signal<StudentSummary[]>([]);
   programs = signal<EngineeringProgramResponse[]>([]);
+  campuses = signal<CampusResponse[]>([]);
 
   searchText = signal('');
   filterProgram = signal<string>('ALL');
+  filterSede = signal<string>('ALL');
 
   // Buscador dentro del selector de programa
   programSearch = signal('');
@@ -85,10 +87,13 @@ export class StudentsList implements OnInit {
   filtered = computed(() => {
     const term = this.normalize(this.searchText().trim());
     const prog = this.filterProgram();
+    const sede = this.filterSede();
     const words = term ? term.split(/\s+/) : [];
     return this.students().filter((s) => {
       const okProg = prog === 'ALL' || s.programaIngenieria === prog;
       if (!okProg) return false;
+      const okSede = sede === 'ALL' || s.sede === sede;
+      if (!okSede) return false;
       if (words.length === 0) return true;
       const fullName = this.normalize(`${s.nombre ?? ''} ${s.apellido ?? ''}`);
       return words.every((w) => fullName.includes(w));
@@ -117,6 +122,11 @@ export class StudentsList implements OnInit {
     this.pageIndex.set(0);
   }
 
+  onSedeChange(value: string): void {
+    this.filterSede.set(value);
+    this.pageIndex.set(0);
+  }
+
   onPage(event: PageEvent): void {
     this.pageIndex.set(event.pageIndex);
     this.pageSize.set(event.pageSize);
@@ -136,6 +146,13 @@ export class StudentsList implements OnInit {
       .subscribe({
         next: (res) => this.programs.set(res.data ?? []),
         error: () => this.programs.set([]),
+      });
+
+    this.http
+      .get<ApiResponse<CampusResponse[]>>(`${this.API}/perfil/sedes`)
+      .subscribe({
+        next: (res) => this.campuses.set(res.data ?? []),
+        error: () => this.campuses.set([]),
       });
   }
 
@@ -158,7 +175,7 @@ export class StudentsList implements OnInit {
   exportXlsx(): void {
     if (this.exporting()) return;
     this.exporting.set(true);
-    this.svc.exportStudents(this.searchText(), this.filterProgram()).subscribe({
+    this.svc.exportStudents(this.searchText(), this.filterProgram(), this.filterSede()).subscribe({
       next: (blob) => {
         this.exporting.set(false);
         const url = URL.createObjectURL(blob);
