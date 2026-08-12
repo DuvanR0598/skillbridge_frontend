@@ -36,6 +36,8 @@ export interface UserResponse {
   authProvider: 'LOCAL' | 'GOOGLE';
   emailVerified: boolean;
   enabled?: boolean;
+  sede?: string;
+  sedeNombre?: string;
   roles: string[];
   permissions: string[];
   createdAt: string;

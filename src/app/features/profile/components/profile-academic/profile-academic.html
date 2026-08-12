@@ -1,19 +1,5 @@
 <!-- profile-academic.component.html -->
 <div class="pa-shell">
-  @if (errorMsg()) {
-    <div class="alert alert-error" role="alert">
-      <mat-icon>error_outline</mat-icon>
-      <span>{{ errorMsg() }}</span>
-    </div>
-  }
-
-  @if (successMsg()) {
-    <div class="alert alert-success" role="status">
-      <mat-icon>check_circle</mat-icon>
-      <span>{{ successMsg() }}</span>
-    </div>
-  }
-
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
     <h3 class="section-title">Programa académico</h3>
 
@@ -86,6 +72,22 @@
         }
       </mat-form-field>
     </div>
+
+    <!-- Sede / seccional -->
+    <mat-form-field appearance="outline" class="full mt-4">
+      <mat-label>Sede / seccional{{ isStudent ? ' *' : ' (opcional)' }}</mat-label>
+      <mat-select formControlName="campus">
+        @for (c of campuses(); track c.value) {
+          <mat-option [value]="c.value">{{ c.displayName }}</mat-option>
+        }
+      </mat-select>
+      @if (
+        form.get('campus')?.hasError('required') &&
+        form.get('campus')?.touched
+      ) {
+        <mat-error>La sede es obligatoria</mat-error>
+      }
+    </mat-form-field>
 
     <div class="form-actions mt-6">
       <button

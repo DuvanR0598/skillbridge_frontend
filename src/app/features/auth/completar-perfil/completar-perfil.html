@@ -205,6 +205,23 @@
             </mat-form-field>
           </div>
 
+          <!-- Sede / seccional -->
+          <mat-form-field appearance="outline" class="mt-3">
+            <mat-label>Sede / seccional{{ isStudent ? '' : ' (opcional)' }}</mat-label>
+            <mat-icon matPrefix class="field-icon">location_on</mat-icon>
+            <mat-select formControlName="campus">
+              @for (c of campuses(); track c.value) {
+                <mat-option [value]="c.value">{{ c.displayName }}</mat-option>
+              }
+            </mat-select>
+            @if (
+              academicForm.get('campus')?.hasError('required') &&
+              academicForm.get('campus')?.touched
+            ) {
+              <mat-error>Selecciona tu sede</mat-error>
+            }
+          </mat-form-field>
+
           <div class="step-actions">
             <button mat-stroked-button class="btn-back" matStepperPrevious (click)="prevStep()">
               <mat-icon>arrow_back</mat-icon>

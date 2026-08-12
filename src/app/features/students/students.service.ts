@@ -16,6 +16,8 @@ export interface StudentSummary {
   programaNombre?: string | null;
   codigoPrograma?: string | null;
   semestreAcademico?: number | null;
+  sede?: string | null;
+  sedeNombre?: string | null;
   activado?: boolean | null;
 }
 
@@ -39,10 +41,11 @@ export class StudentsService {
   }
 
   /** Descarga los estudiantes filtrados en un XLSX (ADMIN/COORDINADOR). */
-  exportStudents(search: string, programa: string): Observable<Blob> {
+  exportStudents(search: string, programa: string, sede: string): Observable<Blob> {
     let params = new HttpParams();
     if (search && search.trim()) params = params.set('search', search.trim());
     if (programa && programa !== 'ALL') params = params.set('programa', programa);
+    if (sede && sede !== 'ALL') params = params.set('sede', sede);
     return this.http.get(`${this.API}/usuarios/estudiantes/exportar`, {
       params,
       responseType: 'blob',

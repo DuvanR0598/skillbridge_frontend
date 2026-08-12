@@ -4,7 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import { UserResponse } from '../../../core/models/auth.model';
-import { UsuarioPerfilResponse } from '../../../core/models/perfil.model';
+import { CampusResponse, UsuarioPerfilResponse } from '../../../core/models/perfil.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminUsersService {
@@ -42,5 +42,12 @@ export class AdminUsersService {
   /** Descarga la información de todos los usuarios en un XLSX (solo ADMIN). */
   exportUsers(): Observable<Blob> {
     return this.http.get(`${this.API}/usuarios/exportar`, { responseType: 'blob' });
+  }
+
+  /** Catálogo de sedes/seccionales (para el filtro). */
+  getCampuses(): Observable<CampusResponse[]> {
+    return this.http
+      .get<ApiResponse<CampusResponse[]>>(`${this.API}/perfil/sedes`)
+      .pipe(map((res) => res.data ?? []));
   }
 }

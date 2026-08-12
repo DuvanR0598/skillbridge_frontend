@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import {
+  CampusResponse,
   CompleteProfileRequest,
   EngineeringProgramResponse,
   ProfileStatusResponse,
@@ -38,5 +39,9 @@ export class ProfileService {
 
   getPrograms(): Observable<ApiResponse<EngineeringProgramResponse[]>> {
     return this.http.get<ApiResponse<EngineeringProgramResponse[]>>(`${this.API}/perfil/programas`);
+  }
+
+  getCampuses(): Observable<ApiResponse<CampusResponse[]>> {
+    return this.http.get<ApiResponse<CampusResponse[]>>(`${this.API}/perfil/sedes`);
   }
 }

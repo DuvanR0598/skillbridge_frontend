@@ -31,20 +31,6 @@
     </div>
   </div>
 
-  <!-- Mensajes -->
-  @if (errorMsg()) {
-    <div class="alert alert-error" role="alert">
-      <mat-icon>error_outline</mat-icon>
-      <span>{{ errorMsg() }}</span>
-    </div>
-  }
-
-  @if (successMsg()) {
-    <div class="alert alert-success" role="status">
-      <mat-icon>check_circle</mat-icon>
-      <span>{{ successMsg() }}</span>
-    </div>
-  }
 
   <!-- Formulario personal -->
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>

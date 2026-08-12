@@ -49,8 +49,6 @@ export class ProfileInfo implements OnChanges {
 
   saving       = signal(false);
   uploading    = signal(false);
-  errorMsg     = signal<string | null>(null);
-  successMsg   = signal<string | null>(null);
   previewUrl   = signal<string | null>(null);
 
   maxDate = new Date(new Date().setFullYear(new Date().getFullYear() - 10));
@@ -117,7 +115,6 @@ export class ProfileInfo implements OnChanges {
 
     // Subir al backend
     this.uploading.set(true);
-    this.clearMessages();
 
     this.profileSvc.uploadAvatar(file).subscribe({
       next: res => {
@@ -149,7 +146,6 @@ export class ProfileInfo implements OnChanges {
     if (this.form.invalid || this.saving()) return;
 
     this.saving.set(true);
-    this.clearMessages();
 
     const v   = this.form.value;
     const dob = v.dateOfBirth
@@ -164,22 +160,22 @@ export class ProfileInfo implements OnChanges {
       next: res => {
         this.saving.set(false);
         this.profileUpdated.emit(res.data);
-        this.showSuccess('Información personal guardada.');
+        this.toast.add({
+          severity: 'success',
+          summary: 'Perfil actualizado',
+          detail: 'La información personal se guardó correctamente.',
+          life: 3000,
+        });
       },
       error: err => {
         this.saving.set(false);
-        this.errorMsg.set(err?.error?.message ?? 'Error al guardar.');
+        this.toast.add({
+          severity: 'error',
+          summary: 'Error al guardar',
+          detail: err?.error?.message ?? 'No se pudo guardar la información.',
+          life: 4000,
+        });
       }
     });
-  }
-
-  private showSuccess(msg: string): void {
-    this.successMsg.set(msg);
-    setTimeout(() => this.successMsg.set(null), 3500);
-  }
-
-  private clearMessages(): void {
-    this.errorMsg.set(null);
-    this.successMsg.set(null);
   }
 }
